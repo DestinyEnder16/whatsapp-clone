@@ -1,14 +1,14 @@
+import Button from '@/shared/components/Button';
 import { colors } from '@/shared/theme/colors';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import {
     FlatList,
     Image,
-    Pressable,
     StyleSheet,
     Text,
     useWindowDimensions,
-    View,
+    View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ONBOARDING_SLIDES } from '../data';
@@ -77,15 +77,7 @@ export function OnboardingScreen() {
                 <Text style={styles.title}>{ONBOARDING_SLIDES[currentIndex].title}</Text>
                 <Text style={styles.description}>{ONBOARDING_SLIDES[currentIndex].description}</Text>
 
-                <Pressable
-                    style={styles.button}
-                    onPress={() => {
-                        // For now, let's just alert or go somewhere.
-                        console.log('Get Started pressed');
-                    }}
-                >
-                    <Text style={styles.buttonText}>Get Started</Text>
-                </Pressable>
+                <Button title="Get Started" onPress={() => { router.push('/(auth)/phone') }} />
             </View>
         </SafeAreaView>
     );
