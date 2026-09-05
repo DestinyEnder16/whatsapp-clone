@@ -1,0 +1,3098 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/v1/auth/otp/request": {
+      "post": {
+        "operationId": "requestOtp",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestOtpDto"
+              },
+              "examples": {
+                "default": {
+                  "summary": "Request a code for a Nigerian phone number",
+                  "value": {
+                    "phoneNumber": "+2348012345678"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OtpChallengeResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Request a phone verification code",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/auth/otp/resend": {
+      "post": {
+        "operationId": "resendOtp",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResendOtpDto"
+              },
+              "examples": {
+                "default": {
+                  "summary": "Resend the code for an existing challenge",
+                  "value": {
+                    "challengeId": "550e8400-e29b-41d4-a716-446655440000"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OtpChallengeResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Resend a phone verification code",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/auth/otp/verify": {
+      "post": {
+        "operationId": "verifyOtp",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyOtpDto"
+              },
+              "examples": {
+                "default": {
+                  "summary": "Verify a code from a mobile device",
+                  "value": {
+                    "challengeId": "550e8400-e29b-41d4-a716-446655440000",
+                    "code": "1234",
+                    "device": {
+                      "name": "Student's iPhone",
+                      "platform": "ios"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Verify the code and create a persistent session",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/auth/refresh": {
+      "post": {
+        "operationId": "refresh",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenDto"
+              },
+              "examples": {
+                "default": {
+                  "summary": "Exchange the current refresh token",
+                  "value": {
+                    "refreshToken": "550e8400-e29b-41d4-a716-446655440000.3fQ8xZ7uV2nK5mP9rT4wY6aB1cD0eF8gH2jL7sN5qRk"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Rotate a refresh token and issue a new token pair",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/auth/logout": {
+      "post": {
+        "operationId": "logout",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenDto"
+              },
+              "examples": {
+                "default": {
+                  "summary": "Log out the session represented by a refresh token",
+                  "value": {
+                    "refreshToken": "550e8400-e29b-41d4-a716-446655440000.3fQ8xZ7uV2nK5mP9rT4wY6aB1cD0eF8gH2jL7sN5qRk"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "summary": "Revoke a refresh session",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/me": {
+      "get": {
+        "operationId": "getMe",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get the signed-in user profile",
+        "tags": [
+          "profile"
+        ]
+      },
+      "patch": {
+        "operationId": "updateMe",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProfileDto"
+              },
+              "examples": {
+                "default": {
+                  "summary": "Complete the signed-in user profile",
+                  "value": {
+                    "displayName": "Great Ichoku",
+                    "avatarUrl": "https://example.com/avatars/great.jpg"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Complete or update the signed-in user profile",
+        "tags": [
+          "profile"
+        ]
+      }
+    },
+    "/v1/me/blocks": {
+      "get": {
+        "operationId": "list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlockListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List users blocked by the signed-in user",
+        "tags": [
+          "blocks"
+        ]
+      }
+    },
+    "/v1/me/blocks/{userId}": {
+      "put": {
+        "operationId": "block",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlockResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A user cannot block themselves."
+          },
+          "404": {
+            "description": "The selected user does not exist."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Block a user idempotently",
+        "tags": [
+          "blocks"
+        ]
+      },
+      "delete": {
+        "operationId": "unblock",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The block is absent."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Unblock a user idempotently",
+        "tags": [
+          "blocks"
+        ]
+      }
+    },
+    "/v1/contacts/match": {
+      "post": {
+        "operationId": "matchContacts",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MatchContactsDto"
+              },
+              "examples": {
+                "default": {
+                  "summary": "Match and normalize a batch of international phone numbers",
+                  "value": {
+                    "phoneNumbers": [
+                      "+234 801 234 5678",
+                      "+2348098765432"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactMatchesResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Match phone numbers already present in the caller contacts",
+        "tags": [
+          "discovery"
+        ]
+      }
+    },
+    "/v1/users/search": {
+      "get": {
+        "operationId": "searchUsers",
+        "parameters": [
+          {
+            "name": "q",
+            "required": true,
+            "in": "query",
+            "description": "A display-name search term. Phone numbers are not searched.",
+            "schema": {
+              "minLength": 3,
+              "maxLength": 80,
+              "example": "Ada",
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 25,
+              "default": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "Opaque cursor returned by the previous search response.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserSearchResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Search completed profiles by display name",
+        "tags": [
+          "discovery"
+        ]
+      }
+    },
+    "/v1/conversations/direct": {
+      "post": {
+        "operationId": "createDirect",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDirectConversationDto"
+              },
+              "examples": {
+                "default": {
+                  "summary": "Start a direct conversation with a registered user",
+                  "value": {
+                    "participantId": "7d444840-9dc0-11d1-b245-5ffdce74fad2"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DirectConversationResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create or return an existing direct conversation",
+        "tags": [
+          "conversations"
+        ]
+      }
+    },
+    "/v1/conversations/group": {
+      "post": {
+        "operationId": "createGroup",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateGroupConversationDto"
+              },
+              "examples": {
+                "default": {
+                  "summary": "Start a named group with registered users",
+                  "value": {
+                    "name": "Study Group",
+                    "participantIds": [
+                      "7d444840-9dc0-41d1-b245-5ffdce74fad2",
+                      "8e555951-aed1-42e2-8346-6aadece85be3"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupConversationResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The group name or participant list is invalid, duplicated, or includes the creator."
+          },
+          "404": {
+            "description": "One or more selected users do not exist."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a group conversation",
+        "tags": [
+          "conversations"
+        ]
+      }
+    },
+    "/v1/conversations/{conversationId}": {
+      "patch": {
+        "operationId": "updateGroup",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "minProperties": 1,
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateGroupConversationDto"
+                  }
+                ]
+              },
+              "examples": {
+                "default": {
+                  "summary": "Rename a group and remove its avatar",
+                  "value": {
+                    "name": "Project Team",
+                    "avatarUrl": null
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupConversationResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No supported field was provided or the metadata is invalid."
+          },
+          "403": {
+            "description": "The member is not allowed to edit group metadata."
+          },
+          "404": {
+            "description": "The group conversation is missing or the user is not a member."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update group conversation metadata",
+        "tags": [
+          "conversations"
+        ]
+      },
+      "delete": {
+        "operationId": "deleteGroup",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The group was deleted."
+          },
+          "403": {
+            "description": "Only the group owner can delete the group."
+          },
+          "404": {
+            "description": "The group conversation is missing or the user is not a member."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete a group conversation",
+        "tags": [
+          "conversations"
+        ]
+      },
+      "get": {
+        "operationId": "get",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/DirectConversationResponseDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/GroupConversationResponseDto"
+                    }
+                  ],
+                  "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                      "direct": "#/components/schemas/DirectConversationResponseDto",
+                      "group": "#/components/schemas/GroupConversationResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The conversation is missing or the user is not a member."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get a conversation by ID",
+        "tags": [
+          "conversations"
+        ]
+      }
+    },
+    "/v1/conversations/{conversationId}/members": {
+      "post": {
+        "operationId": "addGroupMembers",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddGroupMembersDto"
+              },
+              "examples": {
+                "default": {
+                  "summary": "Add registered users to a group",
+                  "value": {
+                    "participantIds": [
+                      "7d444840-9dc0-41d1-b245-5ffdce74fad2",
+                      "8e555951-aed1-42e2-8346-6aadece85be3"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupConversationResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The participant list is invalid, duplicated, or self-referential."
+          },
+          "403": {
+            "description": "The member is not allowed to add group members."
+          },
+          "404": {
+            "description": "The group is inaccessible, or one or more selected users are unavailable."
+          },
+          "409": {
+            "description": "A selected user is already a member or the group member limit would be exceeded."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Add members to a group conversation",
+        "tags": [
+          "conversations"
+        ]
+      }
+    },
+    "/v1/conversations/{conversationId}/members/{memberId}": {
+      "delete": {
+        "operationId": "removeGroupMember",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The member was removed."
+          },
+          "400": {
+            "description": "Use the leave endpoint to remove yourself."
+          },
+          "403": {
+            "description": "The member is not allowed to remove the selected member."
+          },
+          "404": {
+            "description": "The group is inaccessible or the selected membership does not exist."
+          },
+          "409": {
+            "description": "The group owner cannot be removed."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remove a member from a group conversation",
+        "tags": [
+          "conversations"
+        ]
+      }
+    },
+    "/v1/conversations/{conversationId}/members/{memberId}/role": {
+      "patch": {
+        "operationId": "updateGroupMemberRole",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGroupMemberRoleDto"
+              },
+              "examples": {
+                "default": {
+                  "summary": "Promote a member to admin",
+                  "value": {
+                    "role": "admin"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupConversationResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The requested role is invalid."
+          },
+          "403": {
+            "description": "Only the group owner can change member roles."
+          },
+          "404": {
+            "description": "The group is inaccessible or the selected membership does not exist."
+          },
+          "409": {
+            "description": "The owner role can only change through ownership transfer."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Promote or demote a group member",
+        "tags": [
+          "conversations"
+        ]
+      }
+    },
+    "/v1/conversations/{conversationId}/transfer-ownership": {
+      "post": {
+        "operationId": "transferGroupOwnership",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferGroupOwnershipDto"
+              },
+              "examples": {
+                "default": {
+                  "summary": "Choose an existing member as the new owner",
+                  "value": {
+                    "newOwnerId": "7d444840-9dc0-11d1-b245-5ffdce74fad2"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupConversationResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The owner must select another member."
+          },
+          "403": {
+            "description": "Only the current group owner can transfer ownership."
+          },
+          "404": {
+            "description": "The group is inaccessible or the selected membership does not exist."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Transfer ownership of a group conversation",
+        "tags": [
+          "conversations"
+        ]
+      }
+    },
+    "/v1/conversations/{conversationId}/leave": {
+      "post": {
+        "operationId": "leaveGroup",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The member left the group."
+          },
+          "404": {
+            "description": "The group conversation is missing or the user is not a member."
+          },
+          "409": {
+            "description": "The owner must transfer ownership or delete the group."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Leave a group conversation",
+        "tags": [
+          "conversations"
+        ]
+      }
+    },
+    "/v1/conversations": {
+      "get": {
+        "operationId": "list",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20,
+              "example": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "archived",
+            "required": false,
+            "in": "query",
+            "description": "When true, return archived conversations; otherwise return active conversations.",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "Opaque cursor returned by the previous page.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List the signed-in user conversations",
+        "tags": [
+          "conversations"
+        ]
+      }
+    },
+    "/v1/conversations/archived": {
+      "get": {
+        "operationId": "listArchived",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20,
+              "example": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "Opaque cursor returned by the previous archived page.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationListResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The archived-conversation cursor or limit is invalid."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List the signed-in user's archived conversations",
+        "tags": [
+          "conversations"
+        ]
+      }
+    },
+    "/v1/conversations/{conversationId}/settings": {
+      "patch": {
+        "operationId": "update",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateConversationSettingsDto"
+              },
+              "examples": {
+                "default": {
+                  "summary": "Archive, unmute, and pin a conversation",
+                  "value": {
+                    "archived": true,
+                    "muted": false,
+                    "pinned": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationSettingsResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No supported conversation setting was provided."
+          },
+          "404": {
+            "description": "The conversation is missing or the user is not a member."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update the signed-in user conversation settings",
+        "tags": [
+          "conversation settings"
+        ]
+      }
+    },
+    "/v1/conversations/{conversationId}/archive": {
+      "put": {
+        "operationId": "archive",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationSettingsResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The conversation ID is invalid."
+          },
+          "404": {
+            "description": "The conversation is missing or the user is not a member."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Archive a conversation for the signed-in user",
+        "tags": [
+          "conversation settings"
+        ]
+      },
+      "delete": {
+        "operationId": "unarchive",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationSettingsResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The conversation ID is invalid."
+          },
+          "404": {
+            "description": "The conversation is missing or the user is not a member."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Unarchive a conversation for the signed-in user",
+        "tags": [
+          "conversation settings"
+        ]
+      }
+    },
+    "/v1/conversations/{conversationId}/mute": {
+      "put": {
+        "operationId": "mute",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MuteConversationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationSettingsResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The mute duration is missing or unsupported."
+          },
+          "404": {
+            "description": "The conversation is missing or the user is not a member."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mute a conversation for a selected duration",
+        "tags": [
+          "conversation settings"
+        ]
+      },
+      "delete": {
+        "operationId": "unmute",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationSettingsResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The conversation is missing or the user is not a member."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Unmute a conversation",
+        "tags": [
+          "conversation settings"
+        ]
+      }
+    },
+    "/v1/conversations/{conversationId}/favorite": {
+      "put": {
+        "operationId": "favorite",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationSettingsResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The conversation is missing or the user is not a member."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Add a conversation to favorites",
+        "tags": [
+          "conversation settings"
+        ]
+      },
+      "delete": {
+        "operationId": "unfavorite",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationSettingsResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The conversation is missing or the user is not a member."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remove a conversation from favorites",
+        "tags": [
+          "conversation settings"
+        ]
+      }
+    },
+    "/v1/conversations/{conversationId}/messages": {
+      "post": {
+        "operationId": "send",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendMessageDto"
+              },
+              "examples": {
+                "default": {
+                  "summary": "Send a text message",
+                  "value": {
+                    "clientMessageId": "7d444840-9dc0-41d1-b245-5ffdce74fad2",
+                    "text": "Hello! Are you free to chat?"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The conversation is missing or the user is not a member."
+          },
+          "409": {
+            "description": "The client message ID was reused with different data."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Persist or replay an idempotent text message",
+        "tags": [
+          "messages"
+        ]
+      },
+      "get": {
+        "operationId": "list",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "Opaque cursor returned by the previous history page.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageHistoryResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The message cursor is invalid."
+          },
+          "404": {
+            "description": "The conversation is missing or the user is not a member."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List message history, newest first",
+        "tags": [
+          "messages"
+        ]
+      },
+      "delete": {
+        "operationId": "clear",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The current history was hidden for this member. Shared messages were not deleted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClearConversationMessagesResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The conversation is missing or the user is not a member."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Clear the caller's message history for a conversation",
+        "tags": [
+          "messages"
+        ]
+      }
+    },
+    "/v1/conversations/{conversationId}/read": {
+      "post": {
+        "operationId": "markRead",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationReadStateResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The conversation is missing or the user is not a member."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mark all currently persisted messages as read",
+        "tags": [
+          "messages"
+        ]
+      }
+    },
+    "/v1/conversations/{conversationId}/receipts/delivered": {
+      "put": {
+        "operationId": "markDelivered",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateReceiptDto"
+              },
+              "examples": {
+                "default": {
+                  "summary": "Persist a delivery boundary",
+                  "value": {
+                    "throughMessageId": "44444444-4444-4444-8444-444444444444"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptUpdateResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The conversation, membership, or incoming message boundary is inaccessible."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mark incoming messages as delivered",
+        "tags": [
+          "receipts"
+        ]
+      }
+    },
+    "/v1/conversations/{conversationId}/receipts/read": {
+      "put": {
+        "operationId": "markRead",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateReceiptDto"
+              },
+              "examples": {
+                "default": {
+                  "summary": "Persist a read boundary",
+                  "value": {
+                    "throughMessageId": "44444444-4444-4444-8444-444444444444"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptUpdateResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The conversation, membership, or incoming message boundary is inaccessible."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mark incoming messages as read",
+        "tags": [
+          "receipts"
+        ]
+      }
+    },
+    "/v1/conversations/{conversationId}/receipts": {
+      "get": {
+        "operationId": "list",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptFrontiersResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The conversation is missing or the user is not a member."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reconcile participant receipt frontiers",
+        "tags": [
+          "receipts"
+        ]
+      }
+    },
+    "/v1/health": {
+      "get": {
+        "operationId": "getHealth",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "status": "ok",
+                    "service": "chateo-api"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "health"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "ChatMe API",
+    "description": "Phone authentication and chat backend API",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
+    "schemas": {
+      "RequestOtpDto": {
+        "type": "object",
+        "properties": {
+          "phoneNumber": {
+            "type": "string",
+            "example": "+2348012345678",
+            "description": "A valid phone number in E.164 format."
+          }
+        },
+        "required": [
+          "phoneNumber"
+        ]
+      },
+      "ResendOtpDto": {
+        "type": "object",
+        "properties": {
+          "challengeId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          }
+        },
+        "required": [
+          "challengeId"
+        ]
+      },
+      "AuthDeviceDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Great’s iPhone"
+          },
+          "platform": {
+            "type": "string",
+            "enum": [
+              "ios",
+              "android",
+              "web",
+              "unknown"
+            ],
+            "default": "unknown",
+            "example": "ios"
+          }
+        }
+      },
+      "VerifyOtpDto": {
+        "type": "object",
+        "properties": {
+          "challengeId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "code": {
+            "type": "string",
+            "example": "1234",
+            "minLength": 4,
+            "maxLength": 8,
+            "description": "Use the codeLength returned by the OTP request endpoint."
+          },
+          "device": {
+            "$ref": "#/components/schemas/AuthDeviceDto"
+          }
+        },
+        "required": [
+          "challengeId",
+          "code"
+        ]
+      },
+      "RefreshTokenDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string",
+            "description": "The opaque refresh token returned at sign-in.",
+            "example": "550e8400-e29b-41d4-a716-446655440000.3fQ8xZ7uV2nK5mP9rT4wY6aB1cD0eF8gH2jL7sN5qRk"
+          }
+        },
+        "required": [
+          "refreshToken"
+        ]
+      },
+      "OtpChallengeResponseDto": {
+        "type": "object",
+        "properties": {
+          "challengeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "phoneNumberMasked": {
+            "type": "string",
+            "example": "+234********78"
+          },
+          "expiresInSeconds": {
+            "type": "number",
+            "example": 300
+          },
+          "resendInSeconds": {
+            "type": "number",
+            "example": 24
+          },
+          "codeLength": {
+            "type": "number",
+            "example": 4,
+            "minimum": 4,
+            "maximum": 8
+          }
+        },
+        "required": [
+          "challengeId",
+          "phoneNumberMasked",
+          "expiresInSeconds",
+          "resendInSeconds",
+          "codeLength"
+        ]
+      },
+      "UserResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "example": "+2348012345678"
+          },
+          "displayName": {
+            "type": "object",
+            "nullable": true,
+            "example": "Great Ichoku"
+          },
+          "avatarUrl": {
+            "type": "object",
+            "nullable": true,
+            "format": "uri"
+          },
+          "profileComplete": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "phoneNumber",
+          "profileComplete",
+          "createdAt"
+        ]
+      },
+      "AuthResponseDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "accessTokenExpiresInSeconds": {
+            "type": "number",
+            "example": 900
+          },
+          "refreshToken": {
+            "type": "string"
+          },
+          "refreshTokenExpiresInSeconds": {
+            "type": "number",
+            "example": 2592000
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserResponseDto"
+          }
+        },
+        "required": [
+          "accessToken",
+          "accessTokenExpiresInSeconds",
+          "refreshToken",
+          "refreshTokenExpiresInSeconds",
+          "user"
+        ]
+      },
+      "UpdateProfileDto": {
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "example": "Great Ichoku",
+            "minLength": 2,
+            "maxLength": 80
+          },
+          "avatarUrl": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri",
+            "example": "https://example.com/avatars/great.jpg",
+            "description": "A URL returned by the future media-upload service, or null to remove."
+          }
+        }
+      },
+      "BlockedPublicUserDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "displayName": {
+            "type": "object",
+            "nullable": true,
+            "example": "Ada Okafor"
+          },
+          "avatarUrl": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri",
+            "example": "https://example.com/avatars/ada.jpg"
+          }
+        },
+        "required": [
+          "id",
+          "displayName",
+          "avatarUrl"
+        ]
+      },
+      "BlockResponseDto": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/BlockedPublicUserDto"
+          },
+          "blockedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "user",
+          "blockedAt"
+        ]
+      },
+      "BlockListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BlockResponseDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "MatchContactsDto": {
+        "type": "object",
+        "properties": {
+          "phoneNumbers": {
+            "minItems": 1,
+            "maxItems": 100,
+            "example": [
+              "+234 801 234 5678",
+              "+2348098765432"
+            ],
+            "description": "International phone numbers already known to the caller. Values must include + and are normalized to E.164 before matching.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "phoneNumbers"
+        ]
+      },
+      "PublicDiscoveryUserDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "displayName": {
+            "type": "object",
+            "nullable": true,
+            "example": "Ada Okafor"
+          },
+          "avatarUrl": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri",
+            "example": "https://example.com/avatars/ada.jpg"
+          }
+        },
+        "required": [
+          "id",
+          "displayName",
+          "avatarUrl"
+        ]
+      },
+      "ContactMatchDto": {
+        "type": "object",
+        "properties": {
+          "matchedPhoneNumber": {
+            "type": "string",
+            "example": "+2348012345678"
+          },
+          "user": {
+            "$ref": "#/components/schemas/PublicDiscoveryUserDto"
+          }
+        },
+        "required": [
+          "matchedPhoneNumber",
+          "user"
+        ]
+      },
+      "ContactMatchesResponseDto": {
+        "type": "object",
+        "properties": {
+          "matches": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContactMatchDto"
+            }
+          }
+        },
+        "required": [
+          "matches"
+        ]
+      },
+      "UserSearchResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicDiscoveryUserDto"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true,
+            "description": "Pass this opaque value to cursor to request the next page."
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ]
+      },
+      "CreateDirectConversationDto": {
+        "type": "object",
+        "properties": {
+          "participantId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "7d444840-9dc0-11d1-b245-5ffdce74fad2",
+            "description": "The registered user to start a direct conversation with."
+          }
+        },
+        "required": [
+          "participantId"
+        ]
+      },
+      "CreateGroupConversationDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Study Group",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "participantIds": {
+            "minItems": 1,
+            "maxItems": 99,
+            "uniqueItems": true,
+            "description": "The users to add to the group. Do not include the signed-in creator.",
+            "example": [
+              "7d444840-9dc0-41d1-b245-5ffdce74fad2",
+              "8e555951-aed1-42e2-8346-6aadece85be3"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "avatarUrl": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri",
+            "example": "https://example.com/groups/study-group.jpg",
+            "description": "An optional URL supplied by the future media-upload service."
+          }
+        },
+        "required": [
+          "name",
+          "participantIds"
+        ]
+      },
+      "UpdateGroupConversationDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Project Team",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "A new nonblank group name."
+          },
+          "avatarUrl": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri",
+            "example": "https://example.com/groups/project-team.jpg",
+            "description": "A new avatar URL, or null to remove the current avatar."
+          }
+        }
+      },
+      "AddGroupMembersDto": {
+        "type": "object",
+        "properties": {
+          "participantIds": {
+            "minItems": 1,
+            "maxItems": 99,
+            "uniqueItems": true,
+            "description": "Registered users to add atomically. Do not include yourself or an existing member.",
+            "example": [
+              "7d444840-9dc0-41d1-b245-5ffdce74fad2",
+              "8e555951-aed1-42e2-8346-6aadece85be3"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "required": [
+          "participantIds"
+        ]
+      },
+      "UpdateGroupMemberRoleDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "member"
+            ],
+            "example": "admin",
+            "description": "Promote a member to admin or demote an admin to member. Ownership is transferred separately."
+          }
+        },
+        "required": [
+          "role"
+        ]
+      },
+      "TransferGroupOwnershipDto": {
+        "type": "object",
+        "properties": {
+          "newOwnerId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "7d444840-9dc0-41d1-b245-5ffdce74fad2",
+            "description": "An existing group member who will become the new owner."
+          }
+        },
+        "required": [
+          "newOwnerId"
+        ]
+      },
+      "ConversationLatestMessageDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "senderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "text"
+            ],
+            "example": "text"
+          },
+          "preview": {
+            "type": "string",
+            "example": "Hello!"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "senderId",
+          "kind",
+          "preview",
+          "createdAt"
+        ]
+      },
+      "ConversationMemberSettingsDto": {
+        "type": "object",
+        "properties": {
+          "archived": {
+            "type": "boolean"
+          },
+          "muted": {
+            "type": "boolean"
+          },
+          "pinned": {
+            "type": "boolean"
+          },
+          "favorited": {
+            "type": "boolean"
+          },
+          "archivedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "mutedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "mutedUntil": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When a finite mute expires. Null while muted indefinitely or unmuted."
+          },
+          "pinnedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "favoritedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "clearedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Messages at or before this per-user boundary are hidden from history."
+          },
+          "clearedThroughMessageId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        },
+        "required": [
+          "archived",
+          "muted",
+          "pinned",
+          "favorited",
+          "archivedAt",
+          "mutedAt",
+          "mutedUntil",
+          "pinnedAt",
+          "favoritedAt",
+          "clearedAt",
+          "clearedThroughMessageId"
+        ]
+      },
+      "ConversationParticipantDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "displayName": {
+            "type": "object",
+            "nullable": true,
+            "example": "Ada Okafor"
+          },
+          "avatarUrl": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri",
+            "example": "https://example.com/avatars/ada.jpg"
+          }
+        },
+        "required": [
+          "id",
+          "displayName",
+          "avatarUrl"
+        ]
+      },
+      "DirectConversationResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "latestMessage": {
+            "nullable": true,
+            "example": null,
+            "description": "The newest message in the conversation, when present.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConversationLatestMessageDto"
+              }
+            ]
+          },
+          "unreadCount": {
+            "type": "number",
+            "minimum": 0,
+            "example": 0
+          },
+          "settings": {
+            "$ref": "#/components/schemas/ConversationMemberSettingsDto"
+          },
+          "lastActivityAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "direct"
+            ],
+            "example": "direct"
+          },
+          "otherParticipant": {
+            "$ref": "#/components/schemas/ConversationParticipantDto"
+          }
+        },
+        "required": [
+          "id",
+          "latestMessage",
+          "unreadCount",
+          "settings",
+          "lastActivityAt",
+          "createdAt",
+          "updatedAt",
+          "type",
+          "otherParticipant"
+        ]
+      },
+      "GroupConversationParticipantDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "displayName": {
+            "type": "object",
+            "nullable": true,
+            "example": "Ada Okafor"
+          },
+          "avatarUrl": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri",
+            "example": "https://example.com/avatars/ada.jpg"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "admin",
+              "member"
+            ],
+            "example": "member"
+          }
+        },
+        "required": [
+          "id",
+          "displayName",
+          "avatarUrl",
+          "role"
+        ]
+      },
+      "GroupConversationResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "latestMessage": {
+            "nullable": true,
+            "example": null,
+            "description": "The newest message in the conversation, when present.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConversationLatestMessageDto"
+              }
+            ]
+          },
+          "unreadCount": {
+            "type": "number",
+            "minimum": 0,
+            "example": 0
+          },
+          "settings": {
+            "$ref": "#/components/schemas/ConversationMemberSettingsDto"
+          },
+          "lastActivityAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "group"
+            ],
+            "example": "group"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "example": "Study Group"
+          },
+          "avatarUrl": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri"
+          },
+          "participants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GroupConversationParticipantDto"
+            }
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "admin",
+              "member"
+            ],
+            "description": "The signed-in user's role in the group conversation."
+          }
+        },
+        "required": [
+          "id",
+          "latestMessage",
+          "unreadCount",
+          "settings",
+          "lastActivityAt",
+          "createdAt",
+          "updatedAt",
+          "type",
+          "name",
+          "avatarUrl",
+          "participants",
+          "role"
+        ]
+      },
+      "ConversationPageInfoDto": {
+        "type": "object",
+        "properties": {
+          "nextCursor": {
+            "type": "object",
+            "nullable": true
+          },
+          "hasNextPage": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "nextCursor",
+          "hasNextPage"
+        ]
+      },
+      "ConversationListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/DirectConversationResponseDto"
+                },
+                {
+                  "$ref": "#/components/schemas/GroupConversationResponseDto"
+                }
+              ],
+              "discriminator": {
+                "propertyName": "type",
+                "mapping": {
+                  "direct": "#/components/schemas/DirectConversationResponseDto",
+                  "group": "#/components/schemas/GroupConversationResponseDto"
+                }
+              }
+            }
+          },
+          "pageInfo": {
+            "$ref": "#/components/schemas/ConversationPageInfoDto"
+          }
+        },
+        "required": [
+          "items",
+          "pageInfo"
+        ]
+      },
+      "UpdateConversationSettingsDto": {
+        "type": "object",
+        "properties": {
+          "archived": {
+            "type": "boolean",
+            "description": "Archive or restore the conversation for the signed-in user."
+          },
+          "muted": {
+            "type": "boolean",
+            "description": "Mute indefinitely or unmute the conversation. Use the dedicated mute endpoint for a finite duration."
+          },
+          "pinned": {
+            "type": "boolean",
+            "description": "Pin or unpin the conversation for the signed-in user."
+          }
+        }
+      },
+      "ConversationSettingsResponseDto": {
+        "type": "object",
+        "properties": {
+          "conversationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "archived": {
+            "type": "boolean"
+          },
+          "muted": {
+            "type": "boolean"
+          },
+          "pinned": {
+            "type": "boolean"
+          },
+          "favorited": {
+            "type": "boolean"
+          },
+          "archivedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "mutedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "mutedUntil": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When a finite mute expires. Null when unmuted or muted indefinitely."
+          },
+          "pinnedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "favoritedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "clearedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "clearedThroughMessageId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        },
+        "required": [
+          "conversationId",
+          "archived",
+          "muted",
+          "pinned",
+          "favorited",
+          "archivedAt",
+          "mutedAt",
+          "mutedUntil",
+          "pinnedAt",
+          "favoritedAt",
+          "clearedAt",
+          "clearedThroughMessageId"
+        ]
+      },
+      "MuteConversationDto": {
+        "type": "object",
+        "properties": {
+          "duration": {
+            "type": "string",
+            "enum": [
+              "8_hours",
+              "24_hours",
+              "7_days",
+              "always"
+            ],
+            "example": "8_hours",
+            "description": "How long notifications should remain muted."
+          }
+        },
+        "required": [
+          "duration"
+        ]
+      },
+      "SendMessageDto": {
+        "type": "object",
+        "properties": {
+          "clientMessageId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "7d444840-9dc0-41d1-b245-5ffdce74fad2",
+            "description": "A client-generated idempotency key. Reusing it with the same message returns the original message."
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000,
+            "example": "Hello! Are you free to chat?"
+          }
+        },
+        "required": [
+          "clientMessageId",
+          "text"
+        ]
+      },
+      "MessageResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "conversationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "clientMessageId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "senderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "text"
+            ],
+            "example": "text"
+          },
+          "text": {
+            "type": "string",
+            "example": "Hello! Are you free to chat?"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "conversationId",
+          "clientMessageId",
+          "senderId",
+          "kind",
+          "text",
+          "createdAt"
+        ]
+      },
+      "MessagePageInfoDto": {
+        "type": "object",
+        "properties": {
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          },
+          "hasNextPage": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "nextCursor",
+          "hasNextPage"
+        ]
+      },
+      "MessageHistoryResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MessageResponseDto"
+            }
+          },
+          "pageInfo": {
+            "$ref": "#/components/schemas/MessagePageInfoDto"
+          }
+        },
+        "required": [
+          "items",
+          "pageInfo"
+        ]
+      },
+      "ClearConversationMessagesResponseDto": {
+        "type": "object",
+        "properties": {
+          "conversationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "changed": {
+            "type": "boolean",
+            "description": "Whether the stored clear boundary or unread state changed."
+          },
+          "clearedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "clearedThroughMessageId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        },
+        "required": [
+          "conversationId",
+          "changed",
+          "clearedAt",
+          "clearedThroughMessageId"
+        ]
+      },
+      "ConversationReadStateResponseDto": {
+        "type": "object",
+        "properties": {
+          "conversationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "lastReadAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "unreadCount": {
+            "type": "number",
+            "minimum": 0,
+            "example": 0
+          }
+        },
+        "required": [
+          "conversationId",
+          "lastReadAt",
+          "unreadCount"
+        ]
+      },
+      "UpdateReceiptDto": {
+        "type": "object",
+        "properties": {
+          "throughMessageId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Latest incoming message included in this receipt update.",
+            "example": "44444444-4444-4444-8444-444444444444"
+          }
+        },
+        "required": [
+          "throughMessageId"
+        ]
+      },
+      "ReceiptBoundaryResponseDto": {
+        "type": "object",
+        "properties": {
+          "messageId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "messageId",
+          "at"
+        ]
+      },
+      "ReceiptUpdateResponseDto": {
+        "type": "object",
+        "properties": {
+          "conversationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "delivered",
+              "read"
+            ]
+          },
+          "throughMessageId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "changed": {
+            "type": "boolean",
+            "description": "False when this boundary had already been persisted."
+          },
+          "unreadCount": {
+            "type": "number",
+            "minimum": 0
+          },
+          "version": {
+            "type": "number",
+            "minimum": 0
+          },
+          "delivered": {
+            "$ref": "#/components/schemas/ReceiptBoundaryResponseDto"
+          },
+          "read": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReceiptBoundaryResponseDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "conversationId",
+          "status",
+          "throughMessageId",
+          "at",
+          "changed",
+          "unreadCount",
+          "version",
+          "delivered",
+          "read"
+        ]
+      },
+      "ReceiptFrontierResponseDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "number",
+            "minimum": 0
+          },
+          "delivered": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReceiptBoundaryResponseDto"
+              }
+            ]
+          },
+          "read": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReceiptBoundaryResponseDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "userId",
+          "version",
+          "delivered",
+          "read"
+        ]
+      },
+      "ReceiptFrontiersResponseDto": {
+        "type": "object",
+        "properties": {
+          "conversationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReceiptFrontierResponseDto"
+            }
+          }
+        },
+        "required": [
+          "conversationId",
+          "items"
+        ]
+      }
+    }
+  }
+}
