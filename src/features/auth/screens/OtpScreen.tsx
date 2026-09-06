@@ -1,3 +1,4 @@
+import { useAuthStore } from "@/core/store/useAuthStore";
 import { useVerifyOtp } from "@/features/auth/api/useVerifyOtp";
 import { BackButton, Button } from "@/shared/components";
 import Heading from "@/shared/components/Heading";
@@ -13,6 +14,7 @@ export function OtpScreen() {
   const [timer, setTimer] = useState(+(time as string));
   const verifyOtpMutation = useVerifyOtp();
   const [otp, setOtp] = useState("");
+  const setAuth = useAuthStore((state) => state.setAuth);
 
   function handleOtpVerify(code: string) {
     if (otp.length < 4) return;
@@ -24,6 +26,10 @@ export function OtpScreen() {
       {
         onSuccess: (authData) => {
           // authData contains: { accessToken, refreshToken, user: { profileComplete, ... } }
+
+          // Store tokens and initial user object in Zustand!
+
+          setAuth(authData.accessToken, authData.refreshToken, authData.user);
 
           // If user has not finished setup -> route to profile setup
           // If user is already registered -> route to (tabs)/chats
