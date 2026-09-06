@@ -1,4 +1,4 @@
-import { PhoneScreen } from "@/features/signup";
+import { PhoneScreen } from "@/features/auth";
 
 export default function PhonePage() {
     return (
