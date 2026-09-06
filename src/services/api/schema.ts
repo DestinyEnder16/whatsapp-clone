@@ -4,2226 +4,2233 @@
  */
 
 export interface paths {
-    "/v1/auth/otp/request": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Request a phone verification code */
-        post: operations["requestOtp"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+  "/v1/auth/otp/request": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/v1/auth/otp/resend": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Resend a phone verification code */
-        post: operations["resendOtp"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    /** Request a phone verification code */
+    post: operations["requestOtp"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/v1/auth/otp/resend": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/v1/auth/otp/verify": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Verify the code and create a persistent session */
-        post: operations["verifyOtp"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    /** Resend a phone verification code */
+    post: operations["resendOtp"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/v1/auth/otp/verify": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/v1/auth/refresh": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Rotate a refresh token and issue a new token pair */
-        post: operations["refresh"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    /** Verify the code and create a persistent session */
+    post: operations["verifyOtp"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/v1/auth/refresh": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/v1/auth/logout": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Revoke a refresh session */
-        post: operations["logout"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    /** Rotate a refresh token and issue a new token pair */
+    post: operations["refresh"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/v1/auth/logout": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/v1/me": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get the signed-in user profile */
-        get: operations["getMe"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Complete or update the signed-in user profile */
-        patch: operations["updateMe"];
-        trace?: never;
+    get?: never;
+    put?: never;
+    /** Revoke a refresh session */
+    post: operations["logout"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/v1/me": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/v1/me/blocks": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List users blocked by the signed-in user */
-        get: operations["list"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /** Get the signed-in user profile */
+    get: operations["getMe"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Complete or update the signed-in user profile */
+    patch: operations["updateMe"];
+    trace?: never;
+  };
+  "/v1/me/blocks": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/v1/me/blocks/{userId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Block a user idempotently */
-        put: operations["block"];
-        post?: never;
-        /** Unblock a user idempotently */
-        delete: operations["unblock"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /** List users blocked by the signed-in user */
+    get: operations["list"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/v1/me/blocks/{userId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/v1/contacts/match": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Match phone numbers already present in the caller contacts */
-        post: operations["matchContacts"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    /** Block a user idempotently */
+    put: operations["block"];
+    post?: never;
+    /** Unblock a user idempotently */
+    delete: operations["unblock"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/v1/contacts/match": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/v1/users/search": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Search completed profiles by display name */
-        get: operations["searchUsers"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    /** Match phone numbers already present in the caller contacts */
+    post: operations["matchContacts"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/v1/users/search": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/v1/conversations/direct": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Create or return an existing direct conversation */
-        post: operations["createDirect"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /** Search completed profiles by display name */
+    get: operations["searchUsers"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/v1/conversations/direct": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/v1/conversations/group": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Create a group conversation */
-        post: operations["createGroup"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    /** Create or return an existing direct conversation */
+    post: operations["createDirect"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/v1/conversations/group": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/v1/conversations/{conversationId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get a conversation by ID */
-        get: operations["get"];
-        put?: never;
-        post?: never;
-        /** Delete a group conversation */
-        delete: operations["deleteGroup"];
-        options?: never;
-        head?: never;
-        /** Update group conversation metadata */
-        patch: operations["updateGroup"];
-        trace?: never;
+    get?: never;
+    put?: never;
+    /** Create a group conversation */
+    post: operations["createGroup"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/v1/conversations/{conversationId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/v1/conversations/{conversationId}/members": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Add members to a group conversation */
-        post: operations["addGroupMembers"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /** Get a conversation by ID */
+    get: operations["get"];
+    put?: never;
+    post?: never;
+    /** Delete a group conversation */
+    delete: operations["deleteGroup"];
+    options?: never;
+    head?: never;
+    /** Update group conversation metadata */
+    patch: operations["updateGroup"];
+    trace?: never;
+  };
+  "/v1/conversations/{conversationId}/members": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/v1/conversations/{conversationId}/members/{memberId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /** Remove a member from a group conversation */
-        delete: operations["removeGroupMember"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    /** Add members to a group conversation */
+    post: operations["addGroupMembers"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/v1/conversations/{conversationId}/members/{memberId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/v1/conversations/{conversationId}/members/{memberId}/role": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Promote or demote a group member */
-        patch: operations["updateGroupMemberRole"];
-        trace?: never;
+    get?: never;
+    put?: never;
+    post?: never;
+    /** Remove a member from a group conversation */
+    delete: operations["removeGroupMember"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/v1/conversations/{conversationId}/members/{memberId}/role": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/v1/conversations/{conversationId}/transfer-ownership": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Transfer ownership of a group conversation */
-        post: operations["transferGroupOwnership"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Promote or demote a group member */
+    patch: operations["updateGroupMemberRole"];
+    trace?: never;
+  };
+  "/v1/conversations/{conversationId}/transfer-ownership": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/v1/conversations/{conversationId}/leave": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Leave a group conversation */
-        post: operations["leaveGroup"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    /** Transfer ownership of a group conversation */
+    post: operations["transferGroupOwnership"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/v1/conversations/{conversationId}/leave": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/v1/conversations": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List the signed-in user conversations */
-        get: operations["list"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    /** Leave a group conversation */
+    post: operations["leaveGroup"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/v1/conversations": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/v1/conversations/archived": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List the signed-in user's archived conversations */
-        get: operations["listArchived"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /** List the signed-in user conversations */
+    get: operations["list"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/v1/conversations/archived": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/v1/conversations/{conversationId}/settings": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Update the signed-in user conversation settings */
-        patch: operations["update"];
-        trace?: never;
+    /** List the signed-in user's archived conversations */
+    get: operations["listArchived"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/v1/conversations/{conversationId}/settings": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/v1/conversations/{conversationId}/archive": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Archive a conversation for the signed-in user */
-        put: operations["archive"];
-        post?: never;
-        /** Unarchive a conversation for the signed-in user */
-        delete: operations["unarchive"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Update the signed-in user conversation settings */
+    patch: operations["update"];
+    trace?: never;
+  };
+  "/v1/conversations/{conversationId}/archive": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/v1/conversations/{conversationId}/mute": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Mute a conversation for a selected duration */
-        put: operations["mute"];
-        post?: never;
-        /** Unmute a conversation */
-        delete: operations["unmute"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    /** Archive a conversation for the signed-in user */
+    put: operations["archive"];
+    post?: never;
+    /** Unarchive a conversation for the signed-in user */
+    delete: operations["unarchive"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/v1/conversations/{conversationId}/mute": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/v1/conversations/{conversationId}/favorite": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Add a conversation to favorites */
-        put: operations["favorite"];
-        post?: never;
-        /** Remove a conversation from favorites */
-        delete: operations["unfavorite"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    /** Mute a conversation for a selected duration */
+    put: operations["mute"];
+    post?: never;
+    /** Unmute a conversation */
+    delete: operations["unmute"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/v1/conversations/{conversationId}/favorite": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/v1/conversations/{conversationId}/messages": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List message history, newest first */
-        get: operations["list"];
-        put?: never;
-        /** Persist or replay an idempotent text message */
-        post: operations["send"];
-        /** Clear the caller's message history for a conversation */
-        delete: operations["clear"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    /** Add a conversation to favorites */
+    put: operations["favorite"];
+    post?: never;
+    /** Remove a conversation from favorites */
+    delete: operations["unfavorite"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/v1/conversations/{conversationId}/messages": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/v1/conversations/{conversationId}/read": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Mark all currently persisted messages as read */
-        post: operations["markRead"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /** List message history, newest first */
+    get: operations["list"];
+    put?: never;
+    /** Persist or replay an idempotent text message */
+    post: operations["send"];
+    /** Clear the caller's message history for a conversation */
+    delete: operations["clear"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/v1/conversations/{conversationId}/read": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/v1/conversations/{conversationId}/receipts/delivered": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Mark incoming messages as delivered */
-        put: operations["markDelivered"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    /** Mark all currently persisted messages as read */
+    post: operations["markRead"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/v1/conversations/{conversationId}/receipts/delivered": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/v1/conversations/{conversationId}/receipts/read": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Mark incoming messages as read */
-        put: operations["markRead"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    /** Mark incoming messages as delivered */
+    put: operations["markDelivered"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/v1/conversations/{conversationId}/receipts/read": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/v1/conversations/{conversationId}/receipts": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Reconcile participant receipt frontiers */
-        get: operations["list"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    /** Mark incoming messages as read */
+    put: operations["markRead"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/v1/conversations/{conversationId}/receipts": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/v1/health": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getHealth"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /** Reconcile participant receipt frontiers */
+    get: operations["list"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/v1/health": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
+    get: operations["getHealth"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-    schemas: {
-        RequestOtpDto: {
-            /**
-             * @description A valid phone number in E.164 format.
-             * @example +2348012345678
-             */
-            phoneNumber: string;
-        };
-        ResendOtpDto: {
-            /**
-             * Format: uuid
-             * @example 550e8400-e29b-41d4-a716-446655440000
-             */
-            challengeId: string;
-        };
-        AuthDeviceDto: {
-            /** @example Great’s iPhone */
-            name?: string;
-            /**
-             * @default unknown
-             * @example ios
-             * @enum {string}
-             */
-            platform: "ios" | "android" | "web" | "unknown";
-        };
-        VerifyOtpDto: {
-            /**
-             * Format: uuid
-             * @example 550e8400-e29b-41d4-a716-446655440000
-             */
-            challengeId: string;
-            /**
-             * @description Use the codeLength returned by the OTP request endpoint.
-             * @example 1234
-             */
-            code: string;
-            device?: components["schemas"]["AuthDeviceDto"];
-        };
-        RefreshTokenDto: {
-            /**
-             * @description The opaque refresh token returned at sign-in.
-             * @example 550e8400-e29b-41d4-a716-446655440000.3fQ8xZ7uV2nK5mP9rT4wY6aB1cD0eF8gH2jL7sN5qRk
-             */
-            refreshToken: string;
-        };
-        OtpChallengeResponseDto: {
-            /** Format: uuid */
-            challengeId: string;
-            /** @example +234********78 */
-            phoneNumberMasked: string;
-            /** @example 300 */
-            expiresInSeconds: number;
-            /** @example 24 */
-            resendInSeconds: number;
-            /** @example 4 */
-            codeLength: number;
-        };
-        UserResponseDto: {
-            /** Format: uuid */
-            id: string;
-            /** @example +2348012345678 */
-            phoneNumber: string;
-            /** @example Great Ichoku */
-            displayName?: Record<string, never> | null;
-            /** Format: uri */
-            avatarUrl?: Record<string, never> | null;
-            profileComplete: boolean;
-            /** Format: date-time */
-            createdAt: string;
-        };
-        AuthResponseDto: {
-            accessToken: string;
-            /** @example 900 */
-            accessTokenExpiresInSeconds: number;
-            refreshToken: string;
-            /** @example 2592000 */
-            refreshTokenExpiresInSeconds: number;
-            user: components["schemas"]["UserResponseDto"];
-        };
-        UpdateProfileDto: {
-            /** @example Great Ichoku */
-            displayName?: string;
-            /**
-             * Format: uri
-             * @description A URL returned by the future media-upload service, or null to remove.
-             * @example https://example.com/avatars/great.jpg
-             */
-            avatarUrl?: string | null;
-        };
-        BlockedPublicUserDto: {
-            /** Format: uuid */
-            id: string;
-            /** @example Ada Okafor */
-            displayName: Record<string, never> | null;
-            /**
-             * Format: uri
-             * @example https://example.com/avatars/ada.jpg
-             */
-            avatarUrl: string | null;
-        };
-        BlockResponseDto: {
-            user: components["schemas"]["BlockedPublicUserDto"];
-            /** Format: date-time */
-            blockedAt: string;
-        };
-        BlockListResponseDto: {
-            items: components["schemas"]["BlockResponseDto"][];
-        };
-        MatchContactsDto: {
-            /**
-             * @description International phone numbers already known to the caller. Values must include + and are normalized to E.164 before matching.
-             * @example [
-             *       "+234 801 234 5678",
-             *       "+2348098765432"
-             *     ]
-             */
-            phoneNumbers: string[];
-        };
-        PublicDiscoveryUserDto: {
-            /** Format: uuid */
-            id: string;
-            /** @example Ada Okafor */
-            displayName: Record<string, never> | null;
-            /**
-             * Format: uri
-             * @example https://example.com/avatars/ada.jpg
-             */
-            avatarUrl: string | null;
-        };
-        ContactMatchDto: {
-            /** @example +2348012345678 */
-            matchedPhoneNumber: string;
-            user: components["schemas"]["PublicDiscoveryUserDto"];
-        };
-        ContactMatchesResponseDto: {
-            matches: components["schemas"]["ContactMatchDto"][];
-        };
-        UserSearchResponseDto: {
-            items: components["schemas"]["PublicDiscoveryUserDto"][];
-            /** @description Pass this opaque value to cursor to request the next page. */
-            nextCursor: string | null;
-        };
-        CreateDirectConversationDto: {
-            /**
-             * Format: uuid
-             * @description The registered user to start a direct conversation with.
-             * @example 7d444840-9dc0-11d1-b245-5ffdce74fad2
-             */
-            participantId: string;
-        };
-        CreateGroupConversationDto: {
-            /** @example Study Group */
-            name: string;
-            /**
-             * @description The users to add to the group. Do not include the signed-in creator.
-             * @example [
-             *       "7d444840-9dc0-41d1-b245-5ffdce74fad2",
-             *       "8e555951-aed1-42e2-8346-6aadece85be3"
-             *     ]
-             */
-            participantIds: string[];
-            /**
-             * Format: uri
-             * @description An optional URL supplied by the future media-upload service.
-             * @example https://example.com/groups/study-group.jpg
-             */
-            avatarUrl?: string | null;
-        };
-        UpdateGroupConversationDto: {
-            /**
-             * @description A new nonblank group name.
-             * @example Project Team
-             */
-            name?: string;
-            /**
-             * Format: uri
-             * @description A new avatar URL, or null to remove the current avatar.
-             * @example https://example.com/groups/project-team.jpg
-             */
-            avatarUrl?: string | null;
-        };
-        AddGroupMembersDto: {
-            /**
-             * @description Registered users to add atomically. Do not include yourself or an existing member.
-             * @example [
-             *       "7d444840-9dc0-41d1-b245-5ffdce74fad2",
-             *       "8e555951-aed1-42e2-8346-6aadece85be3"
-             *     ]
-             */
-            participantIds: string[];
-        };
-        UpdateGroupMemberRoleDto: {
-            /**
-             * @description Promote a member to admin or demote an admin to member. Ownership is transferred separately.
-             * @example admin
-             * @enum {string}
-             */
-            role: "admin" | "member";
-        };
-        TransferGroupOwnershipDto: {
-            /**
-             * Format: uuid
-             * @description An existing group member who will become the new owner.
-             * @example 7d444840-9dc0-41d1-b245-5ffdce74fad2
-             */
-            newOwnerId: string;
-        };
-        ConversationLatestMessageDto: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            senderId: string;
-            /**
-             * @example text
-             * @enum {string}
-             */
-            kind: "text";
-            /** @example Hello! */
-            preview: string;
-            /** Format: date-time */
-            createdAt: string;
-        };
-        ConversationMemberSettingsDto: {
-            archived: boolean;
-            muted: boolean;
-            pinned: boolean;
-            favorited: boolean;
-            /** Format: date-time */
-            archivedAt: string | null;
-            /** Format: date-time */
-            mutedAt: string | null;
-            /**
-             * Format: date-time
-             * @description When a finite mute expires. Null while muted indefinitely or unmuted.
-             */
-            mutedUntil: string | null;
-            /** Format: date-time */
-            pinnedAt: string | null;
-            /** Format: date-time */
-            favoritedAt: string | null;
-            /**
-             * Format: date-time
-             * @description Messages at or before this per-user boundary are hidden from history.
-             */
-            clearedAt: string | null;
-            /** Format: uuid */
-            clearedThroughMessageId: string | null;
-        };
-        ConversationParticipantDto: {
-            /** Format: uuid */
-            id: string;
-            /** @example Ada Okafor */
-            displayName: Record<string, never> | null;
-            /**
-             * Format: uri
-             * @example https://example.com/avatars/ada.jpg
-             */
-            avatarUrl: string | null;
-        };
-        DirectConversationResponseDto: {
-            /** Format: uuid */
-            id: string;
-            /**
-             * @description The newest message in the conversation, when present.
-             * @example null
-             */
-            latestMessage: components["schemas"]["ConversationLatestMessageDto"] | null;
-            /** @example 0 */
-            unreadCount: number;
-            settings: components["schemas"]["ConversationMemberSettingsDto"];
-            /** Format: date-time */
-            lastActivityAt: string;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            updatedAt: string;
-            /**
-             * @description discriminator enum property added by openapi-typescript
-             * @enum {string}
-             */
-            type: "direct";
-            otherParticipant: components["schemas"]["ConversationParticipantDto"];
-        };
-        GroupConversationParticipantDto: {
-            /** Format: uuid */
-            id: string;
-            /** @example Ada Okafor */
-            displayName: Record<string, never> | null;
-            /**
-             * Format: uri
-             * @example https://example.com/avatars/ada.jpg
-             */
-            avatarUrl: string | null;
-            /**
-             * @example member
-             * @enum {string}
-             */
-            role: "owner" | "admin" | "member";
-        };
-        GroupConversationResponseDto: {
-            /** Format: uuid */
-            id: string;
-            /**
-             * @description The newest message in the conversation, when present.
-             * @example null
-             */
-            latestMessage: components["schemas"]["ConversationLatestMessageDto"] | null;
-            /** @example 0 */
-            unreadCount: number;
-            settings: components["schemas"]["ConversationMemberSettingsDto"];
-            /** Format: date-time */
-            lastActivityAt: string;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            updatedAt: string;
-            /**
-             * @description discriminator enum property added by openapi-typescript
-             * @enum {string}
-             */
-            type: "group";
-            /** @example Study Group */
-            name: string;
-            /** Format: uri */
-            avatarUrl: string | null;
-            participants: components["schemas"]["GroupConversationParticipantDto"][];
-            /**
-             * @description The signed-in user's role in the group conversation.
-             * @enum {string}
-             */
-            role: "owner" | "admin" | "member";
-        };
-        ConversationPageInfoDto: {
-            nextCursor: Record<string, never> | null;
-            hasNextPage: boolean;
-        };
-        ConversationListResponseDto: {
-            items: (components["schemas"]["DirectConversationResponseDto"] | components["schemas"]["GroupConversationResponseDto"])[];
-            pageInfo: components["schemas"]["ConversationPageInfoDto"];
-        };
-        UpdateConversationSettingsDto: {
-            /** @description Archive or restore the conversation for the signed-in user. */
-            archived?: boolean;
-            /** @description Mute indefinitely or unmute the conversation. Use the dedicated mute endpoint for a finite duration. */
-            muted?: boolean;
-            /** @description Pin or unpin the conversation for the signed-in user. */
-            pinned?: boolean;
-        };
-        ConversationSettingsResponseDto: {
-            /** Format: uuid */
-            conversationId: string;
-            archived: boolean;
-            muted: boolean;
-            pinned: boolean;
-            favorited: boolean;
-            /** Format: date-time */
-            archivedAt: string | null;
-            /** Format: date-time */
-            mutedAt: string | null;
-            /**
-             * Format: date-time
-             * @description When a finite mute expires. Null when unmuted or muted indefinitely.
-             */
-            mutedUntil: string | null;
-            /** Format: date-time */
-            pinnedAt: string | null;
-            /** Format: date-time */
-            favoritedAt: string | null;
-            /** Format: date-time */
-            clearedAt: string | null;
-            /** Format: uuid */
-            clearedThroughMessageId: string | null;
-        };
-        MuteConversationDto: {
-            /**
-             * @description How long notifications should remain muted.
-             * @example 8_hours
-             * @enum {string}
-             */
-            duration: "8_hours" | "24_hours" | "7_days" | "always";
-        };
-        SendMessageDto: {
-            /**
-             * Format: uuid
-             * @description A client-generated idempotency key. Reusing it with the same message returns the original message.
-             * @example 7d444840-9dc0-41d1-b245-5ffdce74fad2
-             */
-            clientMessageId: string;
-            /** @example Hello! Are you free to chat? */
-            text: string;
-        };
-        MessageResponseDto: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            conversationId: string;
-            /** Format: uuid */
-            clientMessageId: string;
-            /** Format: uuid */
-            senderId: string;
-            /**
-             * @example text
-             * @enum {string}
-             */
-            kind: "text";
-            /** @example Hello! Are you free to chat? */
-            text: string;
-            /** Format: date-time */
-            createdAt: string;
-        };
-        MessagePageInfoDto: {
-            nextCursor: string | null;
-            hasNextPage: boolean;
-        };
-        MessageHistoryResponseDto: {
-            items: components["schemas"]["MessageResponseDto"][];
-            pageInfo: components["schemas"]["MessagePageInfoDto"];
-        };
-        ClearConversationMessagesResponseDto: {
-            /** Format: uuid */
-            conversationId: string;
-            /** @description Whether the stored clear boundary or unread state changed. */
-            changed: boolean;
-            /** Format: date-time */
-            clearedAt: string | null;
-            /** Format: uuid */
-            clearedThroughMessageId: string | null;
-        };
-        ConversationReadStateResponseDto: {
-            /** Format: uuid */
-            conversationId: string;
-            /** Format: date-time */
-            lastReadAt: string;
-            /** @example 0 */
-            unreadCount: number;
-        };
-        UpdateReceiptDto: {
-            /**
-             * Format: uuid
-             * @description Latest incoming message included in this receipt update.
-             * @example 44444444-4444-4444-8444-444444444444
-             */
-            throughMessageId: string;
-        };
-        ReceiptBoundaryResponseDto: {
-            /** Format: uuid */
-            messageId: string;
-            /** Format: date-time */
-            at: string;
-        };
-        ReceiptUpdateResponseDto: {
-            /** Format: uuid */
-            conversationId: string;
-            /** @enum {string} */
-            status: "delivered" | "read";
-            /** Format: uuid */
-            throughMessageId: string;
-            /** Format: date-time */
-            at: string;
-            /** @description False when this boundary had already been persisted. */
-            changed: boolean;
-            unreadCount: number;
-            version: number;
-            delivered: components["schemas"]["ReceiptBoundaryResponseDto"];
-            read: components["schemas"]["ReceiptBoundaryResponseDto"] | null;
-        };
-        ReceiptFrontierResponseDto: {
-            /** Format: uuid */
-            userId: string;
-            version: number;
-            delivered: components["schemas"]["ReceiptBoundaryResponseDto"] | null;
-            read: components["schemas"]["ReceiptBoundaryResponseDto"] | null;
-        };
-        ReceiptFrontiersResponseDto: {
-            /** Format: uuid */
-            conversationId: string;
-            items: components["schemas"]["ReceiptFrontierResponseDto"][];
-        };
+  schemas: {
+    RequestOtpDto: {
+      /**
+       * @description A valid phone number in E.164 format.
+       * @example +2348012345678
+       */
+      phoneNumber: string;
     };
-    responses: never;
-    parameters: never;
-    requestBodies: never;
-    headers: never;
-    pathItems: never;
+    ResendOtpDto: {
+      /**
+       * Format: uuid
+       * @example 550e8400-e29b-41d4-a716-446655440000
+       */
+      challengeId: string;
+    };
+    AuthDeviceDto: {
+      /** @example Great’s iPhone */
+      name?: string;
+      /**
+       * @default unknown
+       * @example ios
+       * @enum {string}
+       */
+      platform: "ios" | "android" | "web" | "unknown";
+    };
+    VerifyOtpDto: {
+      /**
+       * Format: uuid
+       * @example 550e8400-e29b-41d4-a716-446655440000
+       */
+      challengeId: string;
+      /**
+       * @description Use the codeLength returned by the OTP request endpoint.
+       * @example 1234
+       */
+      code: string;
+      device?: components["schemas"]["AuthDeviceDto"];
+    };
+    RefreshTokenDto: {
+      /**
+       * @description The opaque refresh token returned at sign-in.
+       * @example 550e8400-e29b-41d4-a716-446655440000.3fQ8xZ7uV2nK5mP9rT4wY6aB1cD0eF8gH2jL7sN5qRk
+       */
+      refreshToken: string;
+    };
+    OtpChallengeResponseDto: {
+      /** Format: uuid */
+      challengeId: string;
+      /** @example +234********78 */
+      phoneNumberMasked: string;
+      /** @example 300 */
+      expiresInSeconds: number;
+      /** @example 24 */
+      resendInSeconds: number;
+      /** @example 4 */
+      codeLength: number;
+    };
+    UserResponseDto: {
+      /** Format: uuid */
+      id: string;
+      /** @example +2348012345678 */
+      phoneNumber: string;
+      /** @example Great Ichoku */
+      displayName?: Record<string, never> | null;
+      /** Format: uri */
+      avatarUrl?: Record<string, never> | null;
+      profileComplete: boolean;
+      /** Format: date-time */
+      createdAt: string;
+    };
+    AuthResponseDto: {
+      accessToken: string;
+      /** @example 900 */
+      accessTokenExpiresInSeconds: number;
+      refreshToken: string;
+      /** @example 2592000 */
+      refreshTokenExpiresInSeconds: number;
+      user: components["schemas"]["UserResponseDto"];
+    };
+    UpdateProfileDto: {
+      /** @example Great Ichoku */
+      displayName?: string;
+      /**
+       * Format: uri
+       * @description A URL returned by the future media-upload service, or null to remove.
+       * @example https://example.com/avatars/great.jpg
+       */
+      avatarUrl?: string | null;
+    };
+    BlockedPublicUserDto: {
+      /** Format: uuid */
+      id: string;
+      /** @example Ada Okafor */
+      displayName: Record<string, never> | null;
+      /**
+       * Format: uri
+       * @example https://example.com/avatars/ada.jpg
+       */
+      avatarUrl: string | null;
+    };
+    BlockResponseDto: {
+      user: components["schemas"]["BlockedPublicUserDto"];
+      /** Format: date-time */
+      blockedAt: string;
+    };
+    BlockListResponseDto: {
+      items: components["schemas"]["BlockResponseDto"][];
+    };
+    MatchContactsDto: {
+      /**
+       * @description International phone numbers already known to the caller. Values must include + and are normalized to E.164 before matching.
+       * @example [
+       *       "+234 801 234 5678",
+       *       "+2348098765432"
+       *     ]
+       */
+      phoneNumbers: string[];
+    };
+    PublicDiscoveryUserDto: {
+      /** Format: uuid */
+      id: string;
+      /** @example Ada Okafor */
+      displayName: Record<string, never> | null;
+      /**
+       * Format: uri
+       * @example https://example.com/avatars/ada.jpg
+       */
+      avatarUrl: string | null;
+    };
+    ContactMatchDto: {
+      /** @example +2348012345678 */
+      matchedPhoneNumber: string;
+      user: components["schemas"]["PublicDiscoveryUserDto"];
+    };
+    ContactMatchesResponseDto: {
+      matches: components["schemas"]["ContactMatchDto"][];
+    };
+    UserSearchResponseDto: {
+      items: components["schemas"]["PublicDiscoveryUserDto"][];
+      /** @description Pass this opaque value to cursor to request the next page. */
+      nextCursor: string | null;
+    };
+    CreateDirectConversationDto: {
+      /**
+       * Format: uuid
+       * @description The registered user to start a direct conversation with.
+       * @example 7d444840-9dc0-11d1-b245-5ffdce74fad2
+       */
+      participantId: string;
+    };
+    CreateGroupConversationDto: {
+      /** @example Study Group */
+      name: string;
+      /**
+       * @description The users to add to the group. Do not include the signed-in creator.
+       * @example [
+       *       "7d444840-9dc0-41d1-b245-5ffdce74fad2",
+       *       "8e555951-aed1-42e2-8346-6aadece85be3"
+       *     ]
+       */
+      participantIds: string[];
+      /**
+       * Format: uri
+       * @description An optional URL supplied by the future media-upload service.
+       * @example https://example.com/groups/study-group.jpg
+       */
+      avatarUrl?: string | null;
+    };
+    UpdateGroupConversationDto: {
+      /**
+       * @description A new nonblank group name.
+       * @example Project Team
+       */
+      name?: string;
+      /**
+       * Format: uri
+       * @description A new avatar URL, or null to remove the current avatar.
+       * @example https://example.com/groups/project-team.jpg
+       */
+      avatarUrl?: string | null;
+    };
+    AddGroupMembersDto: {
+      /**
+       * @description Registered users to add atomically. Do not include yourself or an existing member.
+       * @example [
+       *       "7d444840-9dc0-41d1-b245-5ffdce74fad2",
+       *       "8e555951-aed1-42e2-8346-6aadece85be3"
+       *     ]
+       */
+      participantIds: string[];
+    };
+    UpdateGroupMemberRoleDto: {
+      /**
+       * @description Promote a member to admin or demote an admin to member. Ownership is transferred separately.
+       * @example admin
+       * @enum {string}
+       */
+      role: "admin" | "member";
+    };
+    TransferGroupOwnershipDto: {
+      /**
+       * Format: uuid
+       * @description An existing group member who will become the new owner.
+       * @example 7d444840-9dc0-41d1-b245-5ffdce74fad2
+       */
+      newOwnerId: string;
+    };
+    ConversationLatestMessageDto: {
+      /** Format: uuid */
+      id: string;
+      /** Format: uuid */
+      senderId: string;
+      /**
+       * @example text
+       * @enum {string}
+       */
+      kind: "text";
+      /** @example Hello! */
+      preview: string;
+      /** Format: date-time */
+      createdAt: string;
+    };
+    ConversationMemberSettingsDto: {
+      archived: boolean;
+      muted: boolean;
+      pinned: boolean;
+      favorited: boolean;
+      /** Format: date-time */
+      archivedAt: string | null;
+      /** Format: date-time */
+      mutedAt: string | null;
+      /**
+       * Format: date-time
+       * @description When a finite mute expires. Null while muted indefinitely or unmuted.
+       */
+      mutedUntil: string | null;
+      /** Format: date-time */
+      pinnedAt: string | null;
+      /** Format: date-time */
+      favoritedAt: string | null;
+      /**
+       * Format: date-time
+       * @description Messages at or before this per-user boundary are hidden from history.
+       */
+      clearedAt: string | null;
+      /** Format: uuid */
+      clearedThroughMessageId: string | null;
+    };
+    ConversationParticipantDto: {
+      /** Format: uuid */
+      id: string;
+      /** @example Ada Okafor */
+      displayName: Record<string, never> | null;
+      /**
+       * Format: uri
+       * @example https://example.com/avatars/ada.jpg
+       */
+      avatarUrl: string | null;
+    };
+    DirectConversationResponseDto: {
+      /** Format: uuid */
+      id: string;
+      /**
+       * @description The newest message in the conversation, when present.
+       * @example null
+       */
+      latestMessage:
+        components["schemas"]["ConversationLatestMessageDto"] | null;
+      /** @example 0 */
+      unreadCount: number;
+      settings: components["schemas"]["ConversationMemberSettingsDto"];
+      /** Format: date-time */
+      lastActivityAt: string;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      updatedAt: string;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: "direct";
+      otherParticipant: components["schemas"]["ConversationParticipantDto"];
+    };
+    GroupConversationParticipantDto: {
+      /** Format: uuid */
+      id: string;
+      /** @example Ada Okafor */
+      displayName: Record<string, never> | null;
+      /**
+       * Format: uri
+       * @example https://example.com/avatars/ada.jpg
+       */
+      avatarUrl: string | null;
+      /**
+       * @example member
+       * @enum {string}
+       */
+      role: "owner" | "admin" | "member";
+    };
+    GroupConversationResponseDto: {
+      /** Format: uuid */
+      id: string;
+      /**
+       * @description The newest message in the conversation, when present.
+       * @example null
+       */
+      latestMessage:
+        components["schemas"]["ConversationLatestMessageDto"] | null;
+      /** @example 0 */
+      unreadCount: number;
+      settings: components["schemas"]["ConversationMemberSettingsDto"];
+      /** Format: date-time */
+      lastActivityAt: string;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      updatedAt: string;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: "group";
+      /** @example Study Group */
+      name: string;
+      /** Format: uri */
+      avatarUrl: string | null;
+      participants: components["schemas"]["GroupConversationParticipantDto"][];
+      /**
+       * @description The signed-in user's role in the group conversation.
+       * @enum {string}
+       */
+      role: "owner" | "admin" | "member";
+    };
+    ConversationPageInfoDto: {
+      nextCursor: Record<string, never> | null;
+      hasNextPage: boolean;
+    };
+    ConversationListResponseDto: {
+      items: (
+        | components["schemas"]["DirectConversationResponseDto"]
+        | components["schemas"]["GroupConversationResponseDto"]
+      )[];
+      pageInfo: components["schemas"]["ConversationPageInfoDto"];
+    };
+    UpdateConversationSettingsDto: {
+      /** @description Archive or restore the conversation for the signed-in user. */
+      archived?: boolean;
+      /** @description Mute indefinitely or unmute the conversation. Use the dedicated mute endpoint for a finite duration. */
+      muted?: boolean;
+      /** @description Pin or unpin the conversation for the signed-in user. */
+      pinned?: boolean;
+    };
+    ConversationSettingsResponseDto: {
+      /** Format: uuid */
+      conversationId: string;
+      archived: boolean;
+      muted: boolean;
+      pinned: boolean;
+      favorited: boolean;
+      /** Format: date-time */
+      archivedAt: string | null;
+      /** Format: date-time */
+      mutedAt: string | null;
+      /**
+       * Format: date-time
+       * @description When a finite mute expires. Null when unmuted or muted indefinitely.
+       */
+      mutedUntil: string | null;
+      /** Format: date-time */
+      pinnedAt: string | null;
+      /** Format: date-time */
+      favoritedAt: string | null;
+      /** Format: date-time */
+      clearedAt: string | null;
+      /** Format: uuid */
+      clearedThroughMessageId: string | null;
+    };
+    MuteConversationDto: {
+      /**
+       * @description How long notifications should remain muted.
+       * @example 8_hours
+       * @enum {string}
+       */
+      duration: "8_hours" | "24_hours" | "7_days" | "always";
+    };
+    SendMessageDto: {
+      /**
+       * Format: uuid
+       * @description A client-generated idempotency key. Reusing it with the same message returns the original message.
+       * @example 7d444840-9dc0-41d1-b245-5ffdce74fad2
+       */
+      clientMessageId: string;
+      /** @example Hello! Are you free to chat? */
+      text: string;
+    };
+    MessageResponseDto: {
+      /** Format: uuid */
+      id: string;
+      /** Format: uuid */
+      conversationId: string;
+      /** Format: uuid */
+      clientMessageId: string;
+      /** Format: uuid */
+      senderId: string;
+      /**
+       * @example text
+       * @enum {string}
+       */
+      kind: "text";
+      /** @example Hello! Are you free to chat? */
+      text: string;
+      /** Format: date-time */
+      createdAt: string;
+    };
+    MessagePageInfoDto: {
+      nextCursor: string | null;
+      hasNextPage: boolean;
+    };
+    MessageHistoryResponseDto: {
+      items: components["schemas"]["MessageResponseDto"][];
+      pageInfo: components["schemas"]["MessagePageInfoDto"];
+    };
+    ClearConversationMessagesResponseDto: {
+      /** Format: uuid */
+      conversationId: string;
+      /** @description Whether the stored clear boundary or unread state changed. */
+      changed: boolean;
+      /** Format: date-time */
+      clearedAt: string | null;
+      /** Format: uuid */
+      clearedThroughMessageId: string | null;
+    };
+    ConversationReadStateResponseDto: {
+      /** Format: uuid */
+      conversationId: string;
+      /** Format: date-time */
+      lastReadAt: string;
+      /** @example 0 */
+      unreadCount: number;
+    };
+    UpdateReceiptDto: {
+      /**
+       * Format: uuid
+       * @description Latest incoming message included in this receipt update.
+       * @example 44444444-4444-4444-8444-444444444444
+       */
+      throughMessageId: string;
+    };
+    ReceiptBoundaryResponseDto: {
+      /** Format: uuid */
+      messageId: string;
+      /** Format: date-time */
+      at: string;
+    };
+    ReceiptUpdateResponseDto: {
+      /** Format: uuid */
+      conversationId: string;
+      /** @enum {string} */
+      status: "delivered" | "read";
+      /** Format: uuid */
+      throughMessageId: string;
+      /** Format: date-time */
+      at: string;
+      /** @description False when this boundary had already been persisted. */
+      changed: boolean;
+      unreadCount: number;
+      version: number;
+      delivered: components["schemas"]["ReceiptBoundaryResponseDto"];
+      read: components["schemas"]["ReceiptBoundaryResponseDto"] | null;
+    };
+    ReceiptFrontierResponseDto: {
+      /** Format: uuid */
+      userId: string;
+      version: number;
+      delivered: components["schemas"]["ReceiptBoundaryResponseDto"] | null;
+      read: components["schemas"]["ReceiptBoundaryResponseDto"] | null;
+    };
+    ReceiptFrontiersResponseDto: {
+      /** Format: uuid */
+      conversationId: string;
+      items: components["schemas"]["ReceiptFrontierResponseDto"][];
+    };
+  };
+  responses: never;
+  parameters: never;
+  requestBodies: never;
+  headers: never;
+  pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    requestOtp: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RequestOtpDto"];
-            };
-        };
-        responses: {
-            202: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OtpChallengeResponseDto"];
-                };
-            };
-        };
+  requestOtp: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    resendOtp: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ResendOtpDto"];
-            };
-        };
-        responses: {
-            202: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OtpChallengeResponseDto"];
-                };
-            };
-        };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["RequestOtpDto"];
+      };
     };
-    verifyOtp: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    responses: {
+      202: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["VerifyOtpDto"];
-            };
+        content: {
+          "application/json": components["schemas"]["OtpChallengeResponseDto"];
         };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AuthResponseDto"];
-                };
-            };
-        };
+      };
     };
-    refresh: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RefreshTokenDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AuthResponseDto"];
-                };
-            };
-        };
+  };
+  resendOtp: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    logout: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RefreshTokenDto"];
-            };
-        };
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ResendOtpDto"];
+      };
     };
-    getMe: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    responses: {
+      202: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UserResponseDto"];
-                };
-            };
+        content: {
+          "application/json": components["schemas"]["OtpChallengeResponseDto"];
         };
+      };
     };
-    updateMe: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateProfileDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UserResponseDto"];
-                };
-            };
-        };
+  };
+  verifyOtp: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    list: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BlockListResponseDto"];
-                };
-            };
-        };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["VerifyOtpDto"];
+      };
     };
-    block: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                userId: string;
-            };
-            cookie?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BlockResponseDto"];
-                };
-            };
-            /** @description A user cannot block themselves. */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description The selected user does not exist. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
+        content: {
+          "application/json": components["schemas"]["AuthResponseDto"];
         };
+      };
     };
-    unblock: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                userId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description The block is absent. */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+  };
+  refresh: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    matchContacts: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["MatchContactsDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ContactMatchesResponseDto"];
-                };
-            };
-        };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["RefreshTokenDto"];
+      };
     };
-    searchUsers: {
-        parameters: {
-            query: {
-                /** @description A display-name search term. Phone numbers are not searched. */
-                q: string;
-                limit?: number;
-                /** @description Opaque cursor returned by the previous search response. */
-                cursor?: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UserSearchResponseDto"];
-                };
-            };
+        content: {
+          "application/json": components["schemas"]["AuthResponseDto"];
         };
+      };
     };
-    createDirect: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateDirectConversationDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DirectConversationResponseDto"];
-                };
-            };
-        };
+  };
+  logout: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    createGroup: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateGroupConversationDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["GroupConversationResponseDto"];
-                };
-            };
-            /** @description The group name or participant list is invalid, duplicated, or includes the creator. */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description One or more selected users do not exist. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["RefreshTokenDto"];
+      };
     };
-    get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                conversationId: string;
-            };
-            cookie?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DirectConversationResponseDto"] | components["schemas"]["GroupConversationResponseDto"];
-                };
-            };
-            /** @description The conversation is missing or the user is not a member. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+        content?: never;
+      };
     };
-    deleteGroup: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                conversationId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description The group was deleted. */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Only the group owner can delete the group. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description The group conversation is missing or the user is not a member. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+  };
+  getMe: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    updateGroup: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                conversationId: string;
-            };
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateGroupConversationDto"];
-            };
+        content: {
+          "application/json": components["schemas"]["UserResponseDto"];
         };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["GroupConversationResponseDto"];
-                };
-            };
-            /** @description No supported field was provided or the metadata is invalid. */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description The member is not allowed to edit group metadata. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description The group conversation is missing or the user is not a member. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+      };
     };
-    addGroupMembers: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                conversationId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AddGroupMembersDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["GroupConversationResponseDto"];
-                };
-            };
-            /** @description The participant list is invalid, duplicated, or self-referential. */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description The member is not allowed to add group members. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description The group is inaccessible, or one or more selected users are unavailable. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description A selected user is already a member or the group member limit would be exceeded. */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+  };
+  updateMe: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    removeGroupMember: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                conversationId: string;
-                memberId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description The member was removed. */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Use the leave endpoint to remove yourself. */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description The member is not allowed to remove the selected member. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description The group is inaccessible or the selected membership does not exist. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description The group owner cannot be removed. */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateProfileDto"];
+      };
     };
-    updateGroupMemberRole: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                conversationId: string;
-                memberId: string;
-            };
-            cookie?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateGroupMemberRoleDto"];
-            };
+        content: {
+          "application/json": components["schemas"]["UserResponseDto"];
         };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["GroupConversationResponseDto"];
-                };
-            };
-            /** @description The requested role is invalid. */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Only the group owner can change member roles. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description The group is inaccessible or the selected membership does not exist. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description The owner role can only change through ownership transfer. */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+      };
     };
-    transferGroupOwnership: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                conversationId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TransferGroupOwnershipDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["GroupConversationResponseDto"];
-                };
-            };
-            /** @description The owner must select another member. */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Only the current group owner can transfer ownership. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description The group is inaccessible or the selected membership does not exist. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+  };
+  list: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    leaveGroup: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                conversationId: string;
-            };
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            /** @description The member left the group. */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description The group conversation is missing or the user is not a member. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description The owner must transfer ownership or delete the group. */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
+        content: {
+          "application/json": components["schemas"]["BlockListResponseDto"];
         };
+      };
     };
-    list: {
-        parameters: {
-            query?: {
-                limit?: number;
-                /** @description When true, return archived conversations; otherwise return active conversations. */
-                archived?: boolean;
-                /** @description Opaque cursor returned by the previous page. */
-                cursor?: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ConversationListResponseDto"];
-                };
-            };
-        };
+  };
+  block: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        userId: string;
+      };
+      cookie?: never;
     };
-    listArchived: {
-        parameters: {
-            query?: {
-                limit?: number;
-                /** @description Opaque cursor returned by the previous archived page. */
-                cursor?: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ConversationListResponseDto"];
-                };
-            };
-            /** @description The archived-conversation cursor or limit is invalid. */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
+        content: {
+          "application/json": components["schemas"]["BlockResponseDto"];
         };
+      };
+      /** @description A user cannot block themselves. */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description The selected user does not exist. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
     };
-    update: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                conversationId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateConversationSettingsDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ConversationSettingsResponseDto"];
-                };
-            };
-            /** @description No supported conversation setting was provided. */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description The conversation is missing or the user is not a member. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+  };
+  unblock: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        userId: string;
+      };
+      cookie?: never;
     };
-    archive: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                conversationId: string;
-            };
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description The block is absent. */
+      204: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ConversationSettingsResponseDto"];
-                };
-            };
-            /** @description The conversation ID is invalid. */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description The conversation is missing or the user is not a member. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+        content?: never;
+      };
     };
-    unarchive: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                conversationId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ConversationSettingsResponseDto"];
-                };
-            };
-            /** @description The conversation ID is invalid. */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description The conversation is missing or the user is not a member. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+  };
+  matchContacts: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    mute: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                conversationId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["MuteConversationDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ConversationSettingsResponseDto"];
-                };
-            };
-            /** @description The mute duration is missing or unsupported. */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description The conversation is missing or the user is not a member. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["MatchContactsDto"];
+      };
     };
-    unmute: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                conversationId: string;
-            };
-            cookie?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ConversationSettingsResponseDto"];
-                };
-            };
-            /** @description The conversation is missing or the user is not a member. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
+        content: {
+          "application/json": components["schemas"]["ContactMatchesResponseDto"];
         };
+      };
     };
-    favorite: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                conversationId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ConversationSettingsResponseDto"];
-                };
-            };
-            /** @description The conversation is missing or the user is not a member. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+  };
+  searchUsers: {
+    parameters: {
+      query: {
+        /** @description A display-name search term. Phone numbers are not searched. */
+        q: string;
+        limit?: number;
+        /** @description Opaque cursor returned by the previous search response. */
+        cursor?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    unfavorite: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                conversationId: string;
-            };
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ConversationSettingsResponseDto"];
-                };
-            };
-            /** @description The conversation is missing or the user is not a member. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
+        content: {
+          "application/json": components["schemas"]["UserSearchResponseDto"];
         };
+      };
     };
-    list: {
-        parameters: {
-            query?: {
-                limit?: number;
-                /** @description Opaque cursor returned by the previous history page. */
-                cursor?: string;
-            };
-            header?: never;
-            path: {
-                conversationId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MessageHistoryResponseDto"];
-                };
-            };
-            /** @description The message cursor is invalid. */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description The conversation is missing or the user is not a member. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+  };
+  createDirect: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    send: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                conversationId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SendMessageDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MessageResponseDto"];
-                };
-            };
-            /** @description The conversation is missing or the user is not a member. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description The client message ID was reused with different data. */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateDirectConversationDto"];
+      };
     };
-    clear: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                conversationId: string;
-            };
-            cookie?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            /** @description The current history was hidden for this member. Shared messages were not deleted. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ClearConversationMessagesResponseDto"];
-                };
-            };
-            /** @description The conversation is missing or the user is not a member. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
+        content: {
+          "application/json": components["schemas"]["DirectConversationResponseDto"];
         };
+      };
     };
-    markRead: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                conversationId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ConversationReadStateResponseDto"];
-                };
-            };
-            /** @description The conversation is missing or the user is not a member. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+  };
+  createGroup: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    markDelivered: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                conversationId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateReceiptDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ReceiptUpdateResponseDto"];
-                };
-            };
-            /** @description The conversation, membership, or incoming message boundary is inaccessible. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateGroupConversationDto"];
+      };
     };
-    markRead: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                conversationId: string;
-            };
-            cookie?: never;
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateReceiptDto"];
-            };
+        content: {
+          "application/json": components["schemas"]["GroupConversationResponseDto"];
         };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ReceiptUpdateResponseDto"];
-                };
-            };
-            /** @description The conversation, membership, or incoming message boundary is inaccessible. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
+      };
+      /** @description The group name or participant list is invalid, duplicated, or includes the creator. */
+      400: {
+        headers: {
+          [name: string]: unknown;
         };
+        content?: never;
+      };
+      /** @description One or more selected users do not exist. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
     };
-    list: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                conversationId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ReceiptFrontiersResponseDto"];
-                };
-            };
-            /** @description The conversation is missing or the user is not a member. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+  };
+  get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        conversationId: string;
+      };
+      cookie?: never;
     };
-    getHealth: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
+        content: {
+          "application/json":
+            | components["schemas"]["DirectConversationResponseDto"]
+            | components["schemas"]["GroupConversationResponseDto"];
         };
+      };
+      /** @description The conversation is missing or the user is not a member. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
     };
+  };
+  deleteGroup: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        conversationId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description The group was deleted. */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Only the group owner can delete the group. */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description The group conversation is missing or the user is not a member. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  updateGroup: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        conversationId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateGroupConversationDto"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["GroupConversationResponseDto"];
+        };
+      };
+      /** @description No supported field was provided or the metadata is invalid. */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description The member is not allowed to edit group metadata. */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description The group conversation is missing or the user is not a member. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  addGroupMembers: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        conversationId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["AddGroupMembersDto"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["GroupConversationResponseDto"];
+        };
+      };
+      /** @description The participant list is invalid, duplicated, or self-referential. */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description The member is not allowed to add group members. */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description The group is inaccessible, or one or more selected users are unavailable. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description A selected user is already a member or the group member limit would be exceeded. */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  removeGroupMember: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        conversationId: string;
+        memberId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description The member was removed. */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Use the leave endpoint to remove yourself. */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description The member is not allowed to remove the selected member. */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description The group is inaccessible or the selected membership does not exist. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description The group owner cannot be removed. */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  updateGroupMemberRole: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        conversationId: string;
+        memberId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateGroupMemberRoleDto"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["GroupConversationResponseDto"];
+        };
+      };
+      /** @description The requested role is invalid. */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Only the group owner can change member roles. */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description The group is inaccessible or the selected membership does not exist. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description The owner role can only change through ownership transfer. */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  transferGroupOwnership: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        conversationId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["TransferGroupOwnershipDto"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["GroupConversationResponseDto"];
+        };
+      };
+      /** @description The owner must select another member. */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Only the current group owner can transfer ownership. */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description The group is inaccessible or the selected membership does not exist. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  leaveGroup: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        conversationId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description The member left the group. */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description The group conversation is missing or the user is not a member. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description The owner must transfer ownership or delete the group. */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  list: {
+    parameters: {
+      query?: {
+        limit?: number;
+        /** @description When true, return archived conversations; otherwise return active conversations. */
+        archived?: boolean;
+        /** @description Opaque cursor returned by the previous page. */
+        cursor?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ConversationListResponseDto"];
+        };
+      };
+    };
+  };
+  listArchived: {
+    parameters: {
+      query?: {
+        limit?: number;
+        /** @description Opaque cursor returned by the previous archived page. */
+        cursor?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ConversationListResponseDto"];
+        };
+      };
+      /** @description The archived-conversation cursor or limit is invalid. */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  update: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        conversationId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateConversationSettingsDto"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ConversationSettingsResponseDto"];
+        };
+      };
+      /** @description No supported conversation setting was provided. */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description The conversation is missing or the user is not a member. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  archive: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        conversationId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ConversationSettingsResponseDto"];
+        };
+      };
+      /** @description The conversation ID is invalid. */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description The conversation is missing or the user is not a member. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  unarchive: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        conversationId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ConversationSettingsResponseDto"];
+        };
+      };
+      /** @description The conversation ID is invalid. */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description The conversation is missing or the user is not a member. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  mute: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        conversationId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["MuteConversationDto"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ConversationSettingsResponseDto"];
+        };
+      };
+      /** @description The mute duration is missing or unsupported. */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description The conversation is missing or the user is not a member. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  unmute: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        conversationId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ConversationSettingsResponseDto"];
+        };
+      };
+      /** @description The conversation is missing or the user is not a member. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  favorite: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        conversationId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ConversationSettingsResponseDto"];
+        };
+      };
+      /** @description The conversation is missing or the user is not a member. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  unfavorite: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        conversationId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ConversationSettingsResponseDto"];
+        };
+      };
+      /** @description The conversation is missing or the user is not a member. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  list: {
+    parameters: {
+      query?: {
+        limit?: number;
+        /** @description Opaque cursor returned by the previous history page. */
+        cursor?: string;
+      };
+      header?: never;
+      path: {
+        conversationId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["MessageHistoryResponseDto"];
+        };
+      };
+      /** @description The message cursor is invalid. */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description The conversation is missing or the user is not a member. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  send: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        conversationId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["SendMessageDto"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["MessageResponseDto"];
+        };
+      };
+      /** @description The conversation is missing or the user is not a member. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description The client message ID was reused with different data. */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  clear: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        conversationId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description The current history was hidden for this member. Shared messages were not deleted. */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ClearConversationMessagesResponseDto"];
+        };
+      };
+      /** @description The conversation is missing or the user is not a member. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  markRead: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        conversationId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ConversationReadStateResponseDto"];
+        };
+      };
+      /** @description The conversation is missing or the user is not a member. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  markDelivered: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        conversationId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateReceiptDto"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReceiptUpdateResponseDto"];
+        };
+      };
+      /** @description The conversation, membership, or incoming message boundary is inaccessible. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  markRead: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        conversationId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateReceiptDto"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReceiptUpdateResponseDto"];
+        };
+      };
+      /** @description The conversation, membership, or incoming message boundary is inaccessible. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  list: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        conversationId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReceiptFrontiersResponseDto"];
+        };
+      };
+      /** @description The conversation is missing or the user is not a member. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  getHealth: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": unknown;
+        };
+      };
+    };
+  };
 }

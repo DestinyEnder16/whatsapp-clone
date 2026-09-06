@@ -1,21 +1,37 @@
-import { Pressable, StyleSheet, Text } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, Text } from "react-native";
 import colors from "../theme/colors";
 
 interface BtnProps {
-    title: string,
-    onPress: () => void,
-
+    title: string;
+    onPress: () => void;
+    isLoading?: boolean;
+    disabled?: boolean;
+    className?: string;
 }
 
-export default function Button({ title, onPress }: BtnProps) {
+export default function Button({
+    title,
+    onPress,
+    isLoading = false,
+    disabled = false,
+    className,
+}: BtnProps) {
+    const isDisabled = disabled || isLoading;
+
     return (
         <Pressable
-            style={styles.button}
+            style={[styles.button, isDisabled && styles.disabled]}
+            className={className}
             onPress={onPress}
+            disabled={isDisabled}
         >
-            <Text style={styles.buttonText}>{title}</Text>
+            {isLoading ? (
+                <ActivityIndicator color="#fff" />
+            ) : (
+                <Text style={styles.buttonText}>{title}</Text>
+            )}
         </Pressable>
-    )
+    );
 }
 
 const styles = StyleSheet.create({
@@ -25,6 +41,10 @@ const styles = StyleSheet.create({
         paddingVertical: 18,
         borderRadius: 16,
         alignItems: 'center',
+        justifyContent: 'center',
+    },
+    disabled: {
+        opacity: 0.6,
     },
     buttonText: {
         color: '#fff',
