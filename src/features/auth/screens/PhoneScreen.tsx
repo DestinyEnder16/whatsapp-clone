@@ -1,9 +1,10 @@
+import Button from "@/shared/components/Button";
 import Heading from "@/shared/components/Heading";
 import Screen from "@/shared/components/Screen";
 import colors from "@/shared/theme/colors";
 import { router } from "expo-router";
 import { useState } from "react";
-import { ActivityIndicator, Alert, Pressable, Text, TextInput, View } from "react-native";
+import { Alert, Text, TextInput, View } from "react-native";
 import Toast from 'react-native-toast-message';
 import { useRequestOtp } from "../api/useRequestOtp";
 
@@ -36,7 +37,7 @@ export function PhoneScreen() {
                         params: {
                             challengeId: challenge.challengeId,
                             phoneNumberMasked: challenge.phoneNumberMasked,
-                            time: challenge.expiresInSeconds.toString()
+                            time: challenge.resendInSeconds.toString()
                         }
                     })
                 },
@@ -67,28 +68,11 @@ export function PhoneScreen() {
 
 
             <View className="mt-auto pb-4">
-
-                <Pressable
-
+                <Button
+                    title="Continue"
                     onPress={handleSendOtp}
-
-                    disabled={requestOtpMutation.isPending}
-
-                    className="bg-emerald-600 p-4 rounded-xl mt-6 items-center"
-
-                >
-
-                    {requestOtpMutation.isPending ? (
-
-                        <ActivityIndicator color="#fff" />
-
-                    ) : (
-
-                        <Text className="text-white font-semibold text-base">Continue</Text>
-
-                    )}
-
-                </Pressable>
+                    isLoading={requestOtpMutation.isPending}
+                />
             </View>
 
 
