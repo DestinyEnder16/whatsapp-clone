@@ -1,4 +1,4 @@
-import { ProfileSetupScreen } from "@/features/signup";
+import { ProfileSetupScreen } from "@/features/auth";
 
 export default function Profile() {
     return (
