@@ -1,22 +1,51 @@
+import { useAuthStore } from "@/core/store/useAuthStore";
 import { BackButton, Button } from "@/shared/components";
 import Heading from "@/shared/components/Heading";
 import Screen from "@/shared/components/Screen";
 import colors from "@/shared/theme/colors";
+import { router } from "expo-router";
 import { Image } from "expo-image";
 import { useState } from "react";
 import { Text, TextInput, View } from "react-native";
+import { toast } from "@/shared/utils/toast";
+import { useUpdateProfile } from "../api/useUpdateProfile";
 
 export function ProfileSetupScreen() {
     const [name, setName] = useState("");
     const [isFocused, setIsFocused] = useState(false);
+    const setUser = useAuthStore((state) => state.setUser);
+    const updateProfileMutation = useUpdateProfile();
+
+    function handleSaveName() {
+        if (!name.trim()) return;
+
+        updateProfileMutation.mutate(
+            { displayName: name.trim() },
+            {
+                onSuccess: (updatedUser) => {
+                    // Update user in Zustand global store
+                    setUser(updatedUser);
+
+                    toast.success(
+                        "Profile Created",
+                        `Welcome, ${updatedUser.displayName || name.trim()}!`
+                    );
+
+                    // Navigate to profile photo upload
+                    router.push("/upload-photo");
+                },
+                onError: (err: Error) => {
+                    toast.error("Error", err.message);
+                },
+            }
+        );
+    }
 
     return (
         <Screen>
-
             <View className="mb-8">
                 <BackButton />
             </View>
-
 
             <View className="gap-y-[12px]">
                 <Heading title="What's your name?" />
@@ -24,7 +53,6 @@ export function ProfileSetupScreen() {
                     Write your name. You can change it back in settings.
                 </Text>
             </View>
-
 
             <View className="mt-8">
                 <Text className="text-neutral-600 text-[14px] font-medium mb-2.5">
@@ -66,10 +94,9 @@ export function ProfileSetupScreen() {
             <View className="mt-auto pb-4">
                 <Button
                     title="Next"
-                    onPress={() => {
-                        console.log("Name submitted:", name);
-                        // Navigate to next screen or main app tabs
-                    }}
+                    onPress={handleSaveName}
+                    isLoading={updateProfileMutation.isPending}
+                    disabled={!name.trim() || updateProfileMutation.isPending}
                 />
             </View>
         </Screen>
