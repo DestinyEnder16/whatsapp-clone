@@ -27,12 +27,18 @@ interface PhotoPickerModalProps {
   onSelectPhoto: (uri: string) => void;
 }
 
+interface RecentPhotoItem {
+  id: string;
+  uri: string;
+}
+
 export function PhotoPickerModal({
   visible,
   onClose,
   onSelectPhoto,
 }: PhotoPickerModalProps) {
-  const [recentPhotos, setRecentPhotos] = useState<Asset[]>([]);
+  const [recentPhotos, setRecentPhotos] = useState<RecentPhotoItem[]>([]);
+  const [isLoadingPhotos, setIsLoadingPhotos] = useState(false);
 
   useEffect(() => {
     if (visible) {
@@ -41,20 +47,44 @@ export function PhotoPickerModal({
   }, [visible]);
 
   async function loadRecentPhotos() {
-    const { status } = await requestPermissionsAsync();
-    if (status !== "granted") return;
-
     try {
-      // SDK 57 Query
+      setIsLoadingPhotos(true);
+      const permission = await requestPermissionsAsync();
+      
+      const hasPermission =
+        permission.granted || permission.accessPrivileges === "limited" || permission.status === "granted";
+
+      if (!hasPermission) {
+        console.warn("Photo library permission not granted:", permission.status);
+        setIsLoadingPhotos(false);
+        return;
+      }
+
+      // SDK 57: Sort by newest first (ascending: false)
       const assets = await new Query()
         .eq(AssetField.MEDIA_TYPE, MediaType.IMAGE)
-        .orderBy(AssetField.CREATION_TIME)
-        .limit(12)
+        .orderBy({ key: AssetField.CREATION_TIME, ascending: false })
+        .limit(10)
         .exe();
 
-      setRecentPhotos(assets);
+      // Resolve usable URIs for expo-image
+      const items: RecentPhotoItem[] = await Promise.all(
+        assets.map(async (asset) => {
+          let resolvedUri: string;
+          try {
+            resolvedUri = await asset.getUri();
+          } catch {
+            resolvedUri = asset.id;
+          }
+          return { id: asset.id, uri: resolvedUri };
+        })
+      );
+
+      setRecentPhotos(items);
     } catch (e) {
-      console.warn("Could not load recent photos", e);
+      console.warn("Could not load recent photos:", e);
+    } finally {
+      setIsLoadingPhotos(false);
     }
   }
 
@@ -89,14 +119,6 @@ export function PhotoPickerModal({
     }
   }
 
-  // 3. Select directly from thumbnail
-  async function handleSelectRecent(asset: Asset) {
-    // In SDK 57, asset.getUri() gives the file URI
-    const uri = await asset.getUri();
-    onSelectPhoto(uri);
-    onClose();
-  }
-
   return (
     <Modal
       visible={visible}
@@ -119,15 +141,43 @@ export function PhotoPickerModal({
             showsHorizontalScrollIndicator={false}
             className="flex-row mb-6 -mx-1"
           >
-            {recentPhotos.map((photo) => (
+            {/* Tile 1: Camera tile with camera icon badge */}
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={handleTakePhoto}
+              className="mx-1.5 rounded-2xl overflow-hidden relative justify-center items-center bg-neutral-200"
+              style={{ width: 68, height: 68 }}
+            >
+              {recentPhotos.length > 0 ? (
+                <Image
+                  source={{ uri: recentPhotos[0].uri }}
+                  style={{ width: 68, height: 68 }}
+                  contentFit="cover"
+                />
+              ) : (
+                <View className="w-full h-full bg-neutral-300" />
+              )}
+              {/* Semi-transparent dark overlay with white camera icon */}
+              <View className="absolute inset-0 bg-black/30 justify-center items-center">
+                <View className="bg-white/80 p-2 rounded-xl justify-center items-center">
+                  <Ionicons name="camera" size={20} color="#1E293B" />
+                </View>
+              </View>
+            </TouchableOpacity>
+
+            {/* Next Tiles: Recent device photos */}
+            {recentPhotos.slice(1).map((photo) => (
               <TouchableOpacity
                 key={photo.id}
                 activeOpacity={0.8}
-                onPress={() => handleSelectRecent(photo)}
-                className="mx-1.5"
+                onPress={() => {
+                  onSelectPhoto(photo.uri);
+                  onClose();
+                }}
+                className="mx-1.5 rounded-2xl overflow-hidden"
               >
                 <Image
-                  source={{ uri: photo.id }} // expo-image can load asset.id directly
+                  source={{ uri: photo.uri }}
                   style={{ width: 68, height: 68, borderRadius: 16 }}
                   contentFit="cover"
                 />
