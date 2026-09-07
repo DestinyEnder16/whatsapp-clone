@@ -17,7 +17,7 @@ export function OtpScreen() {
   const setAuth = useAuthStore((state) => state.setAuth);
 
   function handleOtpVerify(code: string) {
-    if (otp.length < 4) return;
+    if (code.length < 4) return;
     verifyOtpMutation.mutate(
       {
         challengeId: challengeId as string,
@@ -89,6 +89,7 @@ export function OtpScreen() {
           numberOfDigits={4}
           onTextChange={(code) => setOtp(code)}
           placeholder="****"
+          onFilled={(code) => handleOtpVerify(code)}
         />
         <Text className="text-neutral-400 text-[14px] mt-6 text-center">
           If you didn't get the code, resend it in{" "}
