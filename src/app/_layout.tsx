@@ -16,6 +16,8 @@ export default function RootLayout() {
         }}
       >
         <Stack.Screen name="index" />
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(tabs)" />
       </Stack>
 
       {/* this allows the toasts to be rendered globally over all screens and modals */}

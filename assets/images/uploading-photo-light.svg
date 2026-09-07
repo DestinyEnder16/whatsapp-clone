@@ -1,0 +1,16 @@
+<svg width="164" height="164" viewBox="0 0 164 164" fill="none" xmlns="http://www.w3.org/2000/svg">
+<circle cx="82" cy="82" r="82" fill="#F5FBF7"/>
+<mask id="mask0_uploading" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="164" height="164">
+<circle cx="82" cy="82" r="82" fill="#F5FBF7"/>
+</mask>
+<g mask="url(#mask0_uploading)">
+<circle cx="30.5" cy="45.5" r="38.5" fill="#E8F5ED"/>
+<circle cx="151.5" cy="125.5" r="38.5" fill="#E8F5ED"/>
+<rect x="25" y="32" width="114" height="139" rx="16" fill="white"/>
+<rect x="44" y="112" width="76" height="6" rx="3" fill="#ABDBBE"/>
+<rect x="52" y="124" width="60" height="6" rx="3" fill="#ABDBBE"/>
+<circle cx="82" cy="74" r="23" stroke="#57B77D" stroke-width="2.5" fill="none"/>
+<path d="M82 65V76M82 65L76 71M82 65L88 71" stroke="#57B77D" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M75 80H89" stroke="#57B77D" stroke-width="2.5" stroke-linecap="round"/>
+</g>
+</svg>
