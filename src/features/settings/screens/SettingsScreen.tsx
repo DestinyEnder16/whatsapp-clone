@@ -21,17 +21,24 @@ export function SettingsScreen() {
   const logout = useAuthStore((state) => state.logout);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
-  // Fetch the freshest profile directly from the API (GET /v1/me)
+  // Fetch profile from API, falling back to local store for fields like local avatar
   const { data: me } = useMe();
   const activeUser = me || user;
 
   const displayName =
     typeof activeUser?.displayName === "string" && (activeUser.displayName as string).trim()
       ? (activeUser.displayName as string).trim()
+      : typeof user?.displayName === "string" && (user.displayName as string).trim()
+      ? (user.displayName as string).trim()
       : "WhatsApp User";
 
-  const phoneNumber = activeUser?.phoneNumber || "";
-  const avatarUrl = typeof activeUser?.avatarUrl === "string" ? activeUser.avatarUrl : null;
+  const phoneNumber = activeUser?.phoneNumber || user?.phoneNumber || "";
+  const avatarUrl =
+    typeof activeUser?.avatarUrl === "string" && activeUser.avatarUrl
+      ? activeUser.avatarUrl
+      : typeof user?.avatarUrl === "string"
+      ? user.avatarUrl
+      : null;
 
   function handleLogout() {
     Alert.alert("Log Out", "Are you sure you want to log out of ChatMe?", [
