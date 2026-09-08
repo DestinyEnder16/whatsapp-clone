@@ -35,16 +35,9 @@ export function OtpScreen() {
           // If user is already registered -> route to (tabs)/chats
           if (!authData.user.profileComplete) {
             router.replace("/profile");
+          } else {
+            router.replace("/(tabs)");
           }
-          /*
-                    else {
-
-                        router.replace('/(tabs)');
-
-                    }
-
-
-                    */
         },
         onError: (err) => {
           Toast.show({
