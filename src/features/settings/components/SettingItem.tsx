@@ -5,7 +5,7 @@ import React from "react";
 import { Pressable, Text, View } from "react-native";
 
 export interface SettingItemProps {
-  /** Local SVG image asset (via require) */
+  /** Ionicons icon name (e.g. 'star-outline') or SVG asset */
   icon?: any;
   /** Ionicons icon name */
   ionIcon?: string;
@@ -17,6 +17,8 @@ export interface SettingItemProps {
   rightElement?: React.ReactNode;
   /** Whether to show the right arrow (defaults to true) */
   showChevron?: boolean;
+  /** Custom icon color (defaults to green colors.primary[400]) */
+  iconColor?: string;
 }
 
 export function SettingItem({
@@ -26,7 +28,11 @@ export function SettingItem({
   onPress,
   rightElement,
   showChevron = true,
+  iconColor,
 }: SettingItemProps) {
+  const activeIconColor = iconColor || colors.primary[400];
+  const iconName = ionIcon || (typeof icon === "string" ? icon : null);
+
   return (
     <Pressable
       onPress={onPress}
@@ -37,15 +43,19 @@ export function SettingItem({
         className="w-10 h-10 rounded-full items-center justify-center"
         style={{ backgroundColor: colors.primary[100] }}
       >
-        {icon ? (
+        {iconName ? (
+          <Ionicons
+            name={iconName as any}
+            size={19}
+            color={activeIconColor}
+          />
+        ) : icon ? (
           <Image
             source={icon}
             style={{ width: 18, height: 18 }}
             contentFit="contain"
-            tintColor={colors.primary[400]}
+            tintColor={activeIconColor}
           />
-        ) : ionIcon ? (
-          <Ionicons name={ionIcon as any} size={18} color={colors.primary[400]} />
         ) : null}
       </View>
 
@@ -58,11 +68,10 @@ export function SettingItem({
       {rightElement ? (
         rightElement
       ) : showChevron ? (
-        <Image
-          source={require("@/assets/icons/solid/cheveron-right.svg")}
-          style={{ width: 16, height: 16 }}
-          tintColor={colors.neutral[200]}
-          contentFit="contain"
+        <Ionicons
+          name="chevron-forward"
+          size={16}
+          color={colors.neutral[200]}
         />
       ) : null}
     </Pressable>

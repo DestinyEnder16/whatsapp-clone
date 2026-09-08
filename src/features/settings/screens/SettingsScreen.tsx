@@ -66,11 +66,10 @@ export function SettingsScreen() {
           onPress={() => router.push("/upload-photo")}
           className="w-10 h-10 items-center justify-center rounded-full active:bg-neutral-50"
         >
-          <Image
-            source={require("@/assets/icons/solid/pencil-alt.svg")}
-            style={{ width: 22, height: 22 }}
-            tintColor={colors.primary[400]}
-            contentFit="contain"
+          <Ionicons
+            name="create-outline"
+            size={22}
+            color={colors.primary[400]}
           />
         </Pressable>
       </View>
@@ -111,11 +110,10 @@ export function SettingsScreen() {
           </View>
 
           <Pressable className="p-2 active:opacity-70">
-            <Image
-              source={require("@/assets/icons/solid/qrcode.svg")}
-              style={{ width: 24, height: 24 }}
-              tintColor={colors.primary[400]}
-              contentFit="contain"
+            <Ionicons
+              name="qr-code-outline"
+              size={22}
+              color={colors.primary[400]}
             />
           </Pressable>
         </Pressable>
@@ -125,23 +123,23 @@ export function SettingsScreen() {
 
         {/* Group 1: Preferences */}
         <SettingItem
-          icon={require("@/assets/icons/solid/star.svg")}
+          icon="star-outline"
           title="Star messages"
         />
         <SettingItem
-          icon={require("@/assets/icons/solid/phone.svg")}
+          icon="call-outline"
           title="Last call"
         />
         <SettingItem
-          icon={require("@/assets/icons/solid/folder.svg")}
+          icon="folder-outline"
           title="My folder"
         />
         <SettingItem
-          ionIcon="contrast"
+          icon="contrast-outline"
           title="Appearence"
         />
         <SettingItem
-          icon={require("@/assets/icons/solid/bell.svg")}
+          icon="notifications-outline"
           title="Notification"
           rightElement={
             <Pressable
@@ -154,11 +152,10 @@ export function SettingsScreen() {
             >
               <View className="w-[22px] h-[22px] rounded-full bg-white items-center justify-center shadow-sm">
                 {notificationsEnabled && (
-                  <Image
-                    source={require("@/assets/icons/solid/check.svg")}
-                    style={{ width: 12, height: 12 }}
-                    tintColor={colors.primary[400]}
-                    contentFit="contain"
+                  <Ionicons
+                    name="checkmark"
+                    size={13}
+                    color={colors.primary[400]}
                   />
                 )}
               </View>
@@ -171,19 +168,19 @@ export function SettingsScreen() {
 
         {/* Group 2: Security, Storage, Support & Logout */}
         <SettingItem
-          icon={require("@/assets/icons/solid/lock-closed.svg")}
+          icon="lock-closed-outline"
           title="Privacy"
         />
         <SettingItem
-          icon={require("@/assets/icons/solid/database.svg")}
+          icon="server-outline"
           title="Data and storage"
         />
         <SettingItem
-          icon={require("@/assets/icons/solid/question-mark-circle.svg")}
+          icon="help-circle-outline"
           title="FAQ"
         />
         <SettingItem
-          icon={require("@/assets/icons/solid/logout.svg")}
+          icon="log-out-outline"
           title="Logout"
           showChevron={false}
           onPress={handleLogout}

@@ -1,7 +1,9 @@
-// src/features/chat/screens/ChatScreen.tsx
+import { ContactsEmptyState } from "@/features/contacts";
 import { useConversations } from "@/features/chat/api/useConversations";
-import { useEffect } from "react";
+import { TabScreen } from "@/shared/components";
+import { useEffect, useState } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
+import { PinCodeModal } from "../components";
 
 export function ChatScreen() {
   const {
@@ -10,7 +12,9 @@ export function ChatScreen() {
     error,
     refetch,
     isRefetching,
+    isFetched,
   } = useConversations();
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     if (error) {
@@ -25,6 +29,17 @@ export function ChatScreen() {
     }
   }, [conversations, error]);
 
+  useEffect(() => {
+    if (!isFetched) return;
+
+    const timer = setTimeout(() => {
+      console.log("modal shown");
+      setShowModal(true);
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [isFetched]);
+
   if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center">
@@ -34,8 +49,18 @@ export function ChatScreen() {
   }
 
   return (
-    <View>
-      <Text>Chats</Text>
-    </View>
+    <TabScreen>
+      <View className="flex-1">
+        <Text className="px-4 pt-2 pb-2 text-neutral-900 font-bold text-2xl tracking-tight">
+          Chats
+        </Text>
+        <ContactsEmptyState />
+        <PinCodeModal
+          isVisible={showModal}
+          onCancel={() => setShowModal(false)}
+          onConfirm={() => setShowModal(false)}
+        />
+      </View>
+    </TabScreen>
   );
 }
