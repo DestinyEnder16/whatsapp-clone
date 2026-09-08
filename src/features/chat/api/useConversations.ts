@@ -1,18 +1,14 @@
 import { useAuthStore } from "@/core/store/useAuthStore";
 import { api } from "@/services/api/client";
 import { useQuery } from "@tanstack/react-query";
-
 export function useConversations() {
-  const accessToken = useAuthStore((store) => store.accessToken);
+  const isAuthenticated = useAuthStore((store) => store.isAuthenticated);
 
   return useQuery({
     queryKey: ["conversations"],
     queryFn: async () => {
-      const { data, error } = await api.GET("/v1/conversations", {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      // Authorization header and automatic token refresh are handled globally by api middleware
+      const { data, error } = await api.GET("/v1/conversations");
 
       if (error) {
         throw new Error(
@@ -21,6 +17,7 @@ export function useConversations() {
       }
       return data;
     },
-    enabled: !!accessToken, // NOTE: why do we need to set this to false?
+    // Only fire this query when the user is authenticated (prevents firing on cold start before login)
+    enabled: isAuthenticated,
   });
 }
