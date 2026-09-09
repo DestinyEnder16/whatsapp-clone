@@ -4,12 +4,15 @@ import { Image } from "expo-image";
 import { MatchedContactItem } from "../hooks/useSyncContacts";
 
 interface MatchedContactsCardProps {
+  /** Matched contacts discovered from the backend */
   matches: MatchedContactItem[];
+  /** Tap action to begin messaging or open the full contacts modal */
   onPressAction?: () => void;
+  /** Application display brand name (defaults to "Chatme") */
   appName?: string;
 }
 
-// Fallback diverse avatar illustrations if a user doesn't have an avatarUrl yet
+// Fallback diverse avatar illustrations if a matched user hasn't set an avatarUrl yet
 const FALLBACK_AVATARS = [
   "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80",
   "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
@@ -17,6 +20,14 @@ const FALLBACK_AVATARS = [
   "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
 ];
 
+/**
+ * MatchedContactsCard
+ *
+ * Renders an inviting social preview when contacts are found:
+ * 1. Stacked, overlapping avatar row (like WhatsApp / Instagram social proof bubbles).
+ * 2. "+N" overflow badge if more than 4 contacts matched.
+ * 3. Personalized description combining the first 3 friend names (preferring local phonebook names).
+ */
 export function MatchedContactsCard({
   matches,
   onPressAction,
