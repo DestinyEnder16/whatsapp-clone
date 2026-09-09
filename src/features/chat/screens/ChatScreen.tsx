@@ -1,6 +1,6 @@
-import { ContactsEmptyState } from "@/features/contacts";
 import { useConversations } from "@/features/chat/api/useConversations";
-import { TabScreen } from "@/shared/components";
+import { ContactsEmptyState } from "@/features/contacts";
+import { TabHeader, TabScreen } from "@/shared/components";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 import { PinCodeModal } from "../components";
@@ -10,12 +10,11 @@ export function ChatScreen() {
     data: conversations,
     isLoading,
     error,
-    refetch,
-    isRefetching,
     isFetched,
   } = useConversations();
   const [showModal, setShowModal] = useState(false);
 
+  // to check for conversations
   useEffect(() => {
     if (error) {
       console.error("❌ Error fetching conversations:", error);
@@ -29,6 +28,7 @@ export function ChatScreen() {
     }
   }, [conversations, error]);
 
+  // to show modal requesting pin code
   useEffect(() => {
     if (!isFetched) return;
 
@@ -51,10 +51,12 @@ export function ChatScreen() {
   return (
     <TabScreen>
       <View className="flex-1">
-        <Text className="px-4 pt-2 pb-2 text-neutral-900 font-bold text-2xl tracking-tight">
-          Chats
-        </Text>
-        <ContactsEmptyState />
+        <TabHeader title="Chats" />
+        {conversations?.items.length === 0 ? (
+          <ContactsEmptyState />
+        ) : (
+          <Text>hello world!</Text>
+        )}
         <PinCodeModal
           isVisible={showModal}
           onCancel={() => setShowModal(false)}
