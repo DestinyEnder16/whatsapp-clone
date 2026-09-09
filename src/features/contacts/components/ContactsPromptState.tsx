@@ -3,28 +3,30 @@ import { Text, View } from "react-native";
 import Button from "@/shared/components/Button";
 import Ionicons from "@react-native-vector-icons/ionicons";
 import colors from "@/shared/theme/colors";
-import { useContactsSyncContext } from "../context/ContactsSyncContext";
 
 export interface ContactsPromptStateProps {
+  /** Trigger function to prompt contacts permission and sync */
   onSync?: () => void;
+  /** True while the sync operation is running */
   isSyncing?: boolean;
+  /** Error message string to display, if any */
   error?: string | null;
+  /** Optional custom title text */
   title?: string;
+  /** Optional custom description text */
   description?: string;
 }
 
+/**
+ * Initial screen prompting the user to sync contacts and find friends on Chatme.
+ */
 export function ContactsPromptState({
-  onSync: propOnSync,
-  isSyncing: propIsSyncing,
-  error: propError,
+  onSync,
+  isSyncing = false,
+  error,
   title = "Find Friends on Chatme",
   description = "Sync your contacts to see which of your friends and family are already on Chatme.",
 }: ContactsPromptStateProps = {}) {
-  const context = useContactsSyncContext();
-  const handleSync = propOnSync ?? context?.requestAndSync;
-  const isSyncing = propIsSyncing ?? context?.isSyncing ?? false;
-  const error = propError !== undefined ? propError : context?.error;
-
   return (
     <View className="items-center justify-center py-12 px-6">
       <View className="w-16 h-16 rounded-full bg-emerald-50 items-center justify-center mb-5">
@@ -45,11 +47,11 @@ export function ContactsPromptState({
         </Text>
       )}
 
-      {handleSync && (
+      {onSync && (
         <View className="w-full px-4">
           <Button
             title="Find My Contacts"
-            onPress={handleSync}
+            onPress={onSync}
             isLoading={isSyncing}
           />
         </View>
@@ -57,3 +59,4 @@ export function ContactsPromptState({
     </View>
   );
 }
+

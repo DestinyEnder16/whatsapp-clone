@@ -10,8 +10,7 @@
 | **Self-Healing API Retry** | Intercepting server-flagged `invalidIndices`, stripping invalid numbers, and retrying seamlessly | [`sendBatchWithRetry` in `src/features/contacts/api/useMatchContacts.ts`](../src/features/contacts/api/useMatchContacts.ts#L35-L99) |
 | **Sync Lifecycle & Permissions** | Orchestrating OS permissions, device phonebook querying, normalization, and API matching | [`useSyncContacts` in `src/features/contacts/hooks/useSyncContacts.ts`](../src/features/contacts/hooks/useSyncContacts.ts#L37-L144) |
 | **Local Name Enrichment & Privacy** | Preserving user privacy by never uploading contact names, then mapping local names locally | [`phoneToLocalName` Map in `src/features/contacts/hooks/useSyncContacts.ts`](../src/features/contacts/hooks/useSyncContacts.ts#L88-L135) |
-| **React Context & Dependency Injection** | Providing global sync state and allowing partial value overrides for mocking and testing | [`ContactsSyncProvider` in `src/features/contacts/context/ContactsSyncContext.tsx`](../src/features/contacts/context/ContactsSyncContext.tsx#L40-L64) |
-| **State Machine & Compound Components** | Rendering discrete UI states (Syncing, Matched, NotFound, Denied, Prompt) with zero prop boilerplate | [`ContactsEmptyState` in `src/features/contacts/components/ContactsEmptyState.tsx`](../src/features/contacts/components/ContactsEmptyState.tsx#L25-L77) |
+| **UI State Machine & Direct Props** | Clean routing between Syncing, Matched, NotFound, Denied, and Prompt without React Context indirection | [`ContactsEmptyState` in `src/features/contacts/components/ContactsEmptyState.tsx`](../src/features/contacts/components/ContactsEmptyState.tsx#L25-L65) |
 
 ---
 
@@ -40,10 +39,10 @@ flowchart TD
     end
     
     I --> K["Enrich Matched Contacts\nAttach localName from Local Map"]
-    K --> L["Update ContactsSyncContext"]
+    K --> L["Update useSyncContacts Hook State"]
     
-    L -- "matches.length > 0" --> M["Render ContactsMatchedState"]
-    L -- "matches.length === 0" --> N["Render ContactsNotFoundState"]
+    L -- "matches.length > 0" --> M["Render ContactsMatchedState\n(Direct Props)"]
+    L -- "matches.length === 0" --> N["Render ContactsNotFoundState\n(Direct Props)"]
 ```
 
 ---
@@ -195,90 +194,77 @@ This guarantees that the local user sees the personal name they gave their conta
 
 ---
 
-## 4. Context & Dependency Injection (`ContactsSyncContext.tsx`)
+## 4. UI Architecture & Direct Hook Consumption (`ContactsEmptyState.tsx`)
 
-### Eliminating Prop-Drilling
-The contacts UI tree contains multiple sub-components:
-- `ContactsPromptState` (initial screen with "Find Friends" button)
-- `ContactsSyncingState` (loading indicator while syncing)
-- `ContactsMatchedState` (renders avatar cards when friends are found)
-- `ContactsNotFoundState` (renders invite screen when 0 friends found)
-- `ContactsPermissionDeniedState` (renders guide to open system settings)
+### Why We Eliminated React Context
+In the initial design, the feature utilized a dedicated `ContactsSyncContext`, `ContactsSyncProvider`, and compound component attachments (`ContactsEmptyState.Matched`, `ContactsEmptyState.Provider`). 
 
-Passing `isSyncing`, `matches`, `requestAndSync`, and `permissionStatus` through every component would require extensive prop drilling. `ContactsSyncContext` makes all state accessible to any child component via `useContactsSyncContext()`.
+While this demonstrated advanced patterns, it introduced unnecessary indirection for a component tree that is only **one level deep**:
+1. It required maintaining duplicate types, context values, and fallback checks.
+2. It added extra provider wrappers in the component hierarchy.
+3. It made tracing state and data flow harder for developers reading the code.
 
-### Dependency Injection for Testing & Storybook
-Notice the `value` prop in `ContactsSyncProviderProps`:
-```typescript
-export interface ContactsSyncProviderProps {
-  children: React.ReactNode;
-  value?: Partial<ContactsSyncContextValue>;
-  onStartChat?: () => void;
-}
-```
-Inside the provider:
-```typescript
-const contextValue: ContactsSyncContextValue = {
-  permissionStatus: value?.permissionStatus ?? syncState.permissionStatus,
-  isSyncing: value?.isSyncing ?? syncState.isSyncing,
-  matches: value?.matches ?? syncState.matches,
-  hasSynced: value?.hasSynced ?? syncState.hasSynced,
-  error: value?.error !== undefined ? value.error : syncState.error,
-  requestAndSync: value?.requestAndSync ?? syncState.requestAndSync,
-  onStartChat: value?.onStartChat ?? onStartChat,
-};
-```
+By removing the context layer, `ContactsEmptyState` now directly calls `useSyncContacts()` and passes simple, standard props to its subcomponents.
 
-**Why this is a powerful pattern:**
-When writing unit tests, visual regression tests, or Storybook previews, you do not need to mock native device modules (`expo-contacts`) or mock HTTP networks. You can simply inject mock states:
+### Clean Prop-Based Implementation
 ```tsx
-// Previewing 3 matched contacts in a test or story:
-<ContactsSyncProvider value={{ matches: mockMatches, hasSynced: true }}>
-  <ContactsEmptyState />
-</ContactsSyncProvider>
-```
-
----
-
-## 5. State Machine & Compound Components (`ContactsEmptyState.tsx`)
-
-### Smart Auto-Wrapping
-`ContactsEmptyState` checks whether an existing `ContactsSyncContext` already exists:
-```typescript
 export function ContactsEmptyState({ onStartChat }: ContactsEmptyStateProps = {}) {
-  const existingContext = useContactsSyncContext();
+  const {
+    permissionStatus,
+    isSyncing,
+    matches,
+    hasSynced,
+    error,
+    requestAndSync,
+  } = useSyncContacts();
 
-  if (existingContext) {
-    return <ContactsEmptyStateContent />;
+  // 1. Loading / Syncing State
+  if (isSyncing) {
+    return <ContactsSyncingState />;
   }
 
+  // 2. Synced with Matched Contacts
+  if (hasSynced && matches.length > 0) {
+    return <ContactsMatchedState matches={matches} onStartChat={onStartChat} />;
+  }
+
+  // 3. Synced but No Contacts Found
+  if (hasSynced && matches.length === 0) {
+    return <ContactsNotFoundState onRetry={requestAndSync} />;
+  }
+
+  // 4. Permission Denied State
+  if (permissionStatus === PermissionStatus.DENIED) {
+    return <ContactsPermissionDeniedState />;
+  }
+
+  // 5. Initial State (No sync has happened yet)
   return (
-    <ContactsSyncProvider onStartChat={onStartChat}>
-      <ContactsEmptyStateContent />
-    </ContactsSyncProvider>
+    <ContactsPromptState
+      onSync={requestAndSync}
+      isSyncing={isSyncing}
+      error={error}
+    />
   );
 }
 ```
-- When used inside `ChatScreen`, it requires **zero boilerplate**: simply `<ContactsEmptyState />`.
-- When used inside a customized parent that provides its own provider or mock provider, it reuses the existing context seamlessly.
 
 ### State Machine Evaluation Order
-Inside `ContactsEmptyStateContent`, UI branches are evaluated in strict priority order:
+Inside `ContactsEmptyState`, UI branches are evaluated in strict priority order:
 
 1. `isSyncing === true` $\rightarrow$ Render `<ContactsSyncingState />`
-2. `hasSynced && matches.length > 0` $\rightarrow$ Render `<ContactsMatchedState />`
-3. `hasSynced && matches.length === 0` $\rightarrow$ Render `<ContactsNotFoundState />`
+2. `hasSynced && matches.length > 0` $\rightarrow$ Render `<ContactsMatchedState matches={matches} onStartChat={onStartChat} />`
+3. `hasSynced && matches.length === 0` $\rightarrow$ Render `<ContactsNotFoundState onRetry={requestAndSync} />`
 4. `permissionStatus === PermissionStatus.DENIED` $\rightarrow$ Render `<ContactsPermissionDeniedState />`
-5. *Default* $\rightarrow$ Render `<ContactsPromptState />`
+5. *Default* $\rightarrow$ Render `<ContactsPromptState onSync={requestAndSync} isSyncing={isSyncing} error={error} />`
 
-### Compound Component Attachments
-The component attaches all sub-views as static properties:
-```typescript
-ContactsEmptyState.Syncing = ContactsSyncingState;
-ContactsEmptyState.Matched = ContactsMatchedState;
-ContactsEmptyState.NotFound = ContactsNotFoundState;
-ContactsEmptyState.PermissionDenied = ContactsPermissionDeniedState;
-ContactsEmptyState.Prompt = ContactsPromptState;
-ContactsEmptyState.Provider = ContactsSyncProvider;
-```
-This allows other parts of the application to compose custom layouts using declarative dot notation (e.g., `<ContactsEmptyState.Matched />` inside a bottom sheet) without re-implementing state logic.
+### Clean Subcomponents
+Each subcomponent is completely decoupled and receives only the explicit props it needs:
+- `ContactsPromptState` accepts `onSync`, `isSyncing`, and `error`.
+- `ContactsMatchedState` accepts `matches` and `onStartChat`.
+- `ContactsNotFoundState` accepts `onRetry`.
+- `ContactsPermissionDeniedState` handles its own settings deep link.
+- `ContactsSyncingState` renders the spinner.
+
+This allows every subcomponent to be easily tested or reused anywhere without having to wrap test cases in providers.
+

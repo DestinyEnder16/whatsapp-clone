@@ -2,22 +2,22 @@ import React from "react";
 import { View } from "react-native";
 import Button from "@/shared/components/Button";
 import { MatchedContactsCard } from "./MatchedContactsCard";
-import { useContactsSyncContext } from "../context/ContactsSyncContext";
 import { MatchedContactItem } from "../hooks/useSyncContacts";
 
 export interface ContactsMatchedStateProps {
+  /** Array of matched contacts to display */
   matches?: MatchedContactItem[];
+  /** Action when tapping a contact or starting a conversation */
   onStartChat?: () => void;
 }
 
+/**
+ * Screen displayed after synchronization finds at least one contact on Chatme.
+ */
 export function ContactsMatchedState({
-  matches: propMatches,
-  onStartChat: propOnStartChat,
+  matches = [],
+  onStartChat,
 }: ContactsMatchedStateProps = {}) {
-  const context = useContactsSyncContext();
-  const matches = propMatches ?? context?.matches ?? [];
-  const onStartChat = propOnStartChat ?? context?.onStartChat;
-
   return (
     <View className="items-center justify-center py-10">
       <MatchedContactsCard matches={matches} onPressAction={onStartChat} />
@@ -29,3 +29,4 @@ export function ContactsMatchedState({
     </View>
   );
 }
+
