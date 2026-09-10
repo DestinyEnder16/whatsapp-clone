@@ -1,7 +1,7 @@
-import React from "react";
-import { Linking, Text, View } from "react-native";
-import Button from "@/shared/components/Button";
-import Ionicons from "@react-native-vector-icons/ionicons";
+import React from 'react';
+import { Linking, Text, View } from 'react-native';
+import Button from '@/shared/components/Button';
+import Ionicons from '@react-native-vector-icons/ionicons';
 
 export interface ContactsPermissionDeniedStateProps {
   onOpenSettings?: () => void;
@@ -11,8 +11,8 @@ export interface ContactsPermissionDeniedStateProps {
 
 export function ContactsPermissionDeniedState({
   onOpenSettings = () => Linking.openSettings(),
-  title = "Contacts Permission Needed",
-  description = "Chatme needs permission to see which of your friends are already here. Please enable contacts in your device settings.",
+  title = 'Contacts Permission Needed',
+  description = 'Chatme needs permission to see which of your friends are already here. Please enable contacts in your device settings.',
 }: ContactsPermissionDeniedStateProps = {}) {
   return (
     <View className="items-center justify-center py-14 px-8">
