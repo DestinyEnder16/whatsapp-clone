@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import * as Contacts from "expo-contacts";
 import { Contact, ContactField } from "expo-contacts";
+import { ContactMatchDto, useMatchContacts } from "../api/useMatchContacts";
 import {
-  ContactMatchDto,
-  useMatchContacts,
-} from "../api/useMatchContacts";
-import { normalizePhoneNumber, normalizePhoneNumbers } from "../utils/phoneUtils";
+  normalizePhoneNumber,
+  normalizePhoneNumbers,
+} from "../utils/phoneUtils";
 
 /**
  * MatchedContactItem represents a contact found on WhatsApp, enriched with local device metadata.
@@ -38,19 +38,15 @@ export function useSyncContacts() {
   const [permissionStatus, setPermissionStatus] =
     useState<Contacts.PermissionStatus | null>(null);
 
-  // Loading state while permission request or network calls are active
   const [isSyncing, setIsSyncing] = useState(false);
 
-  // Successfully matched contacts currently registered on the backend
   const [matches, setMatches] = useState<MatchedContactItem[]>([]);
 
   // Tracks whether at least one sync attempt has completed (used by UI to distinguish initial vs empty state)
   const [hasSynced, setHasSynced] = useState(false);
 
-  // Error message if permission failed or API request failed
   const [error, setError] = useState<string | null>(null);
 
-  // Backend mutation hook (handles batching & self-healing retries)
   const matchMutation = useMatchContacts();
 
   // Phase 0: Non-intrusive check of current permission status on mount
@@ -82,7 +78,9 @@ export function useSyncContacts() {
 
       // If not already granted, display the OS system permission dialog
       if (currentStatus !== Contacts.PermissionStatus.GRANTED) {
-        console.log("👉 Requesting contacts permission via Contacts.requestPermissionsAsync()...");
+        console.log(
+          "👉 Requesting contacts permission via Contacts.requestPermissionsAsync()...",
+        );
         const res = await Contacts.requestPermissionsAsync();
         console.log("👉 Permission response:", JSON.stringify(res));
         currentStatus = res.status;
@@ -91,12 +89,17 @@ export function useSyncContacts() {
 
       // If user declined permission, stop gracefully
       if (currentStatus !== Contacts.PermissionStatus.GRANTED) {
-        console.warn("⚠️ Contacts permission not granted. Status:", currentStatus);
+        console.warn(
+          "⚠️ Contacts permission not granted. Status:",
+          currentStatus,
+        );
         setIsSyncing(false);
         return;
       }
 
-      console.log("✅ Contacts permission granted! Fetching device contacts...");
+      console.log(
+        "✅ Contacts permission granted! Fetching device contacts...",
+      );
 
       // -----------------------------------------------------------------------
       // Phase 2: Fetch device contacts from phone storage
@@ -174,7 +177,7 @@ export function useSyncContacts() {
             (typeof match.user?.displayName === "string"
               ? match.user.displayName
               : undefined),
-        })
+        }),
       );
 
       setMatches(enriched);
@@ -196,4 +199,3 @@ export function useSyncContacts() {
     requestAndSync,
   };
 }
-
