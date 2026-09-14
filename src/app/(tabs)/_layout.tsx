@@ -1,19 +1,21 @@
-import colors from "@/shared/theme/colors";
+import { useAppTheme } from "@/shared/hooks";
 import Ionicons from "@react-native-vector-icons/ionicons";
 import { Tabs } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
+  const { colors } = useAppTheme();
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.primary[400],
-        tabBarInactiveTintColor: colors.neutral[300],
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textSecondary,
         tabBarStyle: {
-          backgroundColor: "#FFFFFF",
-          borderTopColor: colors.other.divider,
+          backgroundColor: colors.tabBarBg,
+          borderTopColor: colors.tabBarBorder,
           borderTopWidth: 1,
           height: 80,
           paddingBottom: insets.bottom > 0 ? insets.bottom : 8,

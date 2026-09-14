@@ -1,3 +1,4 @@
+import { useAppTheme } from "@/shared/hooks";
 import { ReactNode } from "react";
 import { View, ViewStyle } from "react-native";
 import { SafeAreaView, SafeAreaViewProps } from "react-native-safe-area-context";
@@ -12,14 +13,22 @@ interface ScreenProps extends SafeAreaViewProps {
 export default function Screen({
   children,
   edges,
-  className = "flex-1 bg-white",
+  className = "flex-1 bg-white dark:bg-neutral-900",
   contentClassName = "flex-1 px-8 py-[50px]",
   style,
   ...props
 }: ScreenProps) {
+  const { colors } = useAppTheme();
+
   return (
-    <SafeAreaView className={className} style={style} edges={edges} {...props}>
+    <SafeAreaView
+      className={className}
+      style={[{ backgroundColor: colors.background }, style]}
+      edges={edges}
+      {...props}
+    >
       <View className={contentClassName}>{children}</View>
     </SafeAreaView>
   );
 }
+

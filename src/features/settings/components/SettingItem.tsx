@@ -1,4 +1,4 @@
-import colors from "@/shared/theme/colors";
+import { useAppTheme } from "@/shared/hooks";
 import Ionicons from "@react-native-vector-icons/ionicons";
 import { Image } from "expo-image";
 import React from "react";
@@ -17,7 +17,7 @@ export interface SettingItemProps {
   rightElement?: React.ReactNode;
   /** Whether to show the right arrow (defaults to true) */
   showChevron?: boolean;
-  /** Custom icon color (defaults to green colors.primary[400]) */
+  /** Custom icon color (defaults to theme primary) */
   iconColor?: string;
 }
 
@@ -30,18 +30,19 @@ export function SettingItem({
   showChevron = true,
   iconColor,
 }: SettingItemProps) {
-  const activeIconColor = iconColor || colors.primary[400];
+  const { colors } = useAppTheme();
+  const activeIconColor = iconColor || colors.primary;
   const iconName = ionIcon || (typeof icon === "string" ? icon : null);
 
   return (
     <Pressable
       onPress={onPress}
-      className="flex-row items-center px-6 py-3.5 active:bg-neutral-50/60"
+      className="flex-row items-center px-6 py-3.5 active:opacity-75"
     >
-      {/* Circular Green Icon Badge */}
+      {/* Circular Icon Badge */}
       <View
         className="w-10 h-10 rounded-full items-center justify-center"
-        style={{ backgroundColor: colors.primary[100] }}
+        style={{ backgroundColor: colors.primaryLight }}
       >
         {iconName ? (
           <Ionicons
@@ -60,7 +61,10 @@ export function SettingItem({
       </View>
 
       {/* Title */}
-      <Text className="ml-4 flex-1 text-[15px] font-semibold text-neutral-900">
+      <Text
+        className="ml-4 flex-1 text-[15px] font-semibold"
+        style={{ color: colors.text }}
+      >
         {title}
       </Text>
 
@@ -71,11 +75,12 @@ export function SettingItem({
         <Ionicons
           name="chevron-forward"
           size={16}
-          color={colors.neutral[200]}
+          color={colors.textMuted}
         />
       ) : null}
     </Pressable>
   );
 }
+
 
 export default SettingItem;

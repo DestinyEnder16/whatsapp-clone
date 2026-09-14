@@ -1,6 +1,6 @@
 import { useAuthStore } from "@/core/store/useAuthStore";
 import { useMe } from "@/features/auth/api/useMe";
-import colors from "@/shared/theme/colors";
+import { useAppTheme } from "@/shared/hooks";
 import { toast } from "@/shared/utils/toast";
 import Ionicons from "@react-native-vector-icons/ionicons";
 import { Image } from "expo-image";
@@ -14,12 +14,14 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { SettingItem } from "../components";
+import { AppearanceModal, SettingItem } from "../components";
 
 export function SettingsScreen() {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
+  const { colors } = useAppTheme();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [appearanceModalVisible, setAppearanceModalVisible] = useState(false);
 
   // Fetch profile from API, falling back to local store for fields like local avatar
   const { data: me } = useMe();
@@ -56,20 +58,28 @@ export function SettingsScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
+    <SafeAreaView
+      className="flex-1"
+      style={{ backgroundColor: colors.background }}
+      edges={["top"]}
+    >
       {/* Top Header */}
       <View className="px-6 pt-3 pb-4 flex-row items-center justify-between">
-        <Text className="text-[26px] font-bold text-neutral-900 tracking-tight">
+        <Text
+          className="text-[26px] font-bold tracking-tight"
+          style={{ color: colors.text }}
+        >
           Settings
         </Text>
         <Pressable
           onPress={() => router.push("/upload-photo")}
-          className="w-10 h-10 items-center justify-center rounded-full active:bg-neutral-50"
+          className="w-10 h-10 items-center justify-center rounded-full active:opacity-75"
+          style={{ backgroundColor: colors.surface }}
         >
           <Ionicons
             name="create-outline"
             size={22}
-            color={colors.primary[400]}
+            color={colors.primary}
           />
         </Pressable>
       </View>
@@ -81,9 +91,15 @@ export function SettingsScreen() {
         {/* User Profile Card */}
         <Pressable
           onPress={() => router.push("/upload-photo")}
-          className="px-6 py-3 flex-row items-center active:bg-neutral-50/50"
+          className="px-6 py-3 flex-row items-center active:opacity-80"
         >
-          <View className="w-[56px] h-[56px] rounded-full overflow-hidden bg-primary-100 items-center justify-center border border-primary-200">
+          <View
+            className="w-[56px] h-[56px] rounded-full overflow-hidden items-center justify-center border"
+            style={{
+              backgroundColor: colors.primaryLight,
+              borderColor: colors.border,
+            }}
+          >
             {avatarUrl ? (
               <Image
                 source={{ uri: avatarUrl }}
@@ -91,7 +107,10 @@ export function SettingsScreen() {
                 contentFit="cover"
               />
             ) : (
-              <Text className="text-primary-700 text-[22px] font-bold">
+              <Text
+                className="text-[22px] font-bold"
+                style={{ color: colors.primaryDark }}
+              >
                 {displayName.charAt(0).toUpperCase()}
               </Text>
             )}
@@ -99,12 +118,16 @@ export function SettingsScreen() {
 
           <View className="ml-4 flex-1">
             <Text
-              className="text-[17px] font-bold text-neutral-900"
+              className="text-[17px] font-bold"
+              style={{ color: colors.text }}
               numberOfLines={1}
             >
               {displayName}
             </Text>
-            <Text className="text-[13px] text-neutral-300 font-medium mt-1">
+            <Text
+              className="text-[13px] font-medium mt-1"
+              style={{ color: colors.textSecondary }}
+            >
               {phoneNumber}
             </Text>
           </View>
@@ -113,13 +136,16 @@ export function SettingsScreen() {
             <Ionicons
               name="qr-code-outline"
               size={22}
-              color={colors.primary[400]}
+              color={colors.primary}
             />
           </Pressable>
         </Pressable>
 
         {/* Divider */}
-        <View className="mx-6 my-3 h-[1px] bg-neutral-50" />
+        <View
+          className="mx-6 my-3 h-[1px]"
+          style={{ backgroundColor: colors.divider }}
+        />
 
         {/* Group 1: Preferences */}
         <SettingItem
@@ -136,7 +162,8 @@ export function SettingsScreen() {
         />
         <SettingItem
           icon="contrast-outline"
-          title="Appearence"
+          title="Appearance"
+          onPress={() => setAppearanceModalVisible(true)}
         />
         <SettingItem
           icon="notifications-outline"
@@ -144,18 +171,20 @@ export function SettingsScreen() {
           rightElement={
             <Pressable
               onPress={() => setNotificationsEnabled(!notificationsEnabled)}
-              className={`w-[48px] h-[26px] rounded-full px-0.5 justify-center ${
-                notificationsEnabled
-                  ? "bg-primary-400 items-end"
-                  : "bg-neutral-100 items-start"
-              }`}
+              className="w-[48px] h-[26px] rounded-full px-0.5 justify-center"
+              style={{
+                backgroundColor: notificationsEnabled
+                  ? colors.primary
+                  : colors.surface,
+                alignItems: notificationsEnabled ? "flex-end" : "flex-start",
+              }}
             >
               <View className="w-[22px] h-[22px] rounded-full bg-white items-center justify-center shadow-sm">
                 {notificationsEnabled && (
                   <Ionicons
                     name="checkmark"
                     size={13}
-                    color={colors.primary[400]}
+                    color={colors.primary}
                   />
                 )}
               </View>
@@ -164,7 +193,10 @@ export function SettingsScreen() {
         />
 
         {/* Divider */}
-        <View className="mx-6 my-3 h-[1px] bg-neutral-50" />
+        <View
+          className="mx-6 my-3 h-[1px]"
+          style={{ backgroundColor: colors.divider }}
+        />
 
         {/* Group 2: Security, Storage, Support & Logout */}
         <SettingItem
@@ -188,11 +220,21 @@ export function SettingsScreen() {
 
         {/* Footer */}
         <View className="px-6 pt-6 pb-6">
-          <Text className="text-[12px] text-neutral-200 font-medium">
+          <Text
+            className="text-[12px] font-medium"
+            style={{ color: colors.textMuted }}
+          >
             2021 ChatMe • Ver 1.0
           </Text>
         </View>
       </ScrollView>
+
+      {/* Appearance Modal */}
+      <AppearanceModal
+        isVisible={appearanceModalVisible}
+        onClose={() => setAppearanceModalVisible(false)}
+      />
     </SafeAreaView>
   );
 }
+
