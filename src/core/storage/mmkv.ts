@@ -1,11 +1,11 @@
 // src/core/storage/mmkv.ts
-import { MMKV } from "react-native-mmkv";
+import { createMMKV } from "react-native-mmkv";
 import type { StateStorage } from "zustand/middleware";
 
 /**
  * Shared MMKV instance for high-performance, synchronous, JSI-backed storage.
  */
-export const storage = new MMKV();
+export const storage = createMMKV();
 
 /**
  * Zustand StateStorage adapter for MMKV.
@@ -20,6 +20,6 @@ export const mmkvStorage: StateStorage = {
     return value ?? null;
   },
   removeItem: (name) => {
-    storage.delete(name);
+    storage.remove(name);
   },
 };
