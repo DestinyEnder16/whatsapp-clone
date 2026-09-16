@@ -1,6 +1,6 @@
 // src/core/store/useThemeStore.ts
+import { mmkvStorage } from "@/core/storage/mmkv";
 import type { AccentColorKey, ThemeMode } from "@/shared/theme/themes";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
@@ -42,7 +42,7 @@ export const useThemeStore = create<ThemeState & ThemeActions>()(
     }),
     {
       name: "theme-storage",
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: createJSONStorage(() => mmkvStorage),
       partialize: (state) => ({
         mode: state.mode,
         accentColor: state.accentColor,

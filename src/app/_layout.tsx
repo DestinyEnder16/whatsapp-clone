@@ -2,13 +2,21 @@ import { useAppTheme } from "@/shared/hooks";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { useColorScheme as useNativeWindColorScheme } from "nativewind";
+import { useEffect } from "react";
 import Toast from "react-native-toast-message";
 import "../../global.css";
 
 const queryClient = new QueryClient();
 
 export default function RootLayout() {
-  const { colors, isDark } = useAppTheme();
+  const { mode, colors, isDark } = useAppTheme();
+  const { setColorScheme } = useNativeWindColorScheme();
+
+  // Synchronize NativeWind once at the app root only when theme mode changes
+  useEffect(() => {
+    setColorScheme(mode);
+  }, [mode, setColorScheme]);
 
   return (
     <QueryClientProvider client={queryClient}>
