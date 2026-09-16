@@ -1,14 +1,14 @@
-import { useAuthStore } from '@/core/store/useAuthStore';
-import { useMe } from '@/features/auth/api/useMe';
-import { useAppTheme } from '@/shared/hooks';
-import { toast } from '@/shared/utils/toast';
-import Ionicons from '@react-native-vector-icons/ionicons';
-import { Image } from 'expo-image';
-import { router } from 'expo-router';
-import { useState } from 'react';
-import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { SettingItem } from '../components';
+import { useAuthStore } from "@/core/store/useAuthStore";
+import { useMe } from "@/features/auth/api/useMe";
+import { useAppTheme } from "@/shared/hooks";
+import { toast } from "@/shared/utils/toast";
+import Ionicons from "@react-native-vector-icons/ionicons";
+import { Image } from "expo-image";
+import { router } from "expo-router";
+import { useState } from "react";
+import { Alert, Pressable, ScrollView, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { SettingItem } from "../components";
 
 export function SettingsScreen() {
   const user = useAuthStore((state) => state.user);
@@ -21,32 +21,32 @@ export function SettingsScreen() {
   const activeUser = me || user;
 
   const displayName =
-    typeof activeUser?.displayName === 'string' &&
+    typeof activeUser?.displayName === "string" &&
     (activeUser.displayName as string).trim()
       ? (activeUser.displayName as string).trim()
-      : typeof user?.displayName === 'string' &&
+      : typeof user?.displayName === "string" &&
           (user.displayName as string).trim()
         ? (user.displayName as string).trim()
-        : 'WhatsApp User';
+        : "WhatsApp User";
 
-  const phoneNumber = activeUser?.phoneNumber || user?.phoneNumber || '';
+  const phoneNumber = activeUser?.phoneNumber || user?.phoneNumber || "";
   const avatarUrl =
-    typeof activeUser?.avatarUrl === 'string' && activeUser.avatarUrl
+    typeof activeUser?.avatarUrl === "string" && activeUser.avatarUrl
       ? activeUser.avatarUrl
-      : typeof user?.avatarUrl === 'string'
+      : typeof user?.avatarUrl === "string"
         ? user.avatarUrl
         : null;
 
   function handleLogout() {
-    Alert.alert('Log Out', 'Are you sure you want to log out of ChatMe?', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert("Log Out", "Are you sure you want to log out of ChatMe?", [
+      { text: "Cancel", style: "cancel" },
       {
-        text: 'Log Out',
-        style: 'destructive',
+        text: "Log Out",
+        style: "destructive",
         onPress: () => {
           logout();
-          toast.info('Logged Out', 'You have been signed out.');
-          router.replace('/onboarding');
+          toast.info("Logged Out", "You have been signed out.");
+          router.replace("/onboarding");
         },
       },
     ]);
@@ -56,7 +56,7 @@ export function SettingsScreen() {
     <SafeAreaView
       className="flex-1"
       style={{ backgroundColor: colors.background }}
-      edges={['top']}
+      edges={["top"]}
     >
       {/* Top Header */}
       <View className="px-6 pt-3 pb-4 flex-row items-center justify-between">
@@ -67,7 +67,7 @@ export function SettingsScreen() {
           Settings
         </Text>
         <Pressable
-          onPress={() => router.push('/upload-photo')}
+          onPress={() => router.push("/upload-photo")}
           className="w-10 h-10 items-center justify-center rounded-full active:opacity-75"
           style={{ backgroundColor: colors.surface }}
         >
@@ -81,7 +81,7 @@ export function SettingsScreen() {
       >
         {/* User Profile Card */}
         <Pressable
-          onPress={() => router.push('/upload-photo')}
+          onPress={() => router.push("/upload-photo")}
           className="px-6 py-3 flex-row items-center active:opacity-80"
         >
           <View
@@ -94,7 +94,7 @@ export function SettingsScreen() {
             {avatarUrl ? (
               <Image
                 source={{ uri: avatarUrl }}
-                style={{ width: '100%', height: '100%' }}
+                style={{ width: "100%", height: "100%" }}
                 contentFit="cover"
               />
             ) : (
@@ -141,7 +141,7 @@ export function SettingsScreen() {
         <SettingItem
           icon="contrast-outline"
           title="Appearance"
-          onPress={() => router.push('./Appearance.tsx')}
+          onPress={() => router.push("/appearance")}
         />
         <SettingItem
           icon="notifications-outline"
@@ -154,7 +154,7 @@ export function SettingsScreen() {
                 backgroundColor: notificationsEnabled
                   ? colors.primary
                   : colors.surface,
-                alignItems: notificationsEnabled ? 'flex-end' : 'flex-start',
+                alignItems: notificationsEnabled ? "flex-end" : "flex-start",
               }}
             >
               <View className="w-[22px] h-[22px] rounded-full bg-white items-center justify-center shadow-sm">

@@ -2,7 +2,7 @@ import { colors } from './colors';
 
 export type ThemeMode = 'system' | 'light' | 'dark';
 
-export type AccentColorKey = 'green' | 'blue' | 'orange';
+export type AccentColorKey = 'green' | 'blue' | 'red' | 'orange';
 
 export interface AccentPalette {
   key: AccentColorKey;
@@ -35,7 +35,7 @@ export interface BaseTheme {
 export const ACCENT_PALETTES: Record<AccentColorKey, AccentPalette> = {
   green: {
     key: 'green',
-    name: 'WhatsApp Green',
+    name: 'Green',
     previewColor: colors.primary[400],
     primary: colors.primary[400],
     primaryDark: colors.primary[600],
@@ -44,16 +44,25 @@ export const ACCENT_PALETTES: Record<AccentColorKey, AccentPalette> = {
   },
   blue: {
     key: 'blue',
-    name: 'Ocean Blue',
+    name: 'Blue',
     previewColor: colors.blue[400],
     primary: colors.blue[400],
     primaryDark: '#005AC2',
     primaryLight: colors.blue[50],
     primaryText: '#FFFFFF',
   },
+  red: {
+    key: 'red',
+    name: 'Red',
+    previewColor: colors.red[400],
+    primary: colors.red[400],
+    primaryDark: '#C73824',
+    primaryLight: colors.red[50],
+    primaryText: '#FFFFFF',
+  },
   orange: {
     key: 'orange',
-    name: 'Sunset Orange',
+    name: 'Orange',
     previewColor: colors.orange[400],
     primary: colors.orange[400],
     primaryDark: '#E0921E',
