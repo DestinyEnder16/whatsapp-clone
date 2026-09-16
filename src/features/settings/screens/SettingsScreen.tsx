@@ -1,57 +1,52 @@
-import { useAuthStore } from "@/core/store/useAuthStore";
-import { useMe } from "@/features/auth/api/useMe";
-import { useAppTheme } from "@/shared/hooks";
-import { toast } from "@/shared/utils/toast";
-import Ionicons from "@react-native-vector-icons/ionicons";
-import { Image } from "expo-image";
-import { router } from "expo-router";
-import React, { useState } from "react";
-import {
-  Alert,
-  Pressable,
-  ScrollView,
-  Text,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { AppearanceModal, SettingItem } from "../components";
+import { useAuthStore } from '@/core/store/useAuthStore';
+import { useMe } from '@/features/auth/api/useMe';
+import { useAppTheme } from '@/shared/hooks';
+import { toast } from '@/shared/utils/toast';
+import Ionicons from '@react-native-vector-icons/ionicons';
+import { Image } from 'expo-image';
+import { router } from 'expo-router';
+import { useState } from 'react';
+import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { SettingItem } from '../components';
 
 export function SettingsScreen() {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const { colors } = useAppTheme();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [appearanceModalVisible, setAppearanceModalVisible] = useState(false);
 
   // Fetch profile from API, falling back to local store for fields like local avatar
   const { data: me } = useMe();
   const activeUser = me || user;
 
   const displayName =
-    typeof activeUser?.displayName === "string" && (activeUser.displayName as string).trim()
+    typeof activeUser?.displayName === 'string' &&
+    (activeUser.displayName as string).trim()
       ? (activeUser.displayName as string).trim()
-      : typeof user?.displayName === "string" && (user.displayName as string).trim()
-      ? (user.displayName as string).trim()
-      : "WhatsApp User";
+      : typeof user?.displayName === 'string' &&
+          (user.displayName as string).trim()
+        ? (user.displayName as string).trim()
+        : 'WhatsApp User';
 
-  const phoneNumber = activeUser?.phoneNumber || user?.phoneNumber || "";
+  const phoneNumber = activeUser?.phoneNumber || user?.phoneNumber || '';
   const avatarUrl =
-    typeof activeUser?.avatarUrl === "string" && activeUser.avatarUrl
+    typeof activeUser?.avatarUrl === 'string' && activeUser.avatarUrl
       ? activeUser.avatarUrl
-      : typeof user?.avatarUrl === "string"
-      ? user.avatarUrl
-      : null;
+      : typeof user?.avatarUrl === 'string'
+        ? user.avatarUrl
+        : null;
 
   function handleLogout() {
-    Alert.alert("Log Out", "Are you sure you want to log out of ChatMe?", [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert('Log Out', 'Are you sure you want to log out of ChatMe?', [
+      { text: 'Cancel', style: 'cancel' },
       {
-        text: "Log Out",
-        style: "destructive",
+        text: 'Log Out',
+        style: 'destructive',
         onPress: () => {
           logout();
-          toast.info("Logged Out", "You have been signed out.");
-          router.replace("/onboarding");
+          toast.info('Logged Out', 'You have been signed out.');
+          router.replace('/onboarding');
         },
       },
     ]);
@@ -61,7 +56,7 @@ export function SettingsScreen() {
     <SafeAreaView
       className="flex-1"
       style={{ backgroundColor: colors.background }}
-      edges={["top"]}
+      edges={['top']}
     >
       {/* Top Header */}
       <View className="px-6 pt-3 pb-4 flex-row items-center justify-between">
@@ -72,15 +67,11 @@ export function SettingsScreen() {
           Settings
         </Text>
         <Pressable
-          onPress={() => router.push("/upload-photo")}
+          onPress={() => router.push('/upload-photo')}
           className="w-10 h-10 items-center justify-center rounded-full active:opacity-75"
           style={{ backgroundColor: colors.surface }}
         >
-          <Ionicons
-            name="create-outline"
-            size={22}
-            color={colors.primary}
-          />
+          <Ionicons name="create-outline" size={22} color={colors.primary} />
         </Pressable>
       </View>
 
@@ -90,7 +81,7 @@ export function SettingsScreen() {
       >
         {/* User Profile Card */}
         <Pressable
-          onPress={() => router.push("/upload-photo")}
+          onPress={() => router.push('/upload-photo')}
           className="px-6 py-3 flex-row items-center active:opacity-80"
         >
           <View
@@ -103,7 +94,7 @@ export function SettingsScreen() {
             {avatarUrl ? (
               <Image
                 source={{ uri: avatarUrl }}
-                style={{ width: "100%", height: "100%" }}
+                style={{ width: '100%', height: '100%' }}
                 contentFit="cover"
               />
             ) : (
@@ -133,11 +124,7 @@ export function SettingsScreen() {
           </View>
 
           <Pressable className="p-2 active:opacity-70">
-            <Ionicons
-              name="qr-code-outline"
-              size={22}
-              color={colors.primary}
-            />
+            <Ionicons name="qr-code-outline" size={22} color={colors.primary} />
           </Pressable>
         </Pressable>
 
@@ -148,22 +135,13 @@ export function SettingsScreen() {
         />
 
         {/* Group 1: Preferences */}
-        <SettingItem
-          icon="star-outline"
-          title="Star messages"
-        />
-        <SettingItem
-          icon="call-outline"
-          title="Last call"
-        />
-        <SettingItem
-          icon="folder-outline"
-          title="My folder"
-        />
+        <SettingItem icon="star-outline" title="Star messages" />
+        <SettingItem icon="call-outline" title="Last call" />
+        <SettingItem icon="folder-outline" title="My folder" />
         <SettingItem
           icon="contrast-outline"
           title="Appearance"
-          onPress={() => setAppearanceModalVisible(true)}
+          onPress={() => router.push('./Appearance.tsx')}
         />
         <SettingItem
           icon="notifications-outline"
@@ -176,16 +154,12 @@ export function SettingsScreen() {
                 backgroundColor: notificationsEnabled
                   ? colors.primary
                   : colors.surface,
-                alignItems: notificationsEnabled ? "flex-end" : "flex-start",
+                alignItems: notificationsEnabled ? 'flex-end' : 'flex-start',
               }}
             >
               <View className="w-[22px] h-[22px] rounded-full bg-white items-center justify-center shadow-sm">
                 {notificationsEnabled && (
-                  <Ionicons
-                    name="checkmark"
-                    size={13}
-                    color={colors.primary}
-                  />
+                  <Ionicons name="checkmark" size={13} color={colors.primary} />
                 )}
               </View>
             </Pressable>
@@ -199,18 +173,9 @@ export function SettingsScreen() {
         />
 
         {/* Group 2: Security, Storage, Support & Logout */}
-        <SettingItem
-          icon="lock-closed-outline"
-          title="Privacy"
-        />
-        <SettingItem
-          icon="server-outline"
-          title="Data and storage"
-        />
-        <SettingItem
-          icon="help-circle-outline"
-          title="FAQ"
-        />
+        <SettingItem icon="lock-closed-outline" title="Privacy" />
+        <SettingItem icon="server-outline" title="Data and storage" />
+        <SettingItem icon="help-circle-outline" title="FAQ" />
         <SettingItem
           icon="log-out-outline"
           title="Logout"
@@ -228,13 +193,6 @@ export function SettingsScreen() {
           </Text>
         </View>
       </ScrollView>
-
-      {/* Appearance Modal */}
-      <AppearanceModal
-        isVisible={appearanceModalVisible}
-        onClose={() => setAppearanceModalVisible(false)}
-      />
     </SafeAreaView>
   );
 }
-

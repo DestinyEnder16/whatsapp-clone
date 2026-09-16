@@ -1,7 +1,7 @@
 // Chatme - UI Kit
 // Re-exports palette from colors.js for full TypeScript type safety
 
-const { colors: baseColors } = require('./colors.js');
+const { colors: baseColors } = require("./colors.js");
 
 export const colors = baseColors as {
   primary: {

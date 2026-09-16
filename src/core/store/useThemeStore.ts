@@ -1,8 +1,8 @@
 // src/core/store/useThemeStore.ts
+import type { AccentColorKey, ThemeMode } from "@/shared/theme/themes";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import type { AccentColorKey, ThemeMode } from "@/shared/theme/themes";
 
 interface ThemeState {
   // --- Persisted State ---
@@ -17,9 +17,9 @@ interface ThemeState {
    * into memory to prevent flickering on startup.
    */
   hasHydrated: boolean;
+}
 
-  // --- Actions ---
-  /** Updates the theme mode (system, light, or dark) */
+interface ThemeActions {
   setMode: (mode: ThemeMode) => void;
 
   /** Updates the app accent color (e.g. green, blue, orange) */
@@ -29,7 +29,7 @@ interface ThemeState {
   setHasHydrated: (state: boolean) => void;
 }
 
-export const useThemeStore = create<ThemeState>()(
+export const useThemeStore = create<ThemeState & ThemeActions>()(
   persist(
     (set) => ({
       mode: "system",
