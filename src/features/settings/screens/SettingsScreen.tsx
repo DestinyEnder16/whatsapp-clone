@@ -173,9 +173,21 @@ export function SettingsScreen() {
         />
 
         {/* Group 2: Security, Storage, Support & Logout */}
-        <SettingItem icon="lock-closed-outline" title="Privacy" />
-        <SettingItem icon="server-outline" title="Data and storage" />
-        <SettingItem icon="help-circle-outline" title="FAQ" />
+        <SettingItem
+          icon="lock-closed-outline"
+          title="Privacy"
+          onPress={() => router.push("/privacy")}
+        />
+        <SettingItem
+          icon="server-outline"
+          title="Data and storage"
+          onPress={() => router.push("/data-storage")}
+        />
+        <SettingItem
+          icon="help-circle-outline"
+          title="FAQ"
+          onPress={() => router.push("/faq")}
+        />
         <SettingItem
           icon="log-out-outline"
           title="Logout"
