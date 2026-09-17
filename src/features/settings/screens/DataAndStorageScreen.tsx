@@ -12,7 +12,7 @@ import { ScrollView, Text, View } from "react-native";
 import { SettingRowItem } from "../components";
 
 export function DataAndStorageScreen() {
-  const { colors } = useAppTheme();
+  const { colors, isDark } = useAppTheme();
   const photos = useDataStorageStore((state) => state.photos);
   const audio = useDataStorageStore((state) => state.audio);
   const documents = useDataStorageStore((state) => state.documents);
@@ -20,7 +20,7 @@ export function DataAndStorageScreen() {
 
   return (
     <View className="flex-1" style={{ backgroundColor: colors.background }}>
-      <StatusBar style="light" />
+      <StatusBar style={isDark ? "light" : "dark"} />
 
       {/* Screen Header */}
       <ScreenHeader title="Data and Storage" />
@@ -42,7 +42,7 @@ export function DataAndStorageScreen() {
               className="text-[12px] font-bold tracking-wider uppercase"
               style={{ color: colors.textMuted }}
             >
-              Auto Download
+              AUTO DOWNLOAD
             </Text>
           </View>
 

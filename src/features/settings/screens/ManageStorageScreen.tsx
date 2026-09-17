@@ -1,5 +1,4 @@
 // src/features/settings/screens/ManageStorageScreen.tsx
-import { useDataStorageStore } from "@/core/store/useDataStorageStore";
 import { ScreenHeader } from "@/shared/components";
 import { useAppTheme } from "@/shared/hooks";
 import { toast } from "@/shared/utils/toast";
@@ -11,17 +10,13 @@ import {
   useManageStorageData,
 } from "../api/useManageStorageData";
 import { ChatStorageItem, StorageProgressBar } from "../components";
+import { useDeviceStorage } from "../hooks/useDeviceStorage";
 
 export function ManageStorageScreen() {
-  const { colors } = useAppTheme();
+  const { colors, isDark } = useAppTheme();
   const { chatList } = useManageStorageData();
   const clearChatMutation = useClearChatStorage();
-  const clearCache = useDataStorageStore((state) => state.clearCache);
-  const lastCacheClearedAt = useDataStorageStore(
-    (state) => state.lastCacheClearedAt
-  );
-
-  const isCacheCleared = !!lastCacheClearedAt;
+  const storage = useDeviceStorage();
 
   const handleClearCache = () => {
     Alert.alert(
@@ -32,8 +27,8 @@ export function ManageStorageScreen() {
         {
           text: "Clear",
           style: "destructive",
-          onPress: () => {
-            clearCache();
+          onPress: async () => {
+            await storage.clearAppCache();
             toast.success("Cache Cleared", "Temporary cache has been cleared.");
           },
         },
@@ -47,20 +42,22 @@ export function ManageStorageScreen() {
 
   return (
     <View className="flex-1" style={{ backgroundColor: colors.background }}>
-      <StatusBar style="light" />
+      <StatusBar style={isDark ? "light" : "dark"} />
 
-      {/* Screen Header */}
+      {/* Screen Header matching Figma */}
       <ScreenHeader title="Manage Storage" />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 50 }}
       >
-        {/* Storage Section with Progress Bar & Legend */}
+        {/* Storage Section with Real Device Capacity, Progress Bar, Legend & Breakdown */}
         <StorageProgressBar
-          mediaFilesFormatted={isCacheCleared ? "420 MB" : "2,1 GB"}
-          freeFormatted={isCacheCleared ? "64,2 GB" : "62,5 GB"}
-          mediaPercentage={isCacheCleared ? 8 : 24}
+          mediaFilesFormatted={storage.mediaFormatted}
+          freeFormatted={storage.freeFormatted}
+          totalFormatted={storage.totalFormatted}
+          mediaPercentage={storage.mediaPercentage}
+          categories={storage.categories}
           onClearCache={handleClearCache}
         />
 

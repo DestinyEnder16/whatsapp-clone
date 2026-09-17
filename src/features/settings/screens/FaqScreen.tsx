@@ -4,7 +4,7 @@ import { useAppTheme } from "@/shared/hooks";
 import Ionicons from "@react-native-vector-icons/ionicons";
 import { StatusBar } from "expo-status-bar";
 import React, { useMemo, useState } from "react";
-import { ScrollView, TextInput, View } from "react-native";
+import { ScrollView, Text, TextInput, View } from "react-native";
 import { FaqAccordionItem } from "../components";
 
 interface FaqItem {
@@ -47,9 +47,9 @@ const FAQ_DATA: FaqItem[] = [
 ];
 
 export function FaqScreen() {
-  const { colors } = useAppTheme();
+  const { colors, isDark } = useAppTheme();
   const [searchQuery, setSearchQuery] = useState("");
-  // Default first item expanded matching the screenshot
+  // Default first item expanded matching the Figma screenshot
   const [expandedId, setExpandedId] = useState<string | null>("faq-1");
 
   const toggleItem = (id: string) => {
@@ -68,18 +68,18 @@ export function FaqScreen() {
 
   return (
     <View className="flex-1" style={{ backgroundColor: colors.background }}>
-      <StatusBar style="light" />
+      <StatusBar style={isDark ? "light" : "dark"} />
 
       {/* Screen Header */}
       <ScreenHeader title="FAQ" />
 
-      {/* Sub-header with Green Background containing Search Bar matching Figma */}
+      {/* Sub-header with Theme Primary Background containing Search Bar matching Figma */}
       <View
         className="px-5 pt-1 pb-4"
         style={{ backgroundColor: colors.primary }}
       >
         <View
-          className="flex-row items-center px-3.5 py-2 rounded-xl"
+          className="flex-row items-center px-3.5 py-2.5 rounded-2xl"
           style={{
             backgroundColor: "rgba(255, 255, 255, 0.22)",
           }}
@@ -109,16 +109,38 @@ export function FaqScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 40 }}
       >
-        <View className="mt-2">
-          {filteredFaqs.map((item) => (
-            <FaqAccordionItem
-              key={item.id}
-              question={item.question}
-              answer={item.answer}
-              isExpanded={expandedId === item.id}
-              onToggle={() => toggleItem(item.id)}
-            />
-          ))}
+        <View className="mt-1">
+          {filteredFaqs.length > 0 ? (
+            filteredFaqs.map((item) => (
+              <FaqAccordionItem
+                key={item.id}
+                question={item.question}
+                answer={item.answer}
+                isExpanded={expandedId === item.id}
+                onToggle={() => toggleItem(item.id)}
+              />
+            ))
+          ) : (
+            <View className="items-center justify-center py-16 px-6">
+              <Ionicons
+                name="search-outline"
+                size={44}
+                color={colors.textMuted}
+              />
+              <Text
+                className="text-[16px] font-semibold mt-3 text-center"
+                style={{ color: colors.text }}
+              >
+                No questions found
+              </Text>
+              <Text
+                className="text-[13px] mt-1 text-center"
+                style={{ color: colors.textSecondary }}
+              >
+                Try searching with different keywords.
+              </Text>
+            </View>
+          )}
         </View>
       </ScrollView>
     </View>

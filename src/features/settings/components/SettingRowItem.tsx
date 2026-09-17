@@ -43,7 +43,7 @@ export function SettingRowItem({
       <View className="flex-row items-center justify-between py-4 min-h-[52px]">
         {/* Left: Title */}
         <Text
-          className="text-[16px] font-semibold flex-1 mr-2"
+          className="text-[16px] font-medium flex-1 mr-2"
           style={{ color: colors.text }}
           numberOfLines={1}
         >
