@@ -115,7 +115,7 @@ export interface paths {
             cookie?: never;
         };
         /** List users blocked by the signed-in user */
-        get: operations["list"];
+        get: operations["listBlocks"];
         put?: never;
         post?: never;
         delete?: never;
@@ -322,7 +322,7 @@ export interface paths {
             cookie?: never;
         };
         /** List the signed-in user conversations */
-        get: operations["list"];
+        get: operations["listConversations"];
         put?: never;
         post?: never;
         delete?: never;
@@ -462,7 +462,7 @@ export interface paths {
             cookie?: never;
         };
         /** List message history, newest first */
-        get: operations["list"];
+        get: operations["listMessages"];
         put?: never;
         /** Persist or replay an idempotent message */
         post: operations["send"];
@@ -483,7 +483,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Mark all currently persisted messages as read */
-        post: operations["markRead"];
+        post: operations["markReadConversation"];
         delete?: never;
         options?: never;
         head?: never;
@@ -571,7 +571,7 @@ export interface paths {
         };
         get?: never;
         /** Mark incoming messages as read */
-        put: operations["markRead"];
+        put: operations["markReadReceipts"];
         post?: never;
         delete?: never;
         options?: never;
@@ -587,7 +587,7 @@ export interface paths {
             cookie?: never;
         };
         /** Reconcile participant receipt frontiers */
-        get: operations["list"];
+        get: operations["listReceipts"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1398,7 +1398,7 @@ export interface operations {
             };
         };
     };
-    list: {
+    listBlocks: {
         parameters: {
             query?: never;
             header?: never;
@@ -1924,7 +1924,7 @@ export interface operations {
             };
         };
     };
-    list: {
+    listConversations: {
         parameters: {
             query?: {
                 limit?: number;
@@ -2334,7 +2334,7 @@ export interface operations {
             };
         };
     };
-    list: {
+    listMessages: {
         parameters: {
             query?: {
                 limit?: number;
@@ -2441,7 +2441,7 @@ export interface operations {
             };
         };
     };
-    markRead: {
+    markReadConversation: {
         parameters: {
             query?: never;
             header?: never;
@@ -2691,7 +2691,7 @@ export interface operations {
             };
         };
     };
-    markRead: {
+    markReadReceipts: {
         parameters: {
             query?: never;
             header?: never;
@@ -2723,7 +2723,7 @@ export interface operations {
             };
         };
     };
-    list: {
+    listReceipts: {
         parameters: {
             query?: never;
             header?: never;

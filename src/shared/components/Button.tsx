@@ -1,54 +1,62 @@
-import { ActivityIndicator, Pressable, StyleSheet, Text } from "react-native";
-import colors from "../theme/colors";
+import { useAppTheme } from "@/shared/hooks";
+import { ActivityIndicator, Pressable, StyleSheet, Text, ViewStyle } from "react-native";
 
 interface BtnProps {
-    title: string;
-    onPress: () => void;
-    isLoading?: boolean;
-    disabled?: boolean;
-    className?: string;
+  title: string;
+  onPress: () => void;
+  isLoading?: boolean;
+  disabled?: boolean;
+  className?: string;
+  style?: ViewStyle;
 }
 
 export default function Button({
-    title,
-    onPress,
-    isLoading = false,
-    disabled = false,
-    className,
+  title,
+  onPress,
+  isLoading = false,
+  disabled = false,
+  className,
+  style,
 }: BtnProps) {
-    const isDisabled = disabled || isLoading;
+  const { colors } = useAppTheme();
+  const isDisabled = disabled || isLoading;
 
-    return (
-        <Pressable
-            style={[styles.button, isDisabled && styles.disabled]}
-            className={className}
-            onPress={onPress}
-            disabled={isDisabled}
-        >
-            {isLoading ? (
-                <ActivityIndicator color="#fff" />
-            ) : (
-                <Text style={styles.buttonText}>{title}</Text>
-            )}
-        </Pressable>
-    );
+  return (
+    <Pressable
+      style={[
+        styles.button,
+        { backgroundColor: colors.primary },
+        style,
+        isDisabled && styles.disabled,
+      ]}
+      className={className}
+      onPress={onPress}
+      disabled={isDisabled}
+    >
+      {isLoading ? (
+        <ActivityIndicator color={colors.primaryText} />
+      ) : (
+        <Text style={[styles.buttonText, { color: colors.primaryText }]}>
+          {title}
+        </Text>
+      )}
+    </Pressable>
+  );
 }
 
 const styles = StyleSheet.create({
-    button: {
-        backgroundColor: colors.primary[400],
-        width: '100%',
-        paddingVertical: 18,
-        borderRadius: 16,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    disabled: {
-        opacity: 0.6,
-    },
-    buttonText: {
-        color: '#fff',
-        fontSize: 18,
-        fontWeight: '600',
-    },
+  button: {
+    width: "100%",
+    paddingVertical: 18,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  disabled: {
+    opacity: 0.6,
+  },
+  buttonText: {
+    fontSize: 18,
+    fontWeight: "600",
+  },
 });

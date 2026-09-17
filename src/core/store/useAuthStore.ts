@@ -1,10 +1,7 @@
 // src/core/store/useAuthStore.ts
+import { mmkvStorage } from "@/core/storage/mmkv";
 import type { components } from "@/services/api/schema";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
-
-// IMPORTANT : The persist middleware synchronises the zustand state with a storage engine (AsyncStorage in this case)
-
 import { createJSONStorage, persist } from "zustand/middleware";
 
 // Extract the user type definition directly from the OpenAPI backend schema
@@ -73,11 +70,11 @@ export const useAuthStore = create<AuthState>()(
       setHasHydrated: (state) => set({ hasHydrated: state }),
     }),
     {
-      // Key name under which auth data is saved in AsyncStorage
+      // Key name under which auth data is saved in MMKV
       name: "auth-storage",
 
-      // Storage adapter for React Native (wraps AsyncStorage)
-      storage: createJSONStorage(() => AsyncStorage),
+      // Synchronous JSI storage adapter (wraps MMKV)
+      storage: createJSONStorage(() => mmkvStorage),
 
       // Only save tokens and user to storage; exclude runtime flags like `hasHydrated`
       partialize: (state) => ({

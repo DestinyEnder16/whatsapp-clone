@@ -29,7 +29,7 @@ export function UploadPhotoScreen() {
     const startTime = Date.now();
 
     updateProfileMutation.mutate(
-      { avatarUrl: uri },
+      { avatarUrl: uri } as any,
       {
         onSuccess: async (updatedUser) => {
           // Keep uploading screen visible for at least 1.2s for smooth UX
