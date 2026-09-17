@@ -62,7 +62,7 @@ export function SettingItem({
 
       {/* Title */}
       <Text
-        className="ml-4 flex-1 text-[15px] font-semibold"
+        className="ml-4 flex-1 text-[15px] font-medium tracking-tight"
         style={{ color: colors.text }}
       >
         {title}

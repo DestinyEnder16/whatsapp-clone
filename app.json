@@ -57,6 +57,17 @@
           "contactsPermission": "Allow $(PRODUCT_NAME) to access your contacts."
         }
       ],
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/sf-pro-display/SFPRODISPLAYREGULAR.otf",
+            "./assets/fonts/sf-pro-display/SFPRODISPLAYMEDIUM.otf",
+            "./assets/fonts/sf-pro-display/SFPRODISPLAYBOLD.otf",
+            "./assets/fonts/sf-pro-display/SFPRODISPLAYSEMIBOLDITALIC.otf"
+          ]
+        }
+      ],
       "@react-native-vector-icons/ionicons"
     ],
     "experiments": {

@@ -1,5 +1,6 @@
 // tailwind.config.js
 const { colors } = require("./src/shared/theme/colors.js");
+const plugin = require("tailwindcss/plugin");
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
@@ -17,7 +18,36 @@ module.exports = {
         blue: colors.blue,
         orange: colors.orange,
       },
+      fontFamily: {
+        sans: ["SFProDisplay-Regular"],
+        regular: ["SFProDisplay-Regular"],
+        medium: ["SFProDisplay-Medium"],
+        bold: ["SFProDisplay-Bold"],
+        semibold: ["SFProDisplay-Bold"],
+        italic: ["SFProDisplay-SemiboldItalic"],
+      },
     },
   },
-  plugins: [],
+  plugins: [
+    plugin(function ({ addUtilities }) {
+      addUtilities({
+        ".font-normal": {
+          fontFamily: "SFProDisplay-Regular",
+          fontWeight: "400",
+        },
+        ".font-medium": {
+          fontFamily: "SFProDisplay-Medium",
+          fontWeight: "500",
+        },
+        ".font-semibold": {
+          fontFamily: "SFProDisplay-Medium",
+          fontWeight: "600",
+        },
+        ".font-bold": {
+          fontFamily: "SFProDisplay-Bold",
+          fontWeight: "700",
+        },
+      });
+    }),
+  ],
 };

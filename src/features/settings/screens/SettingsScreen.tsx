@@ -109,7 +109,7 @@ export function SettingsScreen() {
 
           <View className="ml-4 flex-1">
             <Text
-              className="text-[17px] font-bold"
+              className="text-[17px] font-semibold"
               style={{ color: colors.text }}
               numberOfLines={1}
             >
