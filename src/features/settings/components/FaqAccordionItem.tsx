@@ -31,16 +31,16 @@ export function FaqAccordionItem({
       >
         {/* Question Title */}
         <Text
-          className="text-[15px] font-bold flex-1 mr-3 leading-snug"
+          className="text-[16px] font-bold flex-1 mr-3 leading-snug"
           style={{ color: colors.text }}
         >
           {question}
         </Text>
 
-        {/* Circular + / - Icon */}
+        {/* Circular + / - Icon matching Figma */}
         {isExpanded ? (
           <View
-            className="w-[26px] h-[26px] rounded-full items-center justify-center"
+            className="w-[26px] h-[26px] rounded-full items-center justify-center shadow-xs"
             style={{ backgroundColor: colors.primary }}
           >
             <Ionicons name="remove" size={16} color="#FFFFFF" />
@@ -48,7 +48,7 @@ export function FaqAccordionItem({
         ) : (
           <View
             className="w-[26px] h-[26px] rounded-full border items-center justify-center"
-            style={{ borderColor: colors.primary }}
+            style={{ borderColor: colors.primary, borderWidth: 1.5 }}
           >
             <Ionicons name="add" size={16} color={colors.primary} />
           </View>
@@ -57,7 +57,7 @@ export function FaqAccordionItem({
 
       {/* Expanded Answer Content */}
       {isExpanded && (
-        <View className="pb-4 pt-1 pr-4">
+        <View className="pb-4 pt-0 pr-6">
           <Text
             className="text-[13px] leading-5 font-normal"
             style={{ color: colors.textSecondary }}

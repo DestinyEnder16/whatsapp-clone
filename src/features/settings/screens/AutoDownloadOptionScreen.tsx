@@ -14,7 +14,7 @@ import { RadioOptionItem } from "../components";
 type MediaDownloadKey = "photos" | "audio" | "documents" | "videos";
 
 export function AutoDownloadOptionScreen() {
-  const { colors } = useAppTheme();
+  const { colors, isDark } = useAppTheme();
   const params = useLocalSearchParams<{
     type?: MediaDownloadKey;
     title?: string;
@@ -73,9 +73,9 @@ export function AutoDownloadOptionScreen() {
 
   return (
     <View className="flex-1" style={{ backgroundColor: colors.background }}>
-      <StatusBar style="light" />
+      <StatusBar style={isDark ? "light" : "dark"} />
 
-      {/* Screen Header with dynamic title */}
+      {/* Screen Header with dynamic title matching selected media */}
       <ScreenHeader title={title} />
 
       <ScrollView
