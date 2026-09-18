@@ -1,6 +1,7 @@
 // src/core/store/useAuthStore.ts
 import { mmkvStorage } from "@/core/storage/mmkv";
 import type { components } from "@/services/api/schema";
+import { unregisterPushDeviceAsync } from "@/services/notifications";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
@@ -58,13 +59,15 @@ export const useAuthStore = create<AuthState>()(
       setUser: (user) => set({ user }),
 
       // Called when user signs out: resets all auth fields back to null/false
-      logout: () =>
+      logout: () => {
+        unregisterPushDeviceAsync().catch(() => {});
         set({
           accessToken: null,
           refreshToken: null,
           user: null,
           isAuthenticated: false,
-        }),
+        });
+      },
 
       // Marks hydration as complete so navigation guards can safely redirect
       setHasHydrated: (state) => set({ hasHydrated: state }),

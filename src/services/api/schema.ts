@@ -142,6 +142,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/me/push-devices/{installationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Register or update push device token */
+        put: operations["registerPushDevice"];
+        post?: never;
+        /** Unregister push device */
+        delete: operations["unregisterPushDevice"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/contacts/match": {
         parameters: {
             query?: never;
@@ -1234,6 +1252,27 @@ export interface components {
             conversationId: string;
             items: components["schemas"]["ReceiptFrontierResponseDto"][];
         };
+        RegisterPushDeviceDto: {
+            /** @example ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx] */
+            token: string;
+            /**
+             * @default unknown
+             * @example ios
+             * @enum {string}
+             */
+            platform: "ios" | "android" | "web" | "unknown";
+            /** @example Great’s iPhone */
+            name?: string;
+        };
+        PushDeviceResponseDto: {
+            installationId?: string;
+            token?: string;
+            platform?: string;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+        };
     };
     responses: never;
     parameters: never;
@@ -1464,6 +1503,68 @@ export interface operations {
         requestBody?: never;
         responses: {
             /** @description The block is absent. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    registerPushDevice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                installationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterPushDeviceDto"];
+            };
+        };
+        responses: {
+            /** @description The device was registered or updated successfully. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PushDeviceResponseDto"];
+                };
+            };
+            /** @description The device was registered successfully. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PushDeviceResponseDto"];
+                };
+            };
+        };
+    };
+    unregisterPushDevice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                installationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The device was unregistered successfully. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description The device was unregistered successfully. */
             204: {
                 headers: {
                     [name: string]: unknown;

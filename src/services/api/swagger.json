@@ -271,7 +271,7 @@
     },
     "/v1/me/blocks": {
       "get": {
-        "operationId": "list",
+        "operationId": "listBlocks",
         "parameters": [],
         "responses": {
           "200": {
@@ -364,6 +364,92 @@
         "summary": "Unblock a user idempotently",
         "tags": [
           "blocks"
+        ]
+      }
+    },
+    "/v1/me/push-devices/{installationId}": {
+      "put": {
+        "operationId": "registerPushDevice",
+        "parameters": [
+          {
+            "name": "installationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterPushDeviceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The device was registered or updated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushDeviceResponseDto"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "The device was registered successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushDeviceResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Register or update push device token",
+        "tags": [
+          "notifications"
+        ]
+      },
+      "delete": {
+        "operationId": "unregisterPushDevice",
+        "parameters": [
+          {
+            "name": "installationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The device was unregistered successfully."
+          },
+          "204": {
+            "description": "The device was unregistered successfully."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Unregister push device",
+        "tags": [
+          "notifications"
         ]
       }
     },
@@ -1030,7 +1116,7 @@
     },
     "/v1/conversations": {
       "get": {
-        "operationId": "list",
+        "operationId": "listConversations",
         "parameters": [
           {
             "name": "limit",
@@ -1691,7 +1777,7 @@
         ]
       },
       "get": {
-        "operationId": "list",
+        "operationId": "listMessages",
         "parameters": [
           {
             "name": "conversationId",
@@ -1792,7 +1878,7 @@
     },
     "/v1/conversations/{conversationId}/read": {
       "post": {
-        "operationId": "markRead",
+        "operationId": "markReadConversation",
         "parameters": [
           {
             "name": "conversationId",
@@ -2106,7 +2192,7 @@
     },
     "/v1/conversations/{conversationId}/receipts/read": {
       "put": {
-        "operationId": "markRead",
+        "operationId": "markReadReceipts",
         "parameters": [
           {
             "name": "conversationId",
@@ -2164,7 +2250,7 @@
     },
     "/v1/conversations/{conversationId}/receipts": {
       "get": {
-        "operationId": "list",
+        "operationId": "listReceipts",
         "parameters": [
           {
             "name": "conversationId",
@@ -3886,6 +3972,55 @@
           "conversationId",
           "items"
         ]
+      },
+      "RegisterPushDeviceDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "example": "ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]"
+          },
+          "platform": {
+            "type": "string",
+            "enum": [
+              "ios",
+              "android",
+              "web",
+              "unknown"
+            ],
+            "default": "unknown",
+            "example": "ios"
+          },
+          "name": {
+            "type": "string",
+            "example": "Great’s iPhone"
+          }
+        },
+        "required": [
+          "token"
+        ]
+      },
+      "PushDeviceResponseDto": {
+        "type": "object",
+        "properties": {
+          "installationId": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          },
+          "platform": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
       }
     }
   }

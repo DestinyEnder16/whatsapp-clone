@@ -97,23 +97,92 @@ export async function registerForPushNotificationsAsync(): Promise<
   }
 }
 
+import { api } from "@/services/api/client";
+import { getInstallationId } from "./installationId";
+
 /**
- * Sync the Expo push token with the backend API.
- * The current OpenAPI specification defines device metadata in OTP verify,
- * and conversation mute endpoints, but has not yet exposed a standalone
- * POST /v1/devices/push-token endpoint.
- * This function encapsulates the contract so it connects seamlessly when deployed.
+ * Sync the Expo push token with the backend API via PUT /v1/me/push-devices/{installationId}.
  */
 export async function syncPushTokenWithBackend(token: string): Promise<boolean> {
   try {
-    // Contract prepared for backend endpoint:
-    // POST /v1/devices/notifications/token { token, platform: Platform.OS }
+    const installationId = getInstallationId();
+    const platform =
+      Platform.OS === "ios"
+        ? "ios"
+        : Platform.OS === "android"
+          ? "android"
+          : Platform.OS === "web"
+            ? "web"
+            : "unknown";
+
+    const { data, error } = await api.PUT(
+      "/v1/me/push-devices/{installationId}",
+      {
+        params: {
+          path: { installationId },
+        },
+        body: {
+          token,
+          platform,
+        },
+      }
+    );
+
+    if (error) {
+      console.warn(
+        "[PushNotifications] Failed to sync token with backend:",
+        error
+      );
+      return false;
+    }
+
     if (__DEV__) {
-      console.log("[PushNotifications] Device token acquired:", token);
+      console.log(
+        "[PushNotifications] Successfully registered device with backend:",
+        data
+      );
     }
     return true;
   } catch (err) {
-    console.error("[PushNotifications] Error syncing token with backend:", err);
+    console.warn("[PushNotifications] Error syncing token with backend:", err);
+    return false;
+  }
+}
+
+/**
+ * Unregisters this device installation on the backend when user logs out.
+ */
+export async function unregisterPushDeviceAsync(): Promise<boolean> {
+  try {
+    const installationId = getInstallationId();
+    const { error } = await api.DELETE(
+      "/v1/me/push-devices/{installationId}",
+      {
+        params: {
+          path: { installationId },
+        },
+      }
+    );
+
+    if (error) {
+      console.warn(
+        "[PushNotifications] Failed to unregister device from backend:",
+        error
+      );
+      return false;
+    }
+
+    if (__DEV__) {
+      console.log(
+        "[PushNotifications] Successfully unregistered device from backend"
+      );
+    }
+    return true;
+  } catch (err) {
+    console.warn(
+      "[PushNotifications] Error unregistering device from backend:",
+      err
+    );
     return false;
   }
 }

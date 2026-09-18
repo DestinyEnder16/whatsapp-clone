@@ -4,6 +4,7 @@ import {
   useNotificationStore,
 } from "@/core/store/useNotificationStore";
 import {
+  getInstallationId,
   registerForPushNotificationsAsync,
   sendLocalTestNotification,
 } from "@/services/notifications";
@@ -121,6 +122,12 @@ export function NotificationSettingsScreen() {
     }
     await Clipboard.setStringAsync(expoPushToken);
     toast.success("Copied", "Expo Push Token copied to clipboard.");
+  };
+
+  const handleCopyInstallationId = async () => {
+    const id = getInstallationId();
+    await Clipboard.setStringAsync(id);
+    toast.success("Copied", "Installation ID copied to clipboard.");
   };
 
   const selectSound = (
@@ -626,7 +633,39 @@ export function NotificationSettingsScreen() {
                 style={{ color: colors.textSecondary }}
                 numberOfLines={1}
               >
-                {expoPushToken ? expoPushToken : "Not registered yet (Tap to copy/register)"}
+                {expoPushToken ? expoPushToken : "Not registered yet (Tap to register)"}
+              </Text>
+            </View>
+            <Ionicons
+              name="copy-outline"
+              size={20}
+              color={colors.primary}
+            />
+          </Pressable>
+          <View
+            className="h-[1px] ml-6"
+            style={{ backgroundColor: colors.divider }}
+          />
+
+          {/* Installation ID & Copy */}
+          <Pressable
+            onPress={handleCopyInstallationId}
+            className="px-6 py-3.5 flex-row items-center justify-between active:opacity-70"
+            style={{ backgroundColor: colors.surface }}
+          >
+            <View className="flex-1 mr-3">
+              <Text
+                className="text-[16px] font-medium"
+                style={{ color: colors.text }}
+              >
+                Installation ID
+              </Text>
+              <Text
+                className="text-[12px] font-mono mt-0.5"
+                style={{ color: colors.textSecondary }}
+                numberOfLines={1}
+              >
+                {getInstallationId()}
               </Text>
             </View>
             <Ionicons

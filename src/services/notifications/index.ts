@@ -4,4 +4,6 @@ export {
   registerForPushNotificationsAsync,
   sendLocalTestNotification,
   syncPushTokenWithBackend,
+  unregisterPushDeviceAsync,
 } from "./pushNotificationService";
+export { getInstallationId } from "./installationId";
