@@ -24,7 +24,7 @@ const KEYPAD_ROWS = [
 
 export function PinSetupScreen() {
   const insets = useSafeAreaInsets();
-  const { colors } = useAppTheme();
+  const { colors, isDark } = useAppTheme();
   const [pin, setPin] = useState("");
   const setPinCode = usePinStore((state) => state.setPinCode);
 
@@ -57,8 +57,11 @@ export function PinSetupScreen() {
   }
 
   return (
-    <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
-      <StatusBar style="dark" />
+    <View
+      className="flex-1"
+      style={{ backgroundColor: colors.background, paddingTop: insets.top }}
+    >
+      <StatusBar style={isDark ? "light" : "dark"} />
 
       {/* Top Header / Back Button */}
       <View className="px-6 pt-2 pb-4">
@@ -67,10 +70,16 @@ export function PinSetupScreen() {
 
       {/* Header Texts */}
       <View className="items-center px-8 mt-2">
-        <Text className="text-[24px] font-bold text-neutral-900 tracking-tight text-center">
+        <Text
+          className="text-[24px] font-bold tracking-tight text-center"
+          style={{ color: colors.text }}
+        >
           Setup pin code
         </Text>
-        <Text className="text-[14px] text-neutral-400 text-center mt-2.5 leading-5 max-w-[260px]">
+        <Text
+          className="text-[14px] text-center mt-2.5 leading-5 max-w-[260px]"
+          style={{ color: colors.textSecondary }}
+        >
           Make sure the code is safe and no one else knows.
         </Text>
       </View>
@@ -86,7 +95,11 @@ export function PinSetupScreen() {
               style={[
                 isFilled
                   ? { backgroundColor: colors.primary }
-                  : styles.emptyDot,
+                  : {
+                      borderWidth: 1.5,
+                      borderColor: isDark ? colors.cardBorder : "#D1D5DB",
+                      backgroundColor: "transparent",
+                    },
               ]}
             />
           );
@@ -110,12 +123,16 @@ export function PinSetupScreen() {
                       onPress={() => handleKeyPress("delete")}
                       accessibilityRole="button"
                       accessibilityLabel="Delete last digit"
-                      className="w-[76px] h-[76px] rounded-full border border-neutral-100 bg-white items-center justify-center active:bg-neutral-100 shadow-sm"
+                      className="w-[76px] h-[76px] rounded-full border items-center justify-center active:opacity-75 shadow-sm"
+                      style={{
+                        backgroundColor: colors.card,
+                        borderColor: colors.border,
+                      }}
                     >
                       <Ionicons
                         name="backspace"
                         size={24}
-                        color="#081C2C"
+                        color={colors.text}
                       />
                     </Pressable>
                   );
@@ -127,9 +144,16 @@ export function PinSetupScreen() {
                     onPress={() => handleKeyPress(item)}
                     accessibilityRole="button"
                     accessibilityLabel={`Digit ${item}`}
-                    className="w-[76px] h-[76px] rounded-full border border-neutral-100 bg-white items-center justify-center active:bg-neutral-100 shadow-sm"
+                    className="w-[76px] h-[76px] rounded-full border items-center justify-center active:opacity-75 shadow-sm"
+                    style={{
+                      backgroundColor: colors.card,
+                      borderColor: colors.border,
+                    }}
                   >
-                    <Text className="text-[26px] font-semibold text-neutral-900">
+                    <Text
+                      className="text-[26px] font-semibold"
+                      style={{ color: colors.text }}
+                    >
                       {item}
                     </Text>
                   </Pressable>
@@ -146,12 +170,5 @@ export function PinSetupScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  emptyDot: {
-    borderWidth: 1.5,
-    borderColor: "#D1D5DB",
-    backgroundColor: "transparent",
-  },
-});
-
 export default PinSetupScreen;
+

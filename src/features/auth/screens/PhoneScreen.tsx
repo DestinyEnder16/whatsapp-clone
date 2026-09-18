@@ -1,15 +1,17 @@
-import Button from "@/shared/components/Button";
+import { BackButton, Button } from "@/shared/components";
 import Heading from "@/shared/components/Heading";
 import Screen from "@/shared/components/Screen";
-import colors from "@/shared/theme/colors";
+import { useAppTheme } from "@/shared/hooks";
 import { router } from "expo-router";
-import { useState } from "react";
+import React, { useState } from "react";
 import { Alert, Text, TextInput, View } from "react-native";
-import Toast from 'react-native-toast-message';
+import Toast from "react-native-toast-message";
 import { useRequestOtp } from "../api/useRequestOtp";
 
 export function PhoneScreen() {
-    const [phoneNumber, setPhoneNumber] = useState('')
+    const { colors } = useAppTheme();
+    const [phoneNumber, setPhoneNumber] = useState('');
+    const [isFocused, setIsFocused] = useState(false);
     const requestOtpMutation = useRequestOtp();
 
     function handleSendOtp() {
@@ -18,7 +20,7 @@ export function PhoneScreen() {
                 type: 'error',
                 text1: 'Error',
                 text2: 'Please enter a valid phone number starting with +234'
-            })
+            });
             return;
         }
 
@@ -27,11 +29,6 @@ export function PhoneScreen() {
             { phoneNumber: phoneNumber.trim() },
             {
                 onSuccess: (challenge) => {
-                    // challenge contains: challengeId, phoneNumberMasked, expiresInSeconds
-
-                    // Navigate to OtpScreen, passing the challengeId and masked number
-
-
                     router.push({
                         pathname: '/verify-otp',
                         params: {
@@ -39,33 +36,56 @@ export function PhoneScreen() {
                             phoneNumberMasked: challenge.phoneNumberMasked,
                             time: challenge.resendInSeconds.toString()
                         }
-                    })
+                    });
                 },
                 onError: (error: Error) => {
                     Alert.alert("Error", error.message);
                 }
             }
-        )
+        );
     }
+
     return (
         <Screen>
+            <View className="mb-6">
+                <BackButton />
+            </View>
+
             <View className="gap-y-[12px]">
                 <Heading title="What's your phone number?" />
-                <Text className="text-neutral-300">We will send you the verification code.</Text>
+                <Text
+                    className="text-[14px] leading-5"
+                    style={{ color: colors.textSecondary }}
+                >
+                    We will send you the verification code.
+                </Text>
             </View>
 
             <View className="gap-y-[10px] my-10">
-                <Text className="text-neutral-600 text-[14px] font-medium">Phone Number</Text>
+                <Text
+                    className="text-[14px] font-semibold"
+                    style={{ color: colors.text }}
+                >
+                    Phone Number
+                </Text>
                 <TextInput
-                    keyboardType="numeric"
-                    placeholder="Phone number"
-                    placeholderTextColor={colors.neutral[300]}
-                    className="text-neutral-900 border border-neutral-200 rounded-lg px-5 py-5 focus:border-primary-300"
+                    keyboardType="phone-pad"
+                    placeholder="e.g. +234..."
+                    placeholderTextColor={colors.textMuted}
                     value={phoneNumber}
                     onChangeText={setPhoneNumber}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
+                    className="rounded-2xl px-5 py-4 text-[16px] font-medium border"
+                    style={{
+                        backgroundColor: colors.card,
+                        borderColor: isFocused ? colors.primary : colors.border,
+                        color: colors.text,
+                    }}
+                    cursorColor={colors.primary}
+                    selectionColor={colors.primaryLight}
                 />
             </View>
-
 
             <View className="mt-auto pb-4">
                 <Button
@@ -74,9 +94,6 @@ export function PhoneScreen() {
                     isLoading={requestOtpMutation.isPending}
                 />
             </View>
-
-
-
         </Screen>
     );
 }

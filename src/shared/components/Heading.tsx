@@ -1,14 +1,22 @@
-import { Text } from "react-native";
+import { useAppTheme } from "@/shared/hooks";
+import React from "react";
+import { Text, TextStyle } from "react-native";
 
 interface HeadingProps {
-    title: string,
-
+  title: string;
+  className?: string;
+  style?: TextStyle;
 }
 
-export default function Heading({ title, }: HeadingProps) {
-    return (
+export default function Heading({ title, className = "", style }: HeadingProps) {
+  const { colors } = useAppTheme();
 
-        <Text className="text-neutral-900 text-[24px] font-[700]">{title}</Text>
-
-    )
+  return (
+    <Text
+      className={`text-[24px] font-bold ${className}`}
+      style={[{ color: colors.text }, style]}
+    >
+      {title}
+    </Text>
+  );
 }

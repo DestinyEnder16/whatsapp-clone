@@ -3,13 +3,15 @@ import { useVerifyOtp } from "@/features/auth/api/useVerifyOtp";
 import { BackButton, Button } from "@/shared/components";
 import Heading from "@/shared/components/Heading";
 import Screen from "@/shared/components/Screen";
+import { useAppTheme } from "@/shared/hooks";
 import { router, useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { OtpInput } from "react-native-otp-entry";
 import Toast from "react-native-toast-message";
 
 export function OtpScreen() {
+  const { colors } = useAppTheme();
   const { challengeId, phoneNumberMasked, time } = useLocalSearchParams();
   const [timer, setTimer] = useState(+(time as string));
   const verifyOtpMutation = useVerifyOtp();
@@ -25,14 +27,8 @@ export function OtpScreen() {
       },
       {
         onSuccess: (authData) => {
-          // authData contains: { accessToken, refreshToken, user: { profileComplete, ... } }
-
-          // Store tokens and initial user object in Zustand!
-
           setAuth(authData.accessToken, authData.refreshToken, authData.user);
 
-          // If user has not finished setup -> route to profile setup
-          // If user is already registered -> route to (tabs)/chats
           if (!authData.user.profileComplete) {
             router.replace("/profile");
           } else {
@@ -70,9 +66,12 @@ export function OtpScreen() {
       </View>
 
       <Heading title="Verification Code" />
-      <Text className="text-neutral-300 mt-2 text-[14px]">
+      <Text
+        className="mt-2 text-[14px] leading-5"
+        style={{ color: colors.textSecondary }}
+      >
         Enter the code number we sent to{" "}
-        <Text className="text-neutral-900 font-medium">
+        <Text className="font-semibold" style={{ color: colors.text }}>
           {phoneNumberMasked}
         </Text>
       </Text>
@@ -83,14 +82,47 @@ export function OtpScreen() {
           onTextChange={(code) => setOtp(code)}
           placeholder="****"
           onFilled={(code) => handleOtpVerify(code)}
+          theme={{
+            pinCodeContainerStyle: {
+              backgroundColor: colors.card,
+              borderColor: colors.border,
+              borderRadius: 16,
+              width: 60,
+              height: 64,
+            },
+            pinCodeTextStyle: {
+              color: colors.text,
+              fontSize: 22,
+              fontWeight: "700",
+            },
+            focusedPinCodeContainerStyle: {
+              borderColor: colors.primary,
+              borderWidth: 2,
+            },
+            filledPinCodeContainerStyle: {
+              borderColor: colors.primary,
+            },
+            placeholderTextStyle: {
+              color: colors.textMuted,
+            },
+          }}
         />
-        <Text className="text-neutral-400 text-[14px] mt-6 text-center">
+        <Text
+          className="text-[14px] mt-8 text-center"
+          style={{ color: colors.textSecondary }}
+        >
           If you didn't get the code, resend it in{" "}
-          <Text className="text-neutral-600 font-medium">{timer}</Text> seconds.
+          <Text className="font-bold" style={{ color: colors.primary }}>
+            {timer}
+          </Text>{" "}
+          seconds.
         </Text>
         {timer === 0 && (
-          <Pressable onPress={() => setTimer(25)}>
-            <Text className="text-primary-400 text-[14px] mt-6 text-center">
+          <Pressable onPress={() => setTimer(25)} className="mt-4 active:opacity-75">
+            <Text
+              className="text-[15px] font-bold text-center"
+              style={{ color: colors.primary }}
+            >
               Resend Code
             </Text>
           </Pressable>
@@ -108,3 +140,4 @@ export function OtpScreen() {
     </Screen>
   );
 }
+
