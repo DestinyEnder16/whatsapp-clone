@@ -23,8 +23,7 @@ export default function TabLayout() {
         },
         tabBarLabelStyle: {
           fontSize: 12,
-          fontFamily: "SFProDisplay-Medium",
-          fontWeight: "600",
+          fontFamily: "SFPRODISPLAYMEDIUM",
         },
       }}
     >

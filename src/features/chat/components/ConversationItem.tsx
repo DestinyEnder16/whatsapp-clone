@@ -92,7 +92,7 @@ export function ConversationItem({
               ) : (
                 <Text
                   className="text-[20px]"
-                  style={{ color: colors.primaryDark, fontFamily: "SFProDisplay-Bold" }}
+                  style={{ color: colors.primaryDark, fontFamily: "SFPRODISPLAYBOLD" }}
                 >
                   {name.charAt(0).toUpperCase()}
                 </Text>
@@ -126,7 +126,7 @@ export function ConversationItem({
           )}
           <Text
             className="text-[16px] flex-1"
-            style={{ color: colors.text, fontFamily: "SFProDisplay-Bold" }}
+            style={{ color: colors.text, fontFamily: "SFPRODISPLAYBOLD" }}
             numberOfLines={1}
           >
             {name}
@@ -146,7 +146,7 @@ export function ConversationItem({
           className="text-[14px] leading-5"
           style={{
             color: hasUnread ? colors.text : colors.textSecondary,
-            fontFamily: hasUnread ? "SFProDisplay-Medium" : "SFProDisplay-Regular",
+            fontFamily: hasUnread ? "SFPRODISPLAYMEDIUM" : "SFPRODISPLAYREGULAR",
           }}
           numberOfLines={1}
         >
@@ -160,7 +160,7 @@ export function ConversationItem({
           className="text-[12px]"
           style={{
             color: hasUnread ? "#10B981" : colors.textMuted,
-            fontFamily: "SFProDisplay-Medium",
+            fontFamily: "SFPRODISPLAYMEDIUM",
           }}
         >
           {timeString}
@@ -170,7 +170,7 @@ export function ConversationItem({
           <View className="min-w-[20px] h-[20px] rounded-full bg-[#10B981] px-1.5 items-center justify-center mt-1">
             <Text
               className="text-white text-[11px]"
-              style={{ fontFamily: "SFProDisplay-Bold" }}
+              style={{ fontFamily: "SFPRODISPLAYBOLD" }}
             >
               {unreadCount > 99 ? "99+" : unreadCount}
             </Text>

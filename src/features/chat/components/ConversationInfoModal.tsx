@@ -57,7 +57,7 @@ export function ConversationInfoModal({
           <View className="flex-row items-center justify-between mb-4">
             <Text
               className="text-[18px]"
-              style={{ color: colors.text, fontFamily: "SFProDisplay-Bold" }}
+              style={{ color: colors.text, fontFamily: "SFPRODISPLAYBOLD" }}
             >
               Conversation Info
             </Text>
@@ -89,7 +89,7 @@ export function ConversationInfoModal({
                 ) : (
                   <Text
                     className="text-[32px]"
-                    style={{ color: colors.primaryDark, fontFamily: "SFProDisplay-Bold" }}
+                    style={{ color: colors.primaryDark, fontFamily: "SFPRODISPLAYBOLD" }}
                   >
                     {name.charAt(0).toUpperCase()}
                   </Text>
@@ -98,13 +98,13 @@ export function ConversationInfoModal({
 
               <Text
                 className="text-[20px] text-center"
-                style={{ color: colors.text, fontFamily: "SFProDisplay-Bold" }}
+                style={{ color: colors.text, fontFamily: "SFPRODISPLAYBOLD" }}
               >
                 {name}
               </Text>
               <Text
                 className="text-[13px] mt-1 uppercase tracking-wider"
-                style={{ color: colors.primary, fontFamily: "SFProDisplay-Medium" }}
+                style={{ color: colors.primary, fontFamily: "SFPRODISPLAYMEDIUM" }}
               >
                 {isGroup ? "Group Conversation" : "Direct Conversation"}
               </Text>
@@ -120,7 +120,7 @@ export function ConversationInfoModal({
             >
               <Text
                 className="text-[11px] uppercase tracking-wider mb-3"
-                style={{ color: colors.textMuted, fontFamily: "SFProDisplay-Medium" }}
+                style={{ color: colors.textMuted, fontFamily: "SFPRODISPLAYMEDIUM" }}
               >
                 Conversation Fields
               </Text>

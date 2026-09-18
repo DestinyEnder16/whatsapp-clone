@@ -123,7 +123,7 @@ export function ChatScreen() {
         {/* Title */}
         <Text
           className="text-white text-[28px] tracking-tight mb-3"
-          style={{ fontFamily: "SFProDisplay-Bold" }}
+          style={{ fontFamily: "SFPRODISPLAYBOLD" }}
         >
           Chats
         </Text>
@@ -145,7 +145,7 @@ export function ChatScreen() {
             placeholder="Search chat, people and more..."
             placeholderTextColor="rgba(255, 255, 255, 0.75)"
             className="flex-1 text-white text-[15px]"
-            style={{ fontFamily: "SFProDisplay-Regular" }}
+            style={{ fontFamily: "SFPRODISPLAYREGULAR" }}
             autoCapitalize="none"
             returnKeyType="search"
           />

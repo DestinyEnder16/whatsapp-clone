@@ -61,6 +61,7 @@
         "expo-font",
         {
           "fonts": [
+            "./assets/fonts/sf-pro-display/SFPRODISPLAY.otf",
             "./assets/fonts/sf-pro-display/SFPRODISPLAYREGULAR.otf",
             "./assets/fonts/sf-pro-display/SFPRODISPLAYMEDIUM.otf",
             "./assets/fonts/sf-pro-display/SFPRODISPLAYBOLD.otf",

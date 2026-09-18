@@ -127,13 +127,13 @@ export function StartConversationModal({
           <View>
             <Text
               className="text-[20px]"
-              style={{ color: colors.text, fontFamily: "SFProDisplay-Bold" }}
+              style={{ color: colors.text, fontFamily: "SFPRODISPLAYBOLD" }}
             >
               Start Conversation
             </Text>
             <Text
               className="text-[13px] mt-0.5"
-              style={{ color: colors.textSecondary, fontFamily: "SFProDisplay-Regular" }}
+              style={{ color: colors.textSecondary, fontFamily: "SFPRODISPLAYREGULAR" }}
             >
               Select a contact to create a direct conversation
             </Text>
@@ -169,7 +169,7 @@ export function StartConversationModal({
               placeholder="Search by name (min 3 chars)..."
               placeholderTextColor={colors.textMuted}
               className="flex-1 text-[15px]"
-              style={{ color: colors.text, fontFamily: "SFProDisplay-Regular" }}
+              style={{ color: colors.text, fontFamily: "SFPRODISPLAYREGULAR" }}
               autoCapitalize="none"
               returnKeyType="search"
             />
@@ -191,7 +191,7 @@ export function StartConversationModal({
             <ActivityIndicator size="small" color={colors.primary} />
             <Text
               className="text-[13px] ml-2"
-              style={{ color: colors.primary, fontFamily: "SFProDisplay-Medium" }}
+              style={{ color: colors.primary, fontFamily: "SFPRODISPLAYMEDIUM" }}
             >
               {createDirectMutation.isPending
                 ? "Creating conversation..."
@@ -215,7 +215,7 @@ export function StartConversationModal({
               />
               <Text
                 className="text-[16px] text-center"
-                style={{ color: colors.text, fontFamily: "SFProDisplay-Bold" }}
+                style={{ color: colors.text, fontFamily: "SFPRODISPLAYBOLD" }}
               >
                 {searchQuery.trim().length >= 3
                   ? "No contacts found"
@@ -223,7 +223,7 @@ export function StartConversationModal({
               </Text>
               <Text
                 className="text-[13px] text-center mt-1"
-                style={{ color: colors.textSecondary, fontFamily: "SFProDisplay-Regular" }}
+                style={{ color: colors.textSecondary, fontFamily: "SFPRODISPLAYREGULAR" }}
               >
                 {searchQuery.trim().length >= 3
                   ? "Try searching for another display name"
@@ -253,7 +253,7 @@ export function StartConversationModal({
                 ) : (
                   <Text
                     className="text-[18px]"
-                    style={{ color: colors.primaryDark, fontFamily: "SFProDisplay-Bold" }}
+                    style={{ color: colors.primaryDark, fontFamily: "SFPRODISPLAYBOLD" }}
                   >
                     {item.displayName.charAt(0).toUpperCase()}
                   </Text>
@@ -263,7 +263,7 @@ export function StartConversationModal({
               <View className="flex-1 mr-2">
                 <Text
                   className="text-[16px]"
-                  style={{ color: colors.text, fontFamily: "SFProDisplay-Bold" }}
+                  style={{ color: colors.text, fontFamily: "SFPRODISPLAYBOLD" }}
                   numberOfLines={1}
                 >
                   {item.displayName}
@@ -271,7 +271,7 @@ export function StartConversationModal({
                 {item.subtitle && (
                   <Text
                     className="text-[13px] mt-0.5"
-                    style={{ color: colors.textSecondary, fontFamily: "SFProDisplay-Regular" }}
+                    style={{ color: colors.textSecondary, fontFamily: "SFPRODISPLAYREGULAR" }}
                     numberOfLines={1}
                   >
                     {item.subtitle}
