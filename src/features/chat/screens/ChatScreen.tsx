@@ -1,6 +1,8 @@
+import { usePinStore } from "@/core/store/usePinStore";
 import { useConversations } from "@/features/chat/api/useConversations";
 import { ContactsEmptyState } from "@/features/contacts";
 import { TabHeader, TabScreen } from "@/shared/components";
+import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 import { PinCodeModal } from "../components";
@@ -13,6 +15,7 @@ export function ChatScreen() {
     isFetched,
   } = useConversations();
   const [showModal, setShowModal] = useState(false);
+  const isPinCodeSet = usePinStore((state) => state.isPinCodeSet);
 
   // to check for conversations
   useEffect(() => {
@@ -28,9 +31,9 @@ export function ChatScreen() {
     }
   }, [conversations, error]);
 
-  // to show modal requesting pin code
+  // to show modal requesting pin code only if not already set
   useEffect(() => {
-    if (!isFetched) return;
+    if (!isFetched || isPinCodeSet) return;
 
     const timer = setTimeout(() => {
       console.log("modal shown");
@@ -38,7 +41,7 @@ export function ChatScreen() {
     }, 5000);
 
     return () => clearTimeout(timer);
-  }, [isFetched]);
+  }, [isFetched, isPinCodeSet]);
 
   if (isLoading) {
     return (
@@ -58,9 +61,12 @@ export function ChatScreen() {
           <Text>hello world!</Text>
         )}
         <PinCodeModal
-          isVisible={showModal}
+          isVisible={showModal && !isPinCodeSet}
           onCancel={() => setShowModal(false)}
-          onConfirm={() => setShowModal(false)}
+          onConfirm={() => {
+            setShowModal(false);
+            router.push("/pin-setup" as any);
+          }}
         />
       </View>
     </TabScreen>
