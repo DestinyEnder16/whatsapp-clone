@@ -56,8 +56,8 @@ export function ConversationInfoModal({
           {/* Top Close Button */}
           <View className="flex-row items-center justify-between mb-4">
             <Text
-              className="text-[18px] font-bold"
-              style={{ color: colors.text }}
+              className="text-[18px]"
+              style={{ color: colors.text, fontFamily: "SFProDisplay-Bold" }}
             >
               Conversation Info
             </Text>
@@ -88,8 +88,8 @@ export function ConversationInfoModal({
                   />
                 ) : (
                   <Text
-                    className="text-[32px] font-bold"
-                    style={{ color: colors.primaryDark }}
+                    className="text-[32px]"
+                    style={{ color: colors.primaryDark, fontFamily: "SFProDisplay-Bold" }}
                   >
                     {name.charAt(0).toUpperCase()}
                   </Text>
@@ -97,14 +97,14 @@ export function ConversationInfoModal({
               </View>
 
               <Text
-                className="text-[20px] font-bold text-center"
-                style={{ color: colors.text }}
+                className="text-[20px] text-center"
+                style={{ color: colors.text, fontFamily: "SFProDisplay-Bold" }}
               >
                 {name}
               </Text>
               <Text
-                className="text-[13px] font-medium mt-1 uppercase tracking-wider"
-                style={{ color: colors.primary }}
+                className="text-[13px] mt-1 uppercase tracking-wider"
+                style={{ color: colors.primary, fontFamily: "SFProDisplay-Medium" }}
               >
                 {isGroup ? "Group Conversation" : "Direct Conversation"}
               </Text>
@@ -119,8 +119,8 @@ export function ConversationInfoModal({
               }}
             >
               <Text
-                className="text-[11px] font-semibold uppercase tracking-wider mb-3"
-                style={{ color: colors.textMuted }}
+                className="text-[11px] uppercase tracking-wider mb-3"
+                style={{ color: colors.textMuted, fontFamily: "SFProDisplay-Medium" }}
               >
                 Conversation Fields
               </Text>

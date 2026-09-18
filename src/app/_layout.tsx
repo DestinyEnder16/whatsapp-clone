@@ -25,6 +25,23 @@ if ((TextInput as any).defaultProps == null) {
 }
 (TextInput as any).defaultProps.style = { fontFamily: "SFProDisplay-Regular" };
 
+// React 19 / Modern React Native forwardRef render wrapping to guarantee global font family
+const origTextRender = (Text as any).render;
+if (typeof origTextRender === "function") {
+  (Text as any).render = function (props: any, ref: any) {
+    const style = [{ fontFamily: "SFProDisplay-Regular" }, props?.style];
+    return origTextRender.call(this, { ...props, style }, ref);
+  };
+}
+
+const origTextInputRender = (TextInput as any).render;
+if (typeof origTextInputRender === "function") {
+  (TextInput as any).render = function (props: any, ref: any) {
+    const style = [{ fontFamily: "SFProDisplay-Regular" }, props?.style];
+    return origTextInputRender.call(this, { ...props, style }, ref);
+  };
+}
+
 const queryClient = new QueryClient();
 
 export default function RootLayout() {
@@ -32,10 +49,14 @@ export default function RootLayout() {
   const { setColorScheme } = useNativeWindColorScheme();
 
   const [fontsLoaded, fontError] = useFonts({
-    "SFProDisplay-Regular": require("../../assets/fonts/sf-pro-display/SFPRODISPLAYREGULAR.otf"),
-    "SFProDisplay-Medium": require("../../assets/fonts/sf-pro-display/SFPRODISPLAYMEDIUM.otf"),
-    "SFProDisplay-Bold": require("../../assets/fonts/sf-pro-display/SFPRODISPLAYBOLD.otf"),
-    "SFProDisplay-SemiboldItalic": require("../../assets/fonts/sf-pro-display/SFPRODISPLAYSEMIBOLDITALIC.otf"),
+    "SFProDisplay-Regular": require("../../assets/fonts/sf-pro-display/SFProDisplay-Regular.otf"),
+    "SFProDisplay-Medium": require("../../assets/fonts/sf-pro-display/SFProDisplay-Medium.otf"),
+    "SFProDisplay-Bold": require("../../assets/fonts/sf-pro-display/SFProDisplay-Bold.otf"),
+    "SFProDisplay-SemiboldItalic": require("../../assets/fonts/sf-pro-display/SFProDisplay-SemiboldItalic.otf"),
+    "SFPRODISPLAYREGULAR": require("../../assets/fonts/sf-pro-display/SFPRODISPLAYREGULAR.otf"),
+    "SFPRODISPLAYMEDIUM": require("../../assets/fonts/sf-pro-display/SFPRODISPLAYMEDIUM.otf"),
+    "SFPRODISPLAYBOLD": require("../../assets/fonts/sf-pro-display/SFPRODISPLAYBOLD.otf"),
+    "SFPRODISPLAYSEMIBOLDITALIC": require("../../assets/fonts/sf-pro-display/SFPRODISPLAYSEMIBOLDITALIC.otf"),
   });
 
   // Synchronize NativeWind once at the app root only when theme mode changes

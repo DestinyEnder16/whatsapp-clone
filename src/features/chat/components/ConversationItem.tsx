@@ -91,8 +91,8 @@ export function ConversationItem({
                 <Ionicons name="people" size={24} color={colors.primary} />
               ) : (
                 <Text
-                  className="text-[20px] font-bold"
-                  style={{ color: colors.primaryDark }}
+                  className="text-[20px]"
+                  style={{ color: colors.primaryDark, fontFamily: "SFProDisplay-Bold" }}
                 >
                   {name.charAt(0).toUpperCase()}
                 </Text>
@@ -125,8 +125,8 @@ export function ConversationItem({
             />
           )}
           <Text
-            className="text-[16px] font-bold flex-1"
-            style={{ color: colors.text }}
+            className="text-[16px] flex-1"
+            style={{ color: colors.text, fontFamily: "SFProDisplay-Bold" }}
             numberOfLines={1}
           >
             {name}
@@ -146,7 +146,7 @@ export function ConversationItem({
           className="text-[14px] leading-5"
           style={{
             color: hasUnread ? colors.text : colors.textSecondary,
-            fontWeight: hasUnread ? "500" : "400",
+            fontFamily: hasUnread ? "SFProDisplay-Medium" : "SFProDisplay-Regular",
           }}
           numberOfLines={1}
         >
@@ -157,9 +157,10 @@ export function ConversationItem({
       {/* Right: Timestamp & Unread Badge */}
       <View className="items-end justify-between min-h-[44px]">
         <Text
-          className="text-[12px] font-medium"
+          className="text-[12px]"
           style={{
             color: hasUnread ? "#10B981" : colors.textMuted,
+            fontFamily: "SFProDisplay-Medium",
           }}
         >
           {timeString}
@@ -167,7 +168,10 @@ export function ConversationItem({
 
         {hasUnread ? (
           <View className="min-w-[20px] h-[20px] rounded-full bg-[#10B981] px-1.5 items-center justify-center mt-1">
-            <Text className="text-white text-[11px] font-bold">
+            <Text
+              className="text-white text-[11px]"
+              style={{ fontFamily: "SFProDisplay-Bold" }}
+            >
               {unreadCount > 99 ? "99+" : unreadCount}
             </Text>
           </View>

@@ -7,7 +7,7 @@ import Ionicons from "@react-native-vector-icons/ionicons";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -92,7 +92,7 @@ export function ChatScreen() {
         onSuccess: (newConv) => {
           toast.success(
             "Conversation Created",
-            `Direct conversation created with ${name}`
+            `Direct conversation created with ${name}`,
           );
           setSearchQuery("");
           setSelectedConversation(newConv as ConversationItemData);
@@ -100,7 +100,7 @@ export function ChatScreen() {
         onError: (err: any) => {
           toast.error("Error", err?.message || "Could not start conversation");
         },
-      }
+      },
     );
   };
 
@@ -121,7 +121,10 @@ export function ChatScreen() {
         }}
       >
         {/* Title */}
-        <Text className="text-white text-[28px] font-bold tracking-tight mb-3">
+        <Text
+          className="text-white text-[28px] tracking-tight mb-3"
+          style={{ fontFamily: "SFProDisplay-Bold" }}
+        >
           Chats
         </Text>
 
@@ -142,6 +145,7 @@ export function ChatScreen() {
             placeholder="Search chat, people and more..."
             placeholderTextColor="rgba(255, 255, 255, 0.75)"
             className="flex-1 text-white text-[15px]"
+            style={{ fontFamily: "SFProDisplay-Regular" }}
             autoCapitalize="none"
             returnKeyType="search"
           />
@@ -194,7 +198,10 @@ export function ChatScreen() {
           ListFooterComponent={() => (
             <View className="mt-4">
               {/* API People Search Results */}
-              <View className="px-4 pb-2 border-t pt-3" style={{ borderColor: colors.divider }}>
+              <View
+                className="px-4 pb-2 border-t pt-3"
+                style={{ borderColor: colors.divider }}
+              >
                 <Text
                   className="text-[12px] font-semibold uppercase tracking-wider"
                   style={{ color: colors.textMuted }}
@@ -215,7 +222,8 @@ export function ChatScreen() {
                       : "Searching directory..."}
                   </Text>
                 </View>
-              ) : userSearchResults?.items && userSearchResults.items.length > 0 ? (
+              ) : userSearchResults?.items &&
+                userSearchResults.items.length > 0 ? (
                 userSearchResults.items.map((user) => {
                   const userName =
                     typeof user.displayName === "string" && user.displayName

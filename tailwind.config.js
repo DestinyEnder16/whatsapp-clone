@@ -33,19 +33,23 @@ module.exports = {
       addUtilities({
         ".font-normal": {
           fontFamily: "SFProDisplay-Regular",
-          fontWeight: "400",
+          fontWeight: "normal",
+        },
+        ".font-regular": {
+          fontFamily: "SFProDisplay-Regular",
+          fontWeight: "normal",
         },
         ".font-medium": {
           fontFamily: "SFProDisplay-Medium",
-          fontWeight: "500",
+          fontWeight: "normal",
         },
         ".font-semibold": {
-          fontFamily: "SFProDisplay-Medium",
-          fontWeight: "600",
+          fontFamily: "SFProDisplay-Bold",
+          fontWeight: "normal",
         },
         ".font-bold": {
           fontFamily: "SFProDisplay-Bold",
-          fontWeight: "700",
+          fontWeight: "normal",
         },
       });
     }),
