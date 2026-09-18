@@ -4,10 +4,13 @@ import { toast } from "@/shared/utils/toast";
 import Ionicons from "@react-native-vector-icons/ionicons";
 import { Image } from "expo-image";
 import { router } from "expo-router";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Dimensions,
+  Keyboard,
   Modal,
+  Platform,
   Pressable,
   SectionList,
   Text,
@@ -114,6 +117,46 @@ export function ContactPickerSheet({
   const insets = useSafeAreaInsets();
   const [searchQuery, setSearchQuery] = useState("");
   const [isInputFocused, setIsInputFocused] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  // Track keyboard height to adjust scroll padding
+  useEffect(() => {
+    const showEvent =
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    const hideEvent =
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+
+    const showSub = Keyboard.addListener(showEvent, (e) => {
+      setKeyboardHeight(e.endCoordinates?.height || 0);
+    });
+    const hideSub = Keyboard.addListener(hideEvent, () => {
+      setKeyboardHeight(0);
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
+  // Reset keyboard state & query when sheet closes
+  useEffect(() => {
+    if (!visible) {
+      setKeyboardHeight(0);
+      setSearchQuery("");
+      setIsInputFocused(false);
+    }
+  }, [visible]);
+
+  // Maintain consistent height matching Mockups 1 & 2 (~88% of screen)
+  const screenHeight = Math.max(
+    Dimensions.get("screen").height,
+    Dimensions.get("window").height
+  );
+  const sheetHeight = Math.min(
+    Math.round(screenHeight * 0.88),
+    screenHeight - Math.max(insets.top, 24) - 16
+  );
 
   const { data: apiSearchResults, isLoading: isSearchingApi } =
     useSearchUsers(searchQuery);
@@ -223,18 +266,21 @@ export function ContactPickerSheet({
       <View className="flex-1 justify-end" style={{ backgroundColor: "rgba(0,0,0,0.45)" }}>
         {/* Top green backdrop background */}
         <Pressable
-          onPress={onClose}
+          onPress={() => {
+            Keyboard.dismiss();
+            onClose();
+          }}
           className="flex-1"
           style={{ backgroundColor: colors.primary, opacity: 0.15 }}
         />
 
-        {/* Modal Sheet Card matching Mockup 1 & 2 */}
+        {/* Modal Sheet Card matching Mockup 1 & 2 with maintained height */}
         <View
           className="w-full rounded-t-[32px] overflow-hidden"
           style={{
             backgroundColor: colors.background,
-            maxHeight: "92%",
-            paddingBottom: Math.max(insets.bottom, 16),
+            height: sheetHeight,
+            minHeight: sheetHeight,
           }}
         >
           {/* Drag Handle Bar */}
@@ -310,10 +356,16 @@ export function ContactPickerSheet({
 
           {/* Contact SectionList grouped alphabetically */}
           <SectionList
+            className="flex-1"
+            style={{ flex: 1 }}
             sections={sections}
             keyExtractor={(item) => item.id}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+            contentContainerStyle={{
+              paddingBottom: Math.max(insets.bottom, 24) + keyboardHeight,
+            }}
             renderSectionHeader={({ section: { title } }) => (
               <View
                 className="px-6 py-1.5"
