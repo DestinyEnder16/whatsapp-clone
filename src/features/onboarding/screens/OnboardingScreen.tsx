@@ -1,7 +1,8 @@
 import Button from '@/shared/components/Button';
-import { colors } from '@/shared/theme/colors';
+import { useAppTheme } from '@/shared/hooks';
 import { useRouter } from 'expo-router';
-import { useRef, useState } from 'react';
+import { StatusBar } from 'expo-status-bar';
+import React, { useRef, useState } from 'react';
 import {
     FlatList,
     Image,
@@ -13,10 +14,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ONBOARDING_SLIDES } from '../data';
 
-
 export function OnboardingScreen() {
     const { width } = useWindowDimensions();
     const router = useRouter();
+    const { colors, isDark } = useAppTheme();
     const [currentIndex, setCurrentIndex] = useState(0);
     const slidesRef = useRef(null);
 
@@ -29,27 +30,36 @@ export function OnboardingScreen() {
     const viewConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+            <StatusBar style={isDark ? "light" : "dark"} />
+
             <View style={styles.header}>
                 <Image
                     source={require('@/assets/images/icon.png')}
                     style={styles.logoIcon}
                     resizeMode="contain"
                 />
-                <Text style={styles.logoText}>ChatMe</Text>
+                <Text style={[styles.logoText, { color: colors.primary }]}>ChatMe</Text>
             </View>
 
             <View style={{ flex: 4 }}>
                 <FlatList
                     data={ONBOARDING_SLIDES}
-                    renderItem={({ item }) => (
-                        <View style={[styles.slide, { width }]}>
-                            <Image
-                                source={item.image}
-                                style={[styles.image, { width: width * 0.9, resizeMode: 'contain' }]}
-                            />
-                        </View>
-                    )}
+                    renderItem={({ item }) => {
+                        const imageSource =
+                            isDark && item.id === '1'
+                                ? require('@/assets/images/illustration-onboarding-dark.png')
+                                : item.image;
+
+                        return (
+                            <View style={[styles.slide, { width }]}>
+                                <Image
+                                    source={imageSource}
+                                    style={[styles.image, { width: width * 0.9, resizeMode: 'contain' }]}
+                                />
+                            </View>
+                        );
+                    }}
                     horizontal
                     showsHorizontalScrollIndicator={false}
                     pagingEnabled
@@ -68,16 +78,27 @@ export function OnboardingScreen() {
                             key={index.toString()}
                             style={[
                                 styles.indicator,
-                                currentIndex === index ? styles.indicatorActive : styles.indicatorInactive,
+                                currentIndex === index
+                                    ? { width: 24, backgroundColor: colors.primary }
+                                    : {
+                                          width: 8,
+                                          backgroundColor: isDark
+                                              ? colors.cardBorder
+                                              : colors.divider,
+                                      },
                             ]}
                         />
                     ))}
                 </View>
 
-                <Text style={styles.title}>{ONBOARDING_SLIDES[currentIndex].title}</Text>
-                <Text style={styles.description}>{ONBOARDING_SLIDES[currentIndex].description}</Text>
+                <Text style={[styles.title, { color: colors.text }]}>
+                    {ONBOARDING_SLIDES[currentIndex].title}
+                </Text>
+                <Text style={[styles.description, { color: colors.textSecondary }]}>
+                    {ONBOARDING_SLIDES[currentIndex].description}
+                </Text>
 
-                <Button title="Get Started" onPress={() => { router.push('/(auth)/phone') }} />
+                <Button title="Get Started" onPress={() => { router.push('/(auth)/phone'); }} />
             </View>
         </SafeAreaView>
     );
@@ -86,7 +107,6 @@ export function OnboardingScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
     },
     header: {
         flexDirection: 'row',
@@ -102,7 +122,6 @@ const styles = StyleSheet.create({
     logoText: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: colors.primary[400],
     },
     slide: {
         flex: 1,
@@ -129,39 +148,18 @@ const styles = StyleSheet.create({
         borderRadius: 4,
         marginHorizontal: 4,
     },
-    indicatorActive: {
-        width: 24,
-        backgroundColor: colors.primary[400],
-    },
-    indicatorInactive: {
-        width: 8,
-        backgroundColor: colors.neutral[100],
-    },
     title: {
         fontSize: 28,
         fontWeight: '800',
-        color: colors.neutral[900],
         textAlign: 'center',
         marginBottom: 16,
         lineHeight: 36,
     },
     description: {
         fontSize: 16,
-        color: colors.neutral[300],
         textAlign: 'center',
         marginBottom: 40,
         lineHeight: 24,
     },
-    button: {
-        backgroundColor: colors.primary[400],
-        width: '100%',
-        paddingVertical: 18,
-        borderRadius: 16,
-        alignItems: 'center',
-    },
-    buttonText: {
-        color: '#fff',
-        fontSize: 18,
-        fontWeight: '600',
-    },
 });
+

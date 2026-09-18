@@ -1,5 +1,6 @@
 import { useAppTheme } from "@/shared/hooks";
-import { ReactNode } from "react";
+import { StatusBar } from "expo-status-bar";
+import React, { ReactNode } from "react";
 import { View, ViewStyle } from "react-native";
 import { SafeAreaView, SafeAreaViewProps } from "react-native-safe-area-context";
 
@@ -13,12 +14,12 @@ interface ScreenProps extends SafeAreaViewProps {
 export default function Screen({
   children,
   edges,
-  className = "flex-1 bg-white dark:bg-neutral-900",
+  className = "flex-1",
   contentClassName = "flex-1 px-8 py-[50px]",
   style,
   ...props
 }: ScreenProps) {
-  const { colors } = useAppTheme();
+  const { colors, isDark } = useAppTheme();
 
   return (
     <SafeAreaView
@@ -27,8 +28,10 @@ export default function Screen({
       edges={edges}
       {...props}
     >
+      <StatusBar style={isDark ? "light" : "dark"} />
       <View className={contentClassName}>{children}</View>
     </SafeAreaView>
   );
 }
+
 

@@ -3,16 +3,17 @@ import { useUpdateProfile } from "@/features/auth/api/useUpdateProfile";
 import { BackButton, Button } from "@/shared/components";
 import { PhotoPickerModal } from "@/shared/components/PhotoPickerModal";
 import Screen from "@/shared/components/Screen";
-import colors from "@/shared/theme/colors";
+import { useAppTheme } from "@/shared/hooks";
 import { toast } from "@/shared/utils/toast";
 import { Image } from "expo-image";
 import { router } from "expo-router";
-import { useState } from "react";
+import React, { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
 type UploadStatus = "idle" | "uploading" | "done";
 
 export function UploadPhotoScreen() {
+  const { colors, isDark } = useAppTheme();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [uploadStatus, setUploadStatus] = useState<UploadStatus>("idle");
@@ -32,7 +33,6 @@ export function UploadPhotoScreen() {
       { avatarUrl: uri } as any,
       {
         onSuccess: async (updatedUser) => {
-          // Keep uploading screen visible for at least 1.2s for smooth UX
           const elapsed = Date.now() - startTime;
           if (elapsed < 1200) {
             await new Promise((resolve) => setTimeout(resolve, 1200 - elapsed));
@@ -46,7 +46,6 @@ export function UploadPhotoScreen() {
           if (elapsed < 1200) {
             await new Promise((resolve) => setTimeout(resolve, 1200 - elapsed));
           }
-          // Sync local user store so the user's selected photo persists
           if (user) {
             setUser({ ...user, avatarUrl: uri as any });
           }
@@ -81,7 +80,10 @@ export function UploadPhotoScreen() {
       </View>
 
       <View className="mt-4 items-center">
-        <Text className="text-[24px] font-bold text-neutral-900 tracking-tight">
+        <Text
+          className="text-[24px] font-bold tracking-tight text-center"
+          style={{ color: colors.text }}
+        >
           Upload a photo
         </Text>
       </View>
@@ -93,7 +95,11 @@ export function UploadPhotoScreen() {
           className="flex-1 items-center justify-center"
         >
           <Image
-            source={require("@/assets/images/upload-photo-light.svg")}
+            source={
+              isDark
+                ? require("@/assets/images/upload-photo-dark.svg")
+                : require("@/assets/images/upload-photo-light.svg")
+            }
             style={{ width: 170, height: 170 }}
             contentFit="contain"
           />
@@ -107,7 +113,10 @@ export function UploadPhotoScreen() {
             style={{ width: 170, height: 170 }}
             contentFit="contain"
           />
-          <Text className="mt-8 text-[16px] text-neutral-400 font-medium text-center leading-6">
+          <Text
+            className="mt-8 text-[16px] font-medium text-center leading-6"
+            style={{ color: colors.textSecondary }}
+          >
             Wait a second, your photo{"\n"}still uploading
           </Text>
         </View>
@@ -119,7 +128,10 @@ export function UploadPhotoScreen() {
             onPress={() => setModalVisible(true)}
             className="relative items-center justify-center"
           >
-            <View className="w-[150px] h-[150px] rounded-full overflow-hidden bg-neutral-100">
+            <View
+              className="w-[150px] h-[150px] rounded-full overflow-hidden"
+              style={{ backgroundColor: colors.surface }}
+            >
               {selectedImage ? (
                 <Image
                   source={{ uri: selectedImage }}
@@ -132,7 +144,7 @@ export function UploadPhotoScreen() {
             {/* Green checkmark badge on top right */}
             <View
               className="absolute top-1 right-2 w-9 h-9 rounded-full items-center justify-center border-[2.5px] border-white"
-              style={{ backgroundColor: colors.primary[400] }}
+              style={{ backgroundColor: colors.primary }}
             >
               <Image
                 source={require("@/assets/icons/solid/check.svg")}
@@ -143,7 +155,10 @@ export function UploadPhotoScreen() {
             </View>
           </Pressable>
 
-          <Text className="mt-8 text-[16px] text-neutral-400 font-medium text-center leading-6">
+          <Text
+            className="mt-8 text-[16px] font-medium text-center leading-6"
+            style={{ color: colors.textSecondary }}
+          >
             Done! Your photo{"\n"}successfully uploaded
           </Text>
         </View>
@@ -161,7 +176,10 @@ export function UploadPhotoScreen() {
               onPress={() => router.replace("/(tabs)")}
               className="items-center py-2 active:opacity-70"
             >
-              <Text className="text-[15px] font-semibold text-neutral-300">
+              <Text
+                className="text-[15px] font-semibold"
+                style={{ color: colors.textSecondary }}
+              >
                 Skip for now
               </Text>
             </Pressable>
@@ -183,5 +201,6 @@ export function UploadPhotoScreen() {
     </Screen>
   );
 }
+
 
 export default UploadPhotoScreen;

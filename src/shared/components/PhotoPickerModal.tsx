@@ -19,6 +19,7 @@ import {
 } from "expo-media-library";
 // Replace the old @expo/vector-icons import:
 import { Ionicons } from "@react-native-vector-icons/ionicons";
+import { useAppTheme } from "@/shared/hooks";
 
 
 interface PhotoPickerModalProps {
@@ -119,6 +120,8 @@ export function PhotoPickerModal({
     }
   }
 
+  const { colors } = useAppTheme();
+
   return (
     <Modal
       visible={visible}
@@ -127,12 +130,13 @@ export function PhotoPickerModal({
       onRequestClose={onClose}
     >
       <Pressable
-        className="flex-1 bg-black/40 justify-end"
+        className="flex-1 bg-black/50 justify-end"
         onPress={onClose}
       >
         {/* Modal Container */}
         <Pressable
-          className="bg-white rounded-t-3xl pt-5 pb-8 px-5 shadow-2xl"
+          className="rounded-t-3xl pt-5 pb-8 px-5 shadow-2xl"
+          style={{ backgroundColor: colors.card }}
           onPress={(e) => e.stopPropagation()}
         >
           {/* Recent Photos Horizontal Strip */}
@@ -145,8 +149,8 @@ export function PhotoPickerModal({
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={handleTakePhoto}
-              className="mx-1.5 rounded-2xl overflow-hidden relative justify-center items-center bg-neutral-200"
-              style={{ width: 68, height: 68 }}
+              className="mx-1.5 rounded-2xl overflow-hidden relative justify-center items-center"
+              style={{ width: 68, height: 68, backgroundColor: colors.surface }}
             >
               {recentPhotos.length > 0 ? (
                 <Image
@@ -155,7 +159,7 @@ export function PhotoPickerModal({
                   contentFit="cover"
                 />
               ) : (
-                <View className="w-full h-full bg-neutral-300" />
+                <View className="w-full h-full" style={{ backgroundColor: colors.surface }} />
               )}
               {/* Semi-transparent dark overlay with white camera icon */}
               <View className="absolute inset-0 bg-black/30 justify-center items-center">
@@ -192,8 +196,11 @@ export function PhotoPickerModal({
               className="flex-row items-center py-2.5"
               activeOpacity={0.7}
             >
-              <Ionicons name="camera" size={22} color="#0D9488" />
-              <Text className="ml-4 text-[16px] font-semibold text-slate-800">
+              <Ionicons name="camera" size={22} color={colors.primary} />
+              <Text
+                className="ml-4 text-[16px] font-semibold"
+                style={{ color: colors.text }}
+              >
                 Take Photo
               </Text>
             </TouchableOpacity>
@@ -203,8 +210,11 @@ export function PhotoPickerModal({
               className="flex-row items-center py-2.5"
               activeOpacity={0.7}
             >
-              <Ionicons name="images" size={22} color="#0D9488" />
-              <Text className="ml-4 text-[16px] font-semibold text-slate-800">
+              <Ionicons name="images" size={22} color={colors.primary} />
+              <Text
+                className="ml-4 text-[16px] font-semibold"
+                style={{ color: colors.text }}
+              >
                 Choose From Library
               </Text>
             </TouchableOpacity>

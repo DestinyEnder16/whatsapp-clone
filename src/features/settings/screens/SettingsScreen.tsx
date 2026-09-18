@@ -67,7 +67,7 @@ export function SettingsScreen() {
           Settings
         </Text>
         <Pressable
-          onPress={() => router.push("/upload-photo")}
+          onPress={() => router.push("/edit-profile" as any)}
           className="w-10 h-10 items-center justify-center rounded-full active:opacity-75"
           style={{ backgroundColor: colors.surface }}
         >
@@ -81,7 +81,7 @@ export function SettingsScreen() {
       >
         {/* User Profile Card */}
         <Pressable
-          onPress={() => router.push("/upload-photo")}
+          onPress={() => router.push("/edit-profile" as any)}
           className="px-6 py-3 flex-row items-center active:opacity-80"
         >
           <View
@@ -123,7 +123,10 @@ export function SettingsScreen() {
             </Text>
           </View>
 
-          <Pressable className="p-2 active:opacity-70">
+          <Pressable
+            onPress={() => router.push("/qr-code" as any)}
+            className="p-2 active:opacity-70"
+          >
             <Ionicons name="qr-code-outline" size={22} color={colors.primary} />
           </Pressable>
         </Pressable>
@@ -135,8 +138,16 @@ export function SettingsScreen() {
         />
 
         {/* Group 1: Preferences */}
-        <SettingItem icon="star-outline" title="Star messages" />
-        <SettingItem icon="call-outline" title="Last call" />
+        <SettingItem
+          icon="star-outline"
+          title="Star messages"
+          onPress={() => router.push("/star-message" as any)}
+        />
+        <SettingItem
+          icon="call-outline"
+          title="Last call"
+          onPress={() => router.push("/last-call" as any)}
+        />
         <SettingItem icon="folder-outline" title="My folder" />
         <SettingItem
           icon="contrast-outline"
