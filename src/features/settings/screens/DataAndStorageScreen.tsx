@@ -33,7 +33,7 @@ export function DataAndStorageScreen() {
           {/* Manage Storage Row */}
           <SettingRowItem
             title="Manage Storage"
-            onPress={() => router.push("/manage-storage")}
+            onPress={() => router.push("/settings/manage-storage" as any)}
           />
 
           {/* AUTO DOWNLOAD Section Header */}
@@ -52,9 +52,9 @@ export function DataAndStorageScreen() {
             value={AUTO_DOWNLOAD_LABELS[photos]}
             onPress={() =>
               router.push({
-                pathname: "/auto-download",
+                pathname: "/settings/auto-download",
                 params: { type: "photos", title: "Photos" },
-              })
+              } as any)
             }
           />
 
@@ -64,9 +64,9 @@ export function DataAndStorageScreen() {
             value={AUTO_DOWNLOAD_LABELS[audio]}
             onPress={() =>
               router.push({
-                pathname: "/auto-download",
+                pathname: "/settings/auto-download",
                 params: { type: "audio", title: "Audio" },
-              })
+              } as any)
             }
           />
 
@@ -76,9 +76,9 @@ export function DataAndStorageScreen() {
             value={AUTO_DOWNLOAD_LABELS[documents]}
             onPress={() =>
               router.push({
-                pathname: "/auto-download",
+                pathname: "/settings/auto-download",
                 params: { type: "documents", title: "Documents" },
-              })
+              } as any)
             }
           />
 
@@ -88,9 +88,9 @@ export function DataAndStorageScreen() {
             value={AUTO_DOWNLOAD_LABELS[videos]}
             onPress={() =>
               router.push({
-                pathname: "/auto-download",
+                pathname: "/settings/auto-download",
                 params: { type: "videos", title: "Videos" },
-              })
+              } as any)
             }
           />
         </View>

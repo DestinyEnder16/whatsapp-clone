@@ -138,11 +138,13 @@ export const SAMPLE_CALL_SECTIONS: CallSection[] = [
 
 export function LastCallScreen({
   showBackButton = true,
+  title = "Last Call",
 }: {
   showBackButton?: boolean;
+  title?: string;
 } = {}) {
   const insets = useSafeAreaInsets();
-  const { colors } = useAppTheme();
+  const { colors, isDark } = useAppTheme();
   const [sections] = useState<CallSection[]>(SAMPLE_CALL_SECTIONS);
 
   function handleStartCall(item: CallRecordItem) {
@@ -197,7 +199,7 @@ export function LastCallScreen({
   }
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1" style={{ backgroundColor: colors.background }}>
       <StatusBar style="light" />
 
       {/* Top Header Bar */}
@@ -223,8 +225,11 @@ export function LastCallScreen({
             <View className="w-10" />
           )}
 
-          <Text className="text-[19px] font-bold text-white tracking-tight text-center">
-            Last Call
+          <Text
+            className="text-[19px] text-white tracking-tight text-center"
+            style={{ fontFamily: "SFPRODISPLAYBOLD" }}
+          >
+            {title}
           </Text>
 
           <Pressable
@@ -247,10 +252,19 @@ export function LastCallScreen({
           paddingBottom: insets.bottom + 20,
         }}
         showsVerticalScrollIndicator={false}
-        renderSectionHeader={({ section: { title } }) => (
-          <View className="px-5 pt-4 pb-2 bg-white">
-            <Text className="text-[12px] font-bold tracking-wider text-neutral-400 uppercase">
-              {title}
+        renderSectionHeader={({ section: { title: sectionTitle } }) => (
+          <View
+            className="px-5 pt-4 pb-2"
+            style={{ backgroundColor: colors.background }}
+          >
+            <Text
+              className="text-[12px] tracking-wider uppercase"
+              style={{
+                color: colors.textMuted,
+                fontFamily: "SFPRODISPLAYBOLD",
+              }}
+            >
+              {sectionTitle}
             </Text>
           </View>
         )}
@@ -261,11 +275,18 @@ export function LastCallScreen({
           return (
             <Pressable
               onPress={() => handleStartCall(item)}
-              className="px-5 py-3 flex-row items-center justify-between active:bg-neutral-50"
+              className="px-5 py-3 flex-row items-center justify-between active:opacity-70"
+              style={{ backgroundColor: colors.background }}
             >
               {/* Left Column: Avatar & Contact Info */}
               <View className="flex-row items-center flex-1 mr-3">
-                <View className="w-[50px] h-[50px] rounded-full overflow-hidden bg-neutral-200">
+                <View
+                  className="w-[50px] h-[50px] rounded-full overflow-hidden border"
+                  style={{
+                    backgroundColor: colors.surface,
+                    borderColor: colors.border,
+                  }}
+                >
                   <Image
                     source={{ uri: item.avatarUrl }}
                     style={{ width: "100%", height: "100%" }}
@@ -275,7 +296,11 @@ export function LastCallScreen({
 
                 <View className="ml-3.5 flex-1">
                   <Text
-                    className="text-[16px] font-semibold text-neutral-900"
+                    className="text-[16px]"
+                    style={{
+                      color: colors.text,
+                      fontFamily: "SFPRODISPLAYBOLD",
+                    }}
                     numberOfLines={1}
                   >
                     {item.contactName}
@@ -292,12 +317,13 @@ export function LastCallScreen({
                             : "arrow-down"
                       }
                       size={13}
-                      color={isMissed ? "#DD524C" : "#6E8597"}
+                      color={isMissed ? "#DD524C" : isDark ? colors.textMuted : "#6E8597"}
                     />
                     <Text
-                      className="ml-1.5 text-[13px] font-medium"
+                      className="ml-1.5 text-[13px]"
                       style={{
-                        color: isMissed ? "#DD524C" : "#6E8597",
+                        color: isMissed ? "#DD524C" : isDark ? colors.textMuted : "#6E8597",
+                        fontFamily: "SFPRODISPLAYMEDIUM",
                       }}
                     >
                       {isMissed
@@ -312,7 +338,13 @@ export function LastCallScreen({
 
               {/* Right Column: Time & Info Icon */}
               <View className="flex-row items-center">
-                <Text className="text-[13px] font-medium text-neutral-400 mr-2.5">
+                <Text
+                  className="text-[13px] mr-2.5"
+                  style={{
+                    color: colors.textMuted,
+                    fontFamily: "SFPRODISPLAYREGULAR",
+                  }}
+                >
                   {item.time}
                 </Text>
 

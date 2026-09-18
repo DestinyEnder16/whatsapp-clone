@@ -1,11 +1,12 @@
 import { useAuthStore } from "@/core/store/useAuthStore";
+import { useNotificationStore } from "@/core/store/useNotificationStore";
 import { useMe } from "@/features/auth/api/useMe";
 import { useAppTheme } from "@/shared/hooks";
 import { toast } from "@/shared/utils/toast";
 import Ionicons from "@react-native-vector-icons/ionicons";
 import { Image } from "expo-image";
 import { router } from "expo-router";
-import { useState } from "react";
+import React from "react";
 import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SettingItem } from "../components";
@@ -14,7 +15,12 @@ export function SettingsScreen() {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const { colors } = useAppTheme();
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const notificationsEnabled = useNotificationStore(
+    (state) => state.notificationsEnabled
+  );
+  const setNotificationsEnabled = useNotificationStore(
+    (state) => state.setNotificationsEnabled
+  );
 
   // Fetch profile from API, falling back to local store for fields like local avatar
   const { data: me } = useMe();
@@ -67,7 +73,7 @@ export function SettingsScreen() {
           Settings
         </Text>
         <Pressable
-          onPress={() => router.push("/edit-profile" as any)}
+          onPress={() => router.push("/settings/edit-profile" as any)}
           className="w-10 h-10 items-center justify-center rounded-full active:opacity-75"
           style={{ backgroundColor: colors.surface }}
         >
@@ -81,7 +87,7 @@ export function SettingsScreen() {
       >
         {/* User Profile Card */}
         <Pressable
-          onPress={() => router.push("/edit-profile" as any)}
+          onPress={() => router.push("/settings/edit-profile" as any)}
           className="px-6 py-3 flex-row items-center active:opacity-80"
         >
           <View
@@ -124,7 +130,7 @@ export function SettingsScreen() {
           </View>
 
           <Pressable
-            onPress={() => router.push("/qr-code" as any)}
+            onPress={() => router.push("/settings/qr-code" as any)}
             className="p-2 active:opacity-70"
           >
             <Ionicons name="qr-code-outline" size={22} color={colors.primary} />
@@ -141,25 +147,29 @@ export function SettingsScreen() {
         <SettingItem
           icon="star-outline"
           title="Star messages"
-          onPress={() => router.push("/star-message" as any)}
+          onPress={() => router.push("/settings/star-message" as any)}
         />
         <SettingItem
           icon="call-outline"
           title="Last call"
-          onPress={() => router.push("/last-call" as any)}
+          onPress={() => router.push("/settings/last-call" as any)}
         />
         <SettingItem icon="folder-outline" title="My folder" />
         <SettingItem
           icon="contrast-outline"
           title="Appearance"
-          onPress={() => router.push("/appearance")}
+          onPress={() => router.push("/settings/appearance" as any)}
         />
         <SettingItem
           icon="notifications-outline"
           title="Notification"
+          onPress={() => router.push("/settings/notification" as any)}
           rightElement={
             <Pressable
-              onPress={() => setNotificationsEnabled(!notificationsEnabled)}
+              onPress={(e) => {
+                e.stopPropagation?.();
+                setNotificationsEnabled(!notificationsEnabled);
+              }}
               className="w-[48px] h-[26px] rounded-full px-0.5 justify-center"
               style={{
                 backgroundColor: notificationsEnabled
@@ -187,17 +197,17 @@ export function SettingsScreen() {
         <SettingItem
           icon="lock-closed-outline"
           title="Privacy"
-          onPress={() => router.push("/privacy")}
+          onPress={() => router.push("/settings/privacy" as any)}
         />
         <SettingItem
           icon="server-outline"
           title="Data and storage"
-          onPress={() => router.push("/data-storage")}
+          onPress={() => router.push("/settings/data-storage" as any)}
         />
         <SettingItem
           icon="help-circle-outline"
           title="FAQ"
-          onPress={() => router.push("/faq")}
+          onPress={() => router.push("/settings/faq" as any)}
         />
         <SettingItem
           icon="log-out-outline"

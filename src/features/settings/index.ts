@@ -12,4 +12,5 @@ export { EditProfileScreen } from "./screens/EditProfileScreen";
 export { QrCodeScreen } from "./screens/QrCodeScreen";
 export { StarMessageScreen } from "./screens/StarMessageScreen";
 export { LastCallScreen } from "./screens/LastCallScreen";
+export { NotificationSettingsScreen } from "./screens/NotificationSettingsScreen";
 export { useDeviceStorage } from "./hooks/useDeviceStorage";

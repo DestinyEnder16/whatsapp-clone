@@ -19,12 +19,14 @@ module.exports = {
         orange: colors.orange,
       },
       fontFamily: {
-        sans: ["SFProDisplay-Regular"],
-        regular: ["SFProDisplay-Regular"],
-        medium: ["SFProDisplay-Medium"],
-        bold: ["SFProDisplay-Bold"],
-        semibold: ["SFProDisplay-Bold"],
-        italic: ["SFProDisplay-SemiboldItalic"],
+        sans: ["SFPRODISPLAYREGULAR", "SFProDisplay-Regular"],
+        sfpro: ["SFPRODISPLAYREGULAR", "SFProDisplay-Regular"],
+        sfprodisplay: ["SFPRODISPLAYREGULAR", "SFProDisplay-Regular"],
+        regular: ["SFPRODISPLAYREGULAR", "SFProDisplay-Regular"],
+        medium: ["SFPRODISPLAYMEDIUM", "SFProDisplay-Medium"],
+        bold: ["SFPRODISPLAYBOLD", "SFProDisplay-Bold"],
+        semibold: ["SFPRODISPLAYBOLD", "SFProDisplay-Bold"],
+        italic: ["SFPRODISPLAYSEMIBOLDITALIC", "SFProDisplay-SemiboldItalic"],
       },
     },
   },
@@ -32,20 +34,24 @@ module.exports = {
     plugin(function ({ addUtilities }) {
       addUtilities({
         ".font-normal": {
-          fontFamily: "SFProDisplay-Regular",
-          fontWeight: "400",
+          fontFamily: "SFPRODISPLAYREGULAR",
+          fontWeight: "normal",
+        },
+        ".font-regular": {
+          fontFamily: "SFPRODISPLAYREGULAR",
+          fontWeight: "normal",
         },
         ".font-medium": {
-          fontFamily: "SFProDisplay-Medium",
-          fontWeight: "500",
+          fontFamily: "SFPRODISPLAYMEDIUM",
+          fontWeight: "normal",
         },
         ".font-semibold": {
-          fontFamily: "SFProDisplay-Medium",
-          fontWeight: "600",
+          fontFamily: "SFPRODISPLAYBOLD",
+          fontWeight: "normal",
         },
         ".font-bold": {
-          fontFamily: "SFProDisplay-Bold",
-          fontWeight: "700",
+          fontFamily: "SFPRODISPLAYBOLD",
+          fontWeight: "normal",
         },
       });
     }),

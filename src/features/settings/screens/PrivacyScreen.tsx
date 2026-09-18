@@ -55,9 +55,9 @@ export function PrivacyScreen() {
             value={PRIVACY_AUDIENCE_LABELS[lastSeen]}
             onPress={() =>
               router.push({
-                pathname: "/privacy-option",
+                pathname: "/settings/privacy-option",
                 params: { type: "lastSeen", title: "Last Seen" },
-              })
+              } as any)
             }
           />
 
@@ -67,9 +67,9 @@ export function PrivacyScreen() {
             value={PRIVACY_AUDIENCE_LABELS[profilePhoto]}
             onPress={() =>
               router.push({
-                pathname: "/privacy-option",
+                pathname: "/settings/privacy-option",
                 params: { type: "profilePhoto", title: "Profile Photo" },
-              })
+              } as any)
             }
           />
 
@@ -79,9 +79,9 @@ export function PrivacyScreen() {
             value={PRIVACY_AUDIENCE_LABELS[about]}
             onPress={() =>
               router.push({
-                pathname: "/privacy-option",
+                pathname: "/settings/privacy-option",
                 params: { type: "about", title: "About" },
-              })
+              } as any)
             }
           />
 
@@ -91,9 +91,9 @@ export function PrivacyScreen() {
             value={PRIVACY_AUDIENCE_LABELS[group]}
             onPress={() =>
               router.push({
-                pathname: "/privacy-option",
+                pathname: "/settings/privacy-option",
                 params: { type: "group", title: "Group" },
-              })
+              } as any)
             }
           />
 
@@ -101,7 +101,7 @@ export function PrivacyScreen() {
           <SettingRowItem
             title="Blocked Contact"
             value={`${blockedCount} Contacts`}
-            onPress={() => router.push("/blocked-contacts")}
+            onPress={() => router.push("/settings/blocked-contacts" as any)}
           />
 
           {/* Face ID Row */}

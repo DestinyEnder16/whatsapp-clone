@@ -27,7 +27,7 @@ const DEFAULT_AVATAR =
 
 export function EditProfileScreen() {
   const insets = useSafeAreaInsets();
-  const { colors } = useAppTheme();
+  const { colors, isDark } = useAppTheme();
   const user = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
   const { data: me } = useMe();
@@ -122,7 +122,7 @@ export function EditProfileScreen() {
   }
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1" style={{ backgroundColor: colors.background }}>
       <StatusBar style="light" />
 
       {/* Top Header Background (Green) */}
@@ -158,8 +158,14 @@ export function EditProfileScreen() {
             accessibilityLabel="Change profile photo"
           >
             <View
-              className="w-[136px] h-[136px] rounded-full overflow-hidden bg-neutral-100 items-center justify-center"
-              style={styles.avatarBorder}
+              className="w-[136px] h-[136px] rounded-full overflow-hidden items-center justify-center"
+              style={[
+                styles.avatarBorder,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: isDark ? colors.border : "#FFFFFF",
+                },
+              ]}
             >
               <Image
                 source={{ uri: avatarUri }}
@@ -202,24 +208,37 @@ export function EditProfileScreen() {
         >
           {/* Name Field */}
           <View className="mb-5">
-            <Text className="text-[14px] font-semibold text-neutral-800 mb-2">
+            <Text
+              className="text-[14px] mb-2"
+              style={{ color: colors.text, fontFamily: "SFPRODISPLAYBOLD" }}
+            >
               Name
             </Text>
-            <View className="flex-row items-center px-4 h-[56px] rounded-2xl border border-neutral-100 bg-white">
+            <View
+              className="flex-row items-center px-4 h-[56px] rounded-2xl border"
+              style={{
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
+              }}
+            >
               <View className="w-6 items-center justify-center">
                 <Image
                   source={require("@/assets/icons/solid/user.svg")}
                   style={{ width: 18, height: 18 }}
                   contentFit="contain"
-                  tintColor="#94A3B8"
+                  tintColor={colors.textMuted}
                 />
               </View>
               <TextInput
                 value={name}
                 onChangeText={setName}
                 placeholder="Your full name"
-                placeholderTextColor="#94A3B8"
-                className="flex-1 ml-3 text-[16px] text-neutral-900 font-medium h-full"
+                placeholderTextColor={colors.textMuted}
+                className="flex-1 ml-3 text-[16px] h-full"
+                style={{
+                  color: colors.text,
+                  fontFamily: "SFPRODISPLAYMEDIUM",
+                }}
                 cursorColor={colors.primary}
                 selectionColor={colors.primaryLight}
                 autoCapitalize="words"
@@ -229,10 +248,19 @@ export function EditProfileScreen() {
 
           {/* Phone Number Field */}
           <View className="mb-6">
-            <Text className="text-[14px] font-semibold text-neutral-800 mb-2">
+            <Text
+              className="text-[14px] mb-2"
+              style={{ color: colors.text, fontFamily: "SFPRODISPLAYBOLD" }}
+            >
               Phone Number
             </Text>
-            <View className="flex-row items-center px-4 h-[56px] rounded-2xl border border-neutral-100 bg-white">
+            <View
+              className="flex-row items-center px-4 h-[56px] rounded-2xl border"
+              style={{
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
+              }}
+            >
               {/* Indonesian Flag Icon */}
               <View className="w-7 h-[18px] rounded-[3px] overflow-hidden border border-neutral-200">
                 <View className="flex-1 bg-[#EE2737]" />
@@ -240,7 +268,13 @@ export function EditProfileScreen() {
               </View>
 
               {/* Country Code */}
-              <Text className="text-[15px] font-semibold text-neutral-800 ml-2.5">
+              <Text
+                className="text-[15px] ml-2.5"
+                style={{
+                  color: colors.text,
+                  fontFamily: "SFPRODISPLAYBOLD",
+                }}
+              >
                 +62
               </Text>
 
@@ -250,8 +284,12 @@ export function EditProfileScreen() {
                 onChangeText={setPhoneNumber}
                 keyboardType="phone-pad"
                 placeholder="Phone number"
-                placeholderTextColor="#94A3B8"
-                className="flex-1 ml-3 text-[15px] text-neutral-900 font-medium h-full"
+                placeholderTextColor={colors.textMuted}
+                className="flex-1 ml-3 text-[15px] h-full"
+                style={{
+                  color: colors.text,
+                  fontFamily: "SFPRODISPLAYMEDIUM",
+                }}
                 cursorColor={colors.primary}
                 selectionColor={colors.primaryLight}
               />
@@ -271,7 +309,10 @@ export function EditProfileScreen() {
               opacity: isSaving ? 0.7 : 1,
             }}
           >
-            <Text className="text-white text-[17px] font-bold">
+            <Text
+              className="text-white text-[17px]"
+              style={{ fontFamily: "SFPRODISPLAYBOLD" }}
+            >
               {isSaving ? "Saving..." : "Save"}
             </Text>
           </Pressable>
