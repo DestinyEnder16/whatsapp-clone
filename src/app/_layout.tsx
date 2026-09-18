@@ -1,3 +1,4 @@
+import { configureNotificationHandler } from "@/services/notifications";
 import { useAppTheme } from "@/shared/hooks";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useFonts } from "expo-font";
@@ -41,6 +42,11 @@ export default function RootLayout() {
   useEffect(() => {
     setColorScheme(mode);
   }, [mode, setColorScheme]);
+
+  // Configure Expo foreground notification handler
+  useEffect(() => {
+    configureNotificationHandler();
+  }, []);
 
   // Hide splash screen once fonts are loaded or on error
   useEffect(() => {
