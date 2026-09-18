@@ -8,4 +8,8 @@ export { DataAndStorageScreen } from "./screens/DataAndStorageScreen";
 export { ManageStorageScreen } from "./screens/ManageStorageScreen";
 export { AutoDownloadOptionScreen } from "./screens/AutoDownloadOptionScreen";
 export { FaqScreen } from "./screens/FaqScreen";
+export { EditProfileScreen } from "./screens/EditProfileScreen";
+export { QrCodeScreen } from "./screens/QrCodeScreen";
+export { StarMessageScreen } from "./screens/StarMessageScreen";
+export { LastCallScreen } from "./screens/LastCallScreen";
 export { useDeviceStorage } from "./hooks/useDeviceStorage";

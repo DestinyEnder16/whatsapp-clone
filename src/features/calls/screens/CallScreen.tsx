@@ -1,9 +1,5 @@
-import { Text, View } from "react-native";
+import { LastCallScreen } from "@/features/settings";
 
 export function CallScreen() {
-  return (
-    <View>
-      <Text>Hello world</Text>
-    </View>
-  );
+  return <LastCallScreen showBackButton={false} />;
 }
