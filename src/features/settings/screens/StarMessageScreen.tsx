@@ -102,7 +102,7 @@ export function StarMessageScreen() {
   }
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1" style={{ backgroundColor: colors.background }}>
       <StatusBar style="light" />
 
       {/* Top Header */}
