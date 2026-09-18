@@ -22,11 +22,11 @@ import { useConversations } from "../api/useConversations";
 import { useCreateDirectConversation } from "../api/useCreateDirectConversation";
 import { useSearchUsers } from "../api/useSearchUsers";
 import {
+  ContactPickerSheet,
   ConversationInfoModal,
   ConversationItem,
   type ConversationItemData,
   PinCodeModal,
-  StartConversationModal,
 } from "../components";
 
 export function ChatScreen() {
@@ -90,18 +90,42 @@ export function ChatScreen() {
       { participantId: userId },
       {
         onSuccess: (newConv) => {
-          toast.success(
-            "Conversation Created",
-            `Direct conversation created with ${name}`,
-          );
           setSearchQuery("");
-          setSelectedConversation(newConv as ConversationItemData);
+          router.push({
+            pathname: "/chat/[id]",
+            params: {
+              id: newConv.id,
+              name,
+              avatarUrl: (newConv as any).otherParticipant?.avatarUrl || "",
+              status: "Active 5 minutes ago",
+            },
+          } as any);
         },
         onError: (err: any) => {
           toast.error("Error", err?.message || "Could not start conversation");
         },
       },
     );
+  };
+
+  const handleOpenConversation = (item: ConversationItemData) => {
+    const isGroup = item.type === "group";
+    const name = isGroup
+      ? (item as any).name || "Group"
+      : (item as any).otherParticipant?.displayName || "Contact";
+    const avatarUrl = isGroup
+      ? (item as any).avatarUrl || ""
+      : (item as any).otherParticipant?.avatarUrl || "";
+
+    router.push({
+      pathname: "/chat/[id]",
+      params: {
+        id: item.id,
+        name,
+        avatarUrl,
+        status: "Active 5 minutes ago",
+      },
+    } as any);
   };
 
   const isSearching = searchQuery.trim().length > 0;
@@ -326,7 +350,7 @@ export function ChatScreen() {
             <ConversationItem
               item={item}
               isOnline={index % 2 === 0}
-              onPress={() => setSelectedConversation(item)}
+              onPress={() => handleOpenConversation(item)}
             />
           )}
         />
@@ -348,19 +372,13 @@ export function ChatScreen() {
         <Ionicons name="add" size={32} color="#FFFFFF" />
       </Pressable>
 
-      {/* Start Conversation Modal */}
-      <StartConversationModal
+      {/* Contact Picker Sheet matching Mockups 1 & 2 */}
+      <ContactPickerSheet
         visible={showStartModal}
         onClose={() => setShowStartModal(false)}
-        onConversationCreated={(newId) => {
-          const found = conversations?.items?.find((c) => c.id === newId);
-          if (found) {
-            setSelectedConversation(found as ConversationItemData);
-          }
-        }}
       />
 
-      {/* Conversation Info Modal (since chatting functionality is paused for now) */}
+      {/* Conversation Info Modal (optional/fallback) */}
       <ConversationInfoModal
         conversation={selectedConversation}
         visible={Boolean(selectedConversation)}

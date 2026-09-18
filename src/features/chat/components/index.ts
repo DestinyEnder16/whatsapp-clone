@@ -6,3 +6,5 @@ export {
 } from "./ConversationItem";
 export { StartConversationModal } from "./StartConversationModal";
 export { ConversationInfoModal } from "./ConversationInfoModal";
+export { ContactPickerSheet, type ContactPickerItem } from "./ContactPickerSheet";
+export { ChatAttachmentMenu } from "./ChatAttachmentMenu";

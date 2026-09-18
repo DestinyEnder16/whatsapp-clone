@@ -1,5 +1,6 @@
 // src/features/chat/index.ts
 export { ChatScreen } from "./screens/ChatScreen";
+export { ChatRoomScreen } from "./screens/ChatRoomScreen";
 export { PinSetupScreen } from "./screens/PinSetupScreen";
 export { useConversations } from "./api/useConversations";
 export { useCreateDirectConversation } from "./api/useCreateDirectConversation";
@@ -10,4 +11,7 @@ export {
   type ConversationItemData,
   StartConversationModal,
   ConversationInfoModal,
+  ContactPickerSheet,
+  type ContactPickerItem,
+  ChatAttachmentMenu,
 } from "./components";
