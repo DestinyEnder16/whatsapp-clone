@@ -73,7 +73,7 @@ export function SettingsScreen() {
           Settings
         </Text>
         <Pressable
-          onPress={() => router.push("/edit-profile" as any)}
+          onPress={() => router.push("/settings/edit-profile" as any)}
           className="w-10 h-10 items-center justify-center rounded-full active:opacity-75"
           style={{ backgroundColor: colors.surface }}
         >
@@ -87,7 +87,7 @@ export function SettingsScreen() {
       >
         {/* User Profile Card */}
         <Pressable
-          onPress={() => router.push("/edit-profile" as any)}
+          onPress={() => router.push("/settings/edit-profile" as any)}
           className="px-6 py-3 flex-row items-center active:opacity-80"
         >
           <View
@@ -130,7 +130,7 @@ export function SettingsScreen() {
           </View>
 
           <Pressable
-            onPress={() => router.push("/qr-code" as any)}
+            onPress={() => router.push("/settings/qr-code" as any)}
             className="p-2 active:opacity-70"
           >
             <Ionicons name="qr-code-outline" size={22} color={colors.primary} />
@@ -147,23 +147,23 @@ export function SettingsScreen() {
         <SettingItem
           icon="star-outline"
           title="Star messages"
-          onPress={() => router.push("/star-message" as any)}
+          onPress={() => router.push("/settings/star-message" as any)}
         />
         <SettingItem
           icon="call-outline"
           title="Last call"
-          onPress={() => router.push("/last-call" as any)}
+          onPress={() => router.push("/settings/last-call" as any)}
         />
         <SettingItem icon="folder-outline" title="My folder" />
         <SettingItem
           icon="contrast-outline"
           title="Appearance"
-          onPress={() => router.push("/appearance")}
+          onPress={() => router.push("/settings/appearance" as any)}
         />
         <SettingItem
           icon="notifications-outline"
           title="Notification"
-          onPress={() => router.push("/notification" as any)}
+          onPress={() => router.push("/settings/notification" as any)}
           rightElement={
             <Pressable
               onPress={(e) => {
@@ -197,17 +197,17 @@ export function SettingsScreen() {
         <SettingItem
           icon="lock-closed-outline"
           title="Privacy"
-          onPress={() => router.push("/privacy")}
+          onPress={() => router.push("/settings/privacy" as any)}
         />
         <SettingItem
           icon="server-outline"
           title="Data and storage"
-          onPress={() => router.push("/data-storage")}
+          onPress={() => router.push("/settings/data-storage" as any)}
         />
         <SettingItem
           icon="help-circle-outline"
           title="FAQ"
-          onPress={() => router.push("/faq")}
+          onPress={() => router.push("/settings/faq" as any)}
         />
         <SettingItem
           icon="log-out-outline"

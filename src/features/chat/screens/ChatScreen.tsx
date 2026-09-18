@@ -359,7 +359,7 @@ export function ChatScreen() {
       {/* Floating Action Button (+) matching attached image */}
       <Pressable
         onPress={() => setShowStartModal(true)}
-        className="w-14 h-14 rounded-full items-center justify-center absolute bottom-6 right-6 active:opacity-85 shadow-lg"
+        className="w-[64px] h-[64px] rounded-full items-center justify-center absolute bottom-6 right-6 active:opacity-85 shadow-lg"
         style={{
           backgroundColor: colors.primary,
           shadowColor: "#000",
