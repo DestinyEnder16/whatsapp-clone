@@ -1,6 +1,7 @@
 import { configureNotificationHandler } from "@/services/notifications";
 import { useAppTheme } from "@/shared/hooks";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "@/core/lib/queryClient";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -95,7 +96,6 @@ if (typeof origTextInputRender === "function") {
   };
 }
 
-const queryClient = new QueryClient();
 
 export default function RootLayout() {
   const { mode, colors, isDark } = useAppTheme();

@@ -8,3 +8,6 @@ export { StartConversationModal } from "./StartConversationModal";
 export { ConversationInfoModal } from "./ConversationInfoModal";
 export { ContactPickerSheet, type ContactPickerItem } from "./ContactPickerSheet";
 export { ChatAttachmentMenu } from "./ChatAttachmentMenu";
+export { AnimatedMessageBubble } from "./AnimatedMessageBubble";
+export { TypingIndicator } from "./TypingIndicator";
+export { DateSeparator } from "./DateSeparator";

@@ -53,3 +53,18 @@ export function formatChatDate(dateString?: string | null): string {
     year: "2-digit",
   });
 }
+
+/**
+ * Formats a message timestamp into a 24-hour HH:mm time string (e.g. "19:40")
+ */
+export function formatMessageTime(dateString?: string | null): string {
+  if (!dateString) {
+    const now = new Date();
+    return `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`;
+  }
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "";
+  const hours = date.getHours().toString().padStart(2, "0");
+  const minutes = date.getMinutes().toString().padStart(2, "0");
+  return `${hours}:${minutes}`;
+}

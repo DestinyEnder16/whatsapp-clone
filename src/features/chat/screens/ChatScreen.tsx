@@ -1,5 +1,6 @@
 // src/features/chat/screens/ChatScreen.tsx
 import { usePinStore } from "@/core/store/usePinStore";
+import { useSocketStore } from "@/core/store/useSocketStore";
 import { ContactsEmptyState } from "@/features/contacts";
 import { useAppTheme } from "@/shared/hooks";
 import { toast } from "@/shared/utils/toast";
@@ -49,6 +50,27 @@ export function ChatScreen() {
   const [showPinModal, setShowPinModal] = useState(false);
   const isPinCodeSet = usePinStore((state) => state.isPinCodeSet);
 
+  const connectSocket = useSocketStore((s) => s.connect);
+  const onlineUsers = useSocketStore((s) => s.onlineUsers);
+  const subscribePresence = useSocketStore((s) => s.subscribePresence);
+
+  // Connect socket on mount
+  useEffect(() => {
+    connectSocket();
+  }, [connectSocket]);
+
+  // Subscribe to presence updates for all contacts in conversation list
+  useEffect(() => {
+    if (conversations?.items && conversations.items.length > 0) {
+      const userIds = conversations.items
+        .map((c: any) => c.otherParticipant?.id)
+        .filter(Boolean) as string[];
+      if (userIds.length > 0) {
+        subscribePresence({ userIds });
+      }
+    }
+  }, [conversations?.items, subscribePresence]);
+
   const { data: userSearchResults, isLoading: isSearchingUsers } =
     useSearchUsers(searchQuery);
   const createDirectMutation = useCreateDirectConversation();
@@ -97,7 +119,8 @@ export function ChatScreen() {
               id: newConv.id,
               name,
               avatarUrl: (newConv as any).otherParticipant?.avatarUrl || "",
-              status: "Active 5 minutes ago",
+              status: "Online",
+              otherParticipantId: userId,
             },
           } as any);
         },
@@ -110,6 +133,12 @@ export function ChatScreen() {
 
   const handleOpenConversation = (item: ConversationItemData) => {
     const isGroup = item.type === "group";
+    const otherParticipantId = !isGroup
+      ? (item as any).otherParticipant?.id
+      : undefined;
+    const isOnline = otherParticipantId
+      ? Boolean(onlineUsers[otherParticipantId]?.isOnline)
+      : false;
     const name = isGroup
       ? (item as any).name || "Group"
       : (item as any).otherParticipant?.displayName || "Contact";
@@ -123,7 +152,8 @@ export function ChatScreen() {
         id: item.id,
         name,
         avatarUrl,
-        status: "Active 5 minutes ago",
+        status: isOnline ? "Online" : "Active 5 minutes ago",
+        otherParticipantId,
       },
     } as any);
   };
@@ -212,13 +242,20 @@ export function ChatScreen() {
               )}
             </View>
           )}
-          renderItem={({ item, index }) => (
-            <ConversationItem
-              item={item}
-              isOnline={index % 2 === 0}
-              onPress={() => setSelectedConversation(item)}
-            />
-          )}
+          renderItem={({ item }) => {
+            const otherId = (item as any).otherParticipant?.id;
+            const isOnline = otherId
+              ? Boolean(onlineUsers[otherId]?.isOnline)
+              : false;
+
+            return (
+              <ConversationItem
+                item={item}
+                isOnline={isOnline}
+                onPress={() => setSelectedConversation(item)}
+              />
+            );
+          }}
           ListFooterComponent={() => (
             <View className="mt-4">
               {/* API People Search Results */}
@@ -346,13 +383,20 @@ export function ChatScreen() {
               tintColor={colors.primary}
             />
           }
-          renderItem={({ item, index }) => (
-            <ConversationItem
-              item={item}
-              isOnline={index % 2 === 0}
-              onPress={() => handleOpenConversation(item)}
-            />
-          )}
+          renderItem={({ item }) => {
+            const otherId = (item as any).otherParticipant?.id;
+            const isOnline = otherId
+              ? Boolean(onlineUsers[otherId]?.isOnline)
+              : false;
+
+            return (
+              <ConversationItem
+                item={item}
+                isOnline={isOnline}
+                onPress={() => handleOpenConversation(item)}
+              />
+            );
+          }}
         />
       )}
 
