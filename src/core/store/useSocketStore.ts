@@ -208,6 +208,23 @@ export const useSocketStore = create<SocketState>((set, get) => ({
     socketInstance.on("presence.updated", handlePresence);
     socketInstance.on("user.status", handlePresence);
     socketInstance.on("user.presence", handlePresence);
+
+    // 5. Read / Delivered receipt event listeners
+    const handleReceiptUpdate = (payload: any) => {
+      const conversationId = payload?.conversationId;
+      if (conversationId) {
+        queryClient.invalidateQueries({ queryKey: ["receipts", conversationId] });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["receipts"] });
+      }
+      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+    };
+
+    socketInstance.on("receipt.updated", handleReceiptUpdate);
+    socketInstance.on("receipts.updated", handleReceiptUpdate);
+    socketInstance.on("receipt.read", handleReceiptUpdate);
+    socketInstance.on("message.read", handleReceiptUpdate);
+    socketInstance.on("conversation.read", handleReceiptUpdate);
   },
 
   disconnect: () => {

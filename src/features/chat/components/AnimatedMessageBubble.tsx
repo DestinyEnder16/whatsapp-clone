@@ -5,8 +5,8 @@ import { Image } from "expo-image";
 import React from "react";
 import { Text, View } from "react-native";
 import Animated, {
-  BounceInLeft,
-  BounceInUp,
+  FadeInLeft,
+  ZoomIn,
 } from "react-native-reanimated";
 
 interface AnimatedMessageBubbleProps {
@@ -17,6 +17,8 @@ interface AnimatedMessageBubbleProps {
   imageUri?: string | null;
   isPending?: boolean;
   animate?: boolean;
+  isRead?: boolean;
+  isDelivered?: boolean;
 }
 
 export function AnimatedMessageBubble({
@@ -26,14 +28,17 @@ export function AnimatedMessageBubble({
   imageUri,
   isPending = false,
   animate = false,
+  isRead = false,
+  isDelivered = false,
 }: AnimatedMessageBubbleProps) {
   const { colors, isDark } = useAppTheme();
 
   // Only animate messages that arrived live (not loaded from history)
+  // Subtle, quick animations — no big drops from top of screen
   const enteringAnimation = animate
     ? isMe
-      ? BounceInUp.duration(400).springify()
-      : BounceInLeft.duration(350).springify()
+      ? ZoomIn.duration(200)
+      : FadeInLeft.duration(200)
     : undefined;
 
   const bubbleContent = (
@@ -86,18 +91,30 @@ export function AnimatedMessageBubble({
         </Text>
 
         {isMe && (
-          <View className="ml-1">
+          <View className="ml-1 flex-row items-center">
             {isPending ? (
               <Ionicons
                 name="time-outline"
                 size={12}
                 color="rgba(255,255,255,0.65)"
               />
-            ) : (
+            ) : isRead ? (
               <Ionicons
                 name="checkmark-done"
-                size={14}
-                color="rgba(255,255,255,0.9)"
+                size={15}
+                color="#34B7F1"
+              />
+            ) : isDelivered ? (
+              <Ionicons
+                name="checkmark-done"
+                size={15}
+                color="rgba(255,255,255,0.75)"
+              />
+            ) : (
+              <Ionicons
+                name="checkmark"
+                size={15}
+                color="rgba(255,255,255,0.75)"
               />
             )}
           </View>

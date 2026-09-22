@@ -1,6 +1,7 @@
 // src/features/chat/screens/ChatScreen.tsx
 import { usePinStore } from "@/core/store/usePinStore";
 import { useSocketStore } from "@/core/store/useSocketStore";
+import { formatLastActive } from "../utils/formatLastActive";
 import { ContactsEmptyState } from "@/features/contacts";
 import { useAppTheme } from "@/shared/hooks";
 import { toast } from "@/shared/utils/toast";
@@ -22,6 +23,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useConversations } from "../api/useConversations";
 import { useCreateDirectConversation } from "../api/useCreateDirectConversation";
 import { useSearchUsers } from "../api/useSearchUsers";
+import { api } from "@/services/api/client";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   ContactPickerSheet,
   ConversationInfoModal,
@@ -53,11 +56,31 @@ export function ChatScreen() {
   const connectSocket = useSocketStore((s) => s.connect);
   const onlineUsers = useSocketStore((s) => s.onlineUsers);
   const subscribePresence = useSocketStore((s) => s.subscribePresence);
+  const queryClient = useQueryClient();
 
   // Connect socket on mount
   useEffect(() => {
     connectSocket();
   }, [connectSocket]);
+
+  // Prefetch messages for all conversations so chats open instantly
+  useEffect(() => {
+    if (!conversations?.items) return;
+    conversations.items.forEach((conv: any) => {
+      queryClient.prefetchQuery({
+        queryKey: ["messages", conv.id],
+        queryFn: async () => {
+          const { data, error } = await api.GET(
+            "/v1/conversations/{conversationId}/messages",
+            { params: { path: { conversationId: conv.id }, query: { limit: 50 } } }
+          );
+          if (error) throw new Error((error as any)?.message || "Failed to load messages");
+          return data;
+        },
+        staleTime: 30_000,
+      });
+    });
+  }, [conversations?.items, queryClient]);
 
   // Subscribe to presence updates for all contacts in conversation list
   useEffect(() => {
@@ -152,7 +175,11 @@ export function ChatScreen() {
         id: item.id,
         name,
         avatarUrl,
-        status: isOnline ? "Online" : "Active 5 minutes ago",
+        status: isOnline ? "Online" : formatLastActive({
+          isOnline: false,
+          lastActiveAt: onlineUsers[otherParticipantId]?.lastActiveAt,
+          fallback: "Offline",
+        }),
         otherParticipantId,
       },
     } as any);

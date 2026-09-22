@@ -35,5 +35,11 @@ export function useMessages(conversationId?: string) {
       return data as MessageHistoryResponse;
     },
     enabled: Boolean(isAuthenticated && conversationId),
+    // Keep cached messages fresh for 30s so re-entering a chat is instant
+    staleTime: 30_000,
+    // Keep messages in cache for 10 minutes after leaving the chat
+    gcTime: 10 * 60_000,
+    // Show previous data immediately while refetching in the background
+    placeholderData: (prev) => prev,
   });
 }

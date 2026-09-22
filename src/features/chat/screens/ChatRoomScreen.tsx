@@ -20,6 +20,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useMarkAsRead } from "../api/useMarkAsRead";
 import { useMessages, type MessageDto } from "../api/useMessages";
+import { useReceipts, useMarkReceiptAsRead } from "../api/useReceipts";
 import { useSendMessage } from "../api/useSendMessage";
 import { AnimatedMessageBubble } from "../components/AnimatedMessageBubble";
 import { ChatAttachmentMenu } from "../components/ChatAttachmentMenu";
@@ -119,13 +120,9 @@ export function ChatRoomScreen() {
     fallbackStatus: initialStatus,
   });
 
-  // 3. Mark conversation messages as read when opening room
-  useEffect(() => {
-    if (conversationId) {
-      markAsReadMutation.mutate(conversationId);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [conversationId]);
+  // 3. Receipts query for delivery & read frontiers
+  const { data: receipts } = useReceipts(conversationId);
+  const markReceiptAsRead = useMarkReceiptAsRead();
 
   const [inputText, setInputText] = useState("");
   const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
@@ -150,6 +147,41 @@ export function ChatRoomScreen() {
       initialCountRef.current = sortedMessages.length;
     }
   }, [sortedMessages.length]);
+
+  // The other participant's receipt frontier (for blue double ticks)
+  const otherReceipt = useMemo(() => {
+    if (!receipts?.items) return null;
+    if (params.otherParticipantId) {
+      return (
+        receipts.items.find((r) => r.userId === params.otherParticipantId) || null
+      );
+    }
+    return receipts.items.find((r) => r.userId !== currentUserId) || null;
+  }, [receipts?.items, params.otherParticipantId, currentUserId]);
+
+  // Find latest incoming message ID from the other user
+  const latestIncomingMessageId = useMemo(() => {
+    const incoming = sortedMessages.filter(
+      (m) => m.senderId && m.senderId !== currentUserId
+    );
+    const last = incoming[incoming.length - 1];
+    return last && !last.id.startsWith("optimistic-") ? last.id : null;
+  }, [sortedMessages, currentUserId]);
+
+  // Mark incoming messages as read when opening room and whenever new incoming messages arrive
+  useEffect(() => {
+    if (!conversationId) return;
+
+    if (latestIncomingMessageId) {
+      markReceiptAsRead.mutate({
+        conversationId,
+        throughMessageId: latestIncomingMessageId,
+      });
+    } else {
+      markAsReadMutation.mutate(conversationId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversationId, latestIncomingMessageId]);
 
   // Build the flat list data with date separators interleaved
   const listData: ListItem[] = useMemo(() => {
@@ -374,6 +406,36 @@ export function ChatRoomScreen() {
               const firstAttachment = (msg.attachments as any)?.[0];
               const imageUri = firstAttachment?.url || null;
 
+              // Read / delivery receipt determination for sent messages:
+              let isRead = false;
+              let isDelivered = false;
+
+              if (isMe && !isPending && otherReceipt) {
+                if (otherReceipt.read) {
+                  if (otherReceipt.read.messageId === msg.id) {
+                    isRead = true;
+                  } else {
+                    const msgTime = new Date(msg.createdAt).getTime();
+                    const readTime = new Date(otherReceipt.read.at).getTime();
+                    if (!isNaN(msgTime) && !isNaN(readTime) && msgTime <= readTime) {
+                      isRead = true;
+                    }
+                  }
+                }
+
+                if (!isRead && otherReceipt.delivered) {
+                  if (otherReceipt.delivered.messageId === msg.id) {
+                    isDelivered = true;
+                  } else {
+                    const msgTime = new Date(msg.createdAt).getTime();
+                    const deliveredTime = new Date(otherReceipt.delivered.at).getTime();
+                    if (!isNaN(msgTime) && !isNaN(deliveredTime) && msgTime <= deliveredTime) {
+                      isDelivered = true;
+                    }
+                  }
+                }
+              }
+
               return (
                 <AnimatedMessageBubble
                   id={msg.id}
@@ -383,6 +445,8 @@ export function ChatRoomScreen() {
                   imageUri={imageUri}
                   isPending={isPending}
                   animate={item.isNew}
+                  isRead={isRead}
+                  isDelivered={isDelivered}
                 />
               );
             }}

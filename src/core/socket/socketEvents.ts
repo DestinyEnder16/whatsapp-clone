@@ -52,6 +52,14 @@ export interface ClientToServerEvents {
     payload: { userIds?: string[]; conversationId?: string },
     ack?: (response: SocketAckResponse<any>) => void
   ) => void;
+  "receipt.read": (
+    payload: { conversationId: string; throughMessageId: string },
+    ack?: (response: SocketAckResponse<any>) => void
+  ) => void;
+  "receipt.delivered": (
+    payload: { conversationId: string; throughMessageId: string },
+    ack?: (response: SocketAckResponse<any>) => void
+  ) => void;
 }
 
 /**
@@ -66,4 +74,9 @@ export interface ServerToClientEvents {
   "presence.updated": (payload: UserPresenceData) => void;
   "user.status": (payload: UserPresenceData) => void;
   "user.presence": (payload: UserPresenceData) => void;
+  "receipt.updated": (payload: any) => void;
+  "receipts.updated": (payload: any) => void;
+  "receipt.read": (payload: any) => void;
+  "message.read": (payload: any) => void;
+  "conversation.read": (payload: any) => void;
 }

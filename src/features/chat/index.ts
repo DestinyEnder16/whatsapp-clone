@@ -11,6 +11,7 @@ export { useMuteConversation, useUnmuteConversation } from "./api/useMuteConvers
 export { useMessages } from "./api/useMessages";
 export { useSendMessage } from "./api/useSendMessage";
 export { useMarkAsRead } from "./api/useMarkAsRead";
+export { useReceipts, useMarkReceiptAsRead } from "./api/useReceipts";
 
 // Socket hooks
 export { useChatRoomSocket } from "./hooks/useChatRoomSocket";
