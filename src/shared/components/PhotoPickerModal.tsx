@@ -1,26 +1,24 @@
 // src/shared/components/PhotoPickerModal.tsx
-import React, { useEffect, useState } from "react";
+import { AppText } from '@/shared/components';
+import { Image } from 'expo-image';
+import * as ImagePicker from 'expo-image-picker';
 import {
-  Modal,
-  Pressable,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { Image } from "expo-image";
-import * as ImagePicker from "expo-image-picker";
-import {
-  Asset,
   AssetField,
   MediaType,
   Query,
   requestPermissionsAsync,
-} from "expo-media-library";
+} from 'expo-media-library';
+import { useEffect, useState } from 'react';
+import {
+  Modal,
+  Pressable,
+  ScrollView,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 // Replace the old @expo/vector-icons import:
-import { Ionicons } from "@react-native-vector-icons/ionicons";
-import { useAppTheme } from "@/shared/hooks";
-
+import { useAppTheme } from '@/shared/hooks';
+import { Ionicons } from '@react-native-vector-icons/ionicons';
 
 interface PhotoPickerModalProps {
   visible: boolean;
@@ -51,12 +49,17 @@ export function PhotoPickerModal({
     try {
       setIsLoadingPhotos(true);
       const permission = await requestPermissionsAsync();
-      
+
       const hasPermission =
-        permission.granted || permission.accessPrivileges === "limited" || permission.status === "granted";
+        permission.granted ||
+        permission.accessPrivileges === 'limited' ||
+        permission.status === 'granted';
 
       if (!hasPermission) {
-        console.warn("Photo library permission not granted:", permission.status);
+        console.warn(
+          'Photo library permission not granted:',
+          permission.status
+        );
         setIsLoadingPhotos(false);
         return;
       }
@@ -83,7 +86,7 @@ export function PhotoPickerModal({
 
       setRecentPhotos(items);
     } catch (e) {
-      console.warn("Could not load recent photos:", e);
+      console.warn('Could not load recent photos:', e);
     } finally {
       setIsLoadingPhotos(false);
     }
@@ -129,10 +132,7 @@ export function PhotoPickerModal({
       animationType="slide"
       onRequestClose={onClose}
     >
-      <Pressable
-        className="flex-1 bg-black/50 justify-end"
-        onPress={onClose}
-      >
+      <Pressable className="flex-1 bg-black/50 justify-end" onPress={onClose}>
         {/* Modal Container */}
         <Pressable
           className="rounded-t-3xl pt-5 pb-8 px-5 shadow-2xl"
@@ -159,7 +159,10 @@ export function PhotoPickerModal({
                   contentFit="cover"
                 />
               ) : (
-                <View className="w-full h-full" style={{ backgroundColor: colors.surface }} />
+                <View
+                  className="w-full h-full"
+                  style={{ backgroundColor: colors.surface }}
+                />
               )}
               {/* Semi-transparent dark overlay with white camera icon */}
               <View className="absolute inset-0 bg-black/30 justify-center items-center">
@@ -197,12 +200,12 @@ export function PhotoPickerModal({
               activeOpacity={0.7}
             >
               <Ionicons name="camera" size={22} color={colors.primary} />
-              <Text
+              <AppText
                 className="ml-4 text-[16px] font-semibold"
                 style={{ color: colors.text }}
               >
                 Take Photo
-              </Text>
+              </AppText>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -211,12 +214,12 @@ export function PhotoPickerModal({
               activeOpacity={0.7}
             >
               <Ionicons name="images" size={22} color={colors.primary} />
-              <Text
+              <AppText
                 className="ml-4 text-[16px] font-semibold"
                 style={{ color: colors.text }}
               >
                 Choose From Library
-              </Text>
+              </AppText>
             </TouchableOpacity>
           </View>
         </Pressable>

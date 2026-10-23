@@ -1,8 +1,8 @@
-import React from "react";
-import { Text, View } from "react-native";
-import Button from "@/shared/components/Button";
-import Ionicons from "@react-native-vector-icons/ionicons";
-import colors from "@/shared/theme/colors";
+import { AppText } from '@/shared/components';
+import Button from '@/shared/components/Button';
+import colors from '@/shared/theme/colors';
+import Ionicons from '@react-native-vector-icons/ionicons';
+import { View } from 'react-native';
 
 export interface ContactsPromptStateProps {
   /** Trigger function to prompt contacts permission and sync */
@@ -24,8 +24,8 @@ export function ContactsPromptState({
   onSync,
   isSyncing = false,
   error,
-  title = "Find Friends on Chatme",
-  description = "Sync your contacts to see which of your friends and family are already on Chatme.",
+  title = 'Find Friends on Chatme',
+  description = 'Sync your contacts to see which of your friends and family are already on Chatme.',
 }: ContactsPromptStateProps = {}) {
   return (
     <View className="items-center justify-center py-12 px-6">
@@ -33,18 +33,18 @@ export function ContactsPromptState({
         <Ionicons name="people" size={32} color={colors.primary[400]} />
       </View>
 
-      <Text className="text-neutral-900 font-bold text-xl text-center mb-2">
+      <AppText className="text-neutral-900 font-bold text-xl text-center mb-2">
         {title}
-      </Text>
+      </AppText>
 
-      <Text className="text-neutral-500 text-sm text-center mb-8 px-4 leading-5">
+      <AppText className="text-neutral-500 text-sm text-center mb-8 px-4 leading-5">
         {description}
-      </Text>
+      </AppText>
 
       {error && (
-        <Text className="text-red-500 text-xs text-center mb-4 px-2">
+        <AppText className="text-red-500 text-xs text-center mb-4 px-2">
           {error}
-        </Text>
+        </AppText>
       )}
 
       {onSync && (
@@ -59,4 +59,3 @@ export function ContactsPromptState({
     </View>
   );
 }
-

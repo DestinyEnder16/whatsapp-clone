@@ -1,6 +1,7 @@
-import { useAppTheme } from "@/shared/hooks";
-import React, { ReactNode } from "react";
-import { Text, View } from "react-native";
+import { useAppTheme } from '@/shared/hooks';
+import { ReactNode } from 'react';
+import { View } from 'react-native';
+import { AppText } from './AppText';
 
 export interface TabHeaderProps {
   title: string;
@@ -14,8 +15,8 @@ export default function TabHeader({
   title,
   rightElement,
   rightAction,
-  className = "px-4 pt-2 pb-2",
-  titleClassName = "text-neutral-900 dark:text-neutral-50 font-bold text-2xl tracking-tight",
+  className = 'px-4 pt-2 pb-2',
+  titleClassName = 'text-neutral-900 dark:text-neutral-50 font-bold text-2xl tracking-tight',
 }: TabHeaderProps) {
   const { colors } = useAppTheme();
   const right = rightElement ?? rightAction;
@@ -23,24 +24,20 @@ export default function TabHeader({
   if (right) {
     return (
       <View className={`flex-row items-center justify-between ${className}`}>
-        <Text
-          className={titleClassName}
-          style={{ color: colors.text }}
-        >
+        <AppText className={titleClassName} style={{ color: colors.text }}>
           {title}
-        </Text>
+        </AppText>
         {right}
       </View>
     );
   }
 
   return (
-    <Text
+    <AppText
       className={`${className} ${titleClassName}`}
       style={{ color: colors.text }}
     >
       {title}
-    </Text>
+    </AppText>
   );
 }
-

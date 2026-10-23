@@ -1,7 +1,7 @@
-import React from 'react';
-import { Linking, Text, View } from 'react-native';
+import { AppText } from '@/shared/components';
 import Button from '@/shared/components/Button';
 import Ionicons from '@react-native-vector-icons/ionicons';
+import { Linking, View } from 'react-native';
 
 export interface ContactsPermissionDeniedStateProps {
   onOpenSettings?: () => void;
@@ -19,12 +19,12 @@ export function ContactsPermissionDeniedState({
       <View className="w-16 h-16 rounded-full bg-amber-50 items-center justify-center mb-4">
         <Ionicons name="lock-closed-outline" size={30} color="#D97706" />
       </View>
-      <Text className="text-neutral-900 font-bold text-lg text-center mb-2">
+      <AppText className="text-neutral-900 font-bold text-lg text-center mb-2">
         {title}
-      </Text>
-      <Text className="text-neutral-500 text-sm text-center mb-6 leading-5">
+      </AppText>
+      <AppText className="text-neutral-500 text-sm text-center mb-6 leading-5">
         {description}
-      </Text>
+      </AppText>
       <View className="w-full">
         <Button title="Open Settings" onPress={onOpenSettings} />
       </View>
