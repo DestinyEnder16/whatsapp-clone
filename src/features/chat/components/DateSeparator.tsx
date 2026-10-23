@@ -1,7 +1,7 @@
 // src/features/chat/components/DateSeparator.tsx
-import { useAppTheme } from "@/shared/hooks";
-import React from "react";
-import { Text, View } from "react-native";
+import { AppText } from '@/shared/components';
+import { useAppTheme } from '@/shared/hooks';
+import { View } from 'react-native';
 
 interface DateSeparatorProps {
   label: string;
@@ -20,19 +20,19 @@ export function DateSeparator({ label }: DateSeparatorProps) {
         className="px-4 py-1.5 rounded-full"
         style={{
           backgroundColor: isDark
-            ? "rgba(255,255,255,0.08)"
-            : "rgba(0,0,0,0.06)",
+            ? 'rgba(255,255,255,0.08)'
+            : 'rgba(0,0,0,0.06)',
         }}
       >
-        <Text
+        <AppText
           className="text-[12px]"
           style={{
             color: colors.textMuted,
-            fontFamily: "SFPRODISPLAYMEDIUM",
+            fontFamily: 'SFPRODISPLAYMEDIUM',
           }}
         >
           {label}
-        </Text>
+        </AppText>
       </View>
     </View>
   );

@@ -1,7 +1,8 @@
 import { forwardRef } from 'react';
 import { StyleProp, Text, TextProps, TextStyle } from 'react-native';
 
-export type AppTextVariant = 'regular' | 'medium' | 'bold' | 'italic';
+export type AppTextVariant =
+  'regular' | 'medium' | 'semibold' | 'bold' | 'italic';
 
 interface AppTextProps extends TextProps {
   className?: string;
@@ -12,6 +13,7 @@ interface AppTextProps extends TextProps {
 const fontFamilies: Record<AppTextVariant, string> = {
   regular: 'SFPRODISPLAYREGULAR',
   medium: 'SFPRODISPLAYMEDIUM',
+  semibold: 'SFPRODISPLAYBOLD',
   bold: 'SFPRODISPLAYBOLD',
   italic: 'SFPRODISPLAYSEMIBOLDITALIC',
 };

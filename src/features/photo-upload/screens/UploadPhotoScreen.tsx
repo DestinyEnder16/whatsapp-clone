@@ -1,22 +1,22 @@
-import { useAuthStore } from "@/core/store/useAuthStore";
-import { useUpdateProfile } from "@/features/auth/api/useUpdateProfile";
-import { BackButton, Button } from "@/shared/components";
-import { PhotoPickerModal } from "@/shared/components/PhotoPickerModal";
-import Screen from "@/shared/components/Screen";
-import { useAppTheme } from "@/shared/hooks";
-import { toast } from "@/shared/utils/toast";
-import { Image } from "expo-image";
-import { router } from "expo-router";
-import React, { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { useAuthStore } from '@/core/store/useAuthStore';
+import { useUpdateProfile } from '@/features/auth/api/useUpdateProfile';
+import { AppText, BackButton, Button } from '@/shared/components';
+import { PhotoPickerModal } from '@/shared/components/PhotoPickerModal';
+import Screen from '@/shared/components/Screen';
+import { useAppTheme } from '@/shared/hooks';
+import { toast } from '@/shared/utils/toast';
+import { Image } from 'expo-image';
+import { router } from 'expo-router';
+import { useState } from 'react';
+import { Pressable, View } from 'react-native';
 
-type UploadStatus = "idle" | "uploading" | "done";
+type UploadStatus = 'idle' | 'uploading' | 'done';
 
 export function UploadPhotoScreen() {
   const { colors, isDark } = useAppTheme();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [uploadStatus, setUploadStatus] = useState<UploadStatus>("idle");
+  const [uploadStatus, setUploadStatus] = useState<UploadStatus>('idle');
 
   const user = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
@@ -25,41 +25,38 @@ export function UploadPhotoScreen() {
   async function handleSelectPhoto(uri: string) {
     setSelectedImage(uri);
     setModalVisible(false);
-    setUploadStatus("uploading");
+    setUploadStatus('uploading');
 
     const startTime = Date.now();
 
-    updateProfileMutation.mutate(
-      { avatarUrl: uri } as any,
-      {
-        onSuccess: async (updatedUser) => {
-          const elapsed = Date.now() - startTime;
-          if (elapsed < 1200) {
-            await new Promise((resolve) => setTimeout(resolve, 1200 - elapsed));
-          }
-          setUser(updatedUser);
-          setUploadStatus("done");
-        },
-        onError: async (err: Error) => {
-          console.warn("Update profile API warning:", err.message);
-          const elapsed = Date.now() - startTime;
-          if (elapsed < 1200) {
-            await new Promise((resolve) => setTimeout(resolve, 1200 - elapsed));
-          }
-          if (user) {
-            setUser({ ...user, avatarUrl: uri as any });
-          }
-          setUploadStatus("done");
-        },
+    updateProfileMutation.mutate({ avatarUrl: uri } as any, {
+      onSuccess: async (updatedUser) => {
+        const elapsed = Date.now() - startTime;
+        if (elapsed < 1200) {
+          await new Promise((resolve) => setTimeout(resolve, 1200 - elapsed));
+        }
+        setUser(updatedUser);
+        setUploadStatus('done');
       },
-    );
+      onError: async (err: Error) => {
+        console.warn('Update profile API warning:', err.message);
+        const elapsed = Date.now() - startTime;
+        if (elapsed < 1200) {
+          await new Promise((resolve) => setTimeout(resolve, 1200 - elapsed));
+        }
+        if (user) {
+          setUser({ ...user, avatarUrl: uri as any });
+        }
+        setUploadStatus('done');
+      },
+    });
   }
 
   function handleBack() {
-    if (uploadStatus === "done") {
-      setUploadStatus("idle");
-    } else if (uploadStatus === "uploading") {
-      setUploadStatus("idle");
+    if (uploadStatus === 'done') {
+      setUploadStatus('idle');
+    } else if (uploadStatus === 'uploading') {
+      setUploadStatus('idle');
     } else if (router.canGoBack()) {
       router.back();
     }
@@ -67,10 +64,10 @@ export function UploadPhotoScreen() {
 
   function handleNext() {
     toast.success(
-      "Profile Setup Complete",
-      "Your photo was successfully uploaded!",
+      'Profile Setup Complete',
+      'Your photo was successfully uploaded!'
     );
-    router.replace("/(tabs)");
+    router.replace('/(tabs)');
   }
 
   return (
@@ -80,16 +77,16 @@ export function UploadPhotoScreen() {
       </View>
 
       <View className="mt-4 items-center">
-        <Text
+        <AppText
           className="text-[24px] font-bold tracking-tight text-center"
           style={{ color: colors.text }}
         >
           Upload a photo
-        </Text>
+        </AppText>
       </View>
 
       {/* Center illustration & feedback */}
-      {uploadStatus === "idle" && (
+      {uploadStatus === 'idle' && (
         <Pressable
           onPress={() => setModalVisible(true)}
           className="flex-1 items-center justify-center"
@@ -97,8 +94,8 @@ export function UploadPhotoScreen() {
           <Image
             source={
               isDark
-                ? require("@/assets/images/upload-photo-dark.svg")
-                : require("@/assets/images/upload-photo-light.svg")
+                ? require('@/assets/images/upload-photo-dark.svg')
+                : require('@/assets/images/upload-photo-light.svg')
             }
             style={{ width: 170, height: 170 }}
             contentFit="contain"
@@ -106,23 +103,23 @@ export function UploadPhotoScreen() {
         </Pressable>
       )}
 
-      {uploadStatus === "uploading" && (
+      {uploadStatus === 'uploading' && (
         <View className="flex-1 items-center justify-center">
           <Image
-            source={require("@/assets/images/uploading-photo-light.svg")}
+            source={require('@/assets/images/uploading-photo-light.svg')}
             style={{ width: 170, height: 170 }}
             contentFit="contain"
           />
-          <Text
+          <AppText
             className="mt-8 text-[16px] font-medium text-center leading-6"
             style={{ color: colors.textSecondary }}
           >
-            Wait a second, your photo{"\n"}still uploading
-          </Text>
+            Wait a second, your photo{'\n'}still uploading
+          </AppText>
         </View>
       )}
 
-      {uploadStatus === "done" && (
+      {uploadStatus === 'done' && (
         <View className="flex-1 items-center justify-center">
           <Pressable
             onPress={() => setModalVisible(true)}
@@ -135,7 +132,7 @@ export function UploadPhotoScreen() {
               {selectedImage ? (
                 <Image
                   source={{ uri: selectedImage }}
-                  style={{ width: "100%", height: "100%" }}
+                  style={{ width: '100%', height: '100%' }}
                   contentFit="cover"
                 />
               ) : null}
@@ -147,7 +144,7 @@ export function UploadPhotoScreen() {
               style={{ backgroundColor: colors.primary }}
             >
               <Image
-                source={require("@/assets/icons/solid/check.svg")}
+                source={require('@/assets/icons/solid/check.svg')}
                 style={{ width: 18, height: 18 }}
                 tintColor="#FFFFFF"
                 contentFit="contain"
@@ -155,40 +152,40 @@ export function UploadPhotoScreen() {
             </View>
           </Pressable>
 
-          <Text
+          <AppText
             className="mt-8 text-[16px] font-medium text-center leading-6"
             style={{ color: colors.textSecondary }}
           >
-            Done! Your photo{"\n"}successfully uploaded
-          </Text>
+            Done! Your photo{'\n'}successfully uploaded
+          </AppText>
         </View>
       )}
 
       {/* Bottom Action Area */}
       <View className="mt-auto pb-4">
-        {uploadStatus === "idle" && (
+        {uploadStatus === 'idle' && (
           <View className="gap-y-3">
             <Button
               title="Upload Photo"
               onPress={() => setModalVisible(true)}
             />
             <Pressable
-              onPress={() => router.replace("/(tabs)")}
+              onPress={() => router.replace('/(tabs)')}
               className="items-center py-2 active:opacity-70"
             >
-              <Text
+              <AppText
                 className="text-[15px] font-semibold"
                 style={{ color: colors.textSecondary }}
               >
                 Skip for now
-              </Text>
+              </AppText>
             </Pressable>
           </View>
         )}
 
-        {uploadStatus === "uploading" && <View className="h-[56px]" />}
+        {uploadStatus === 'uploading' && <View className="h-[56px]" />}
 
-        {uploadStatus === "done" && (
+        {uploadStatus === 'done' && (
           <Button title="Next" onPress={handleNext} />
         )}
       </View>
@@ -201,6 +198,5 @@ export function UploadPhotoScreen() {
     </Screen>
   );
 }
-
 
 export default UploadPhotoScreen;

@@ -1,7 +1,8 @@
 import { forwardRef } from 'react';
 import { StyleProp, TextInput, TextInputProps, TextStyle } from 'react-native';
 
-export type AppTextInputVariant = 'regular' | 'medium' | 'bold' | 'italic';
+export type AppTextInputVariant =
+  'regular' | 'medium' | 'semibold' | 'bold' | 'italic';
 
 interface AppTextInputProps extends TextInputProps {
   className?: string;
@@ -12,6 +13,7 @@ interface AppTextInputProps extends TextInputProps {
 const fontFamilies: Record<AppTextInputVariant, string> = {
   regular: 'SFPRODISPLAYREGULAR',
   medium: 'SFPRODISPLAYMEDIUM',
+  semibold: 'SFPRODISPLAYBOLD',
   bold: 'SFPRODISPLAYBOLD',
   italic: 'SFPRODISPLAYSEMIBOLDITALIC',
 };

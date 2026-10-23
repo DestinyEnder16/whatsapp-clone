@@ -1,4 +1,5 @@
 // src/features/chat/components/ContactPickerSheet.tsx
+import { AppText, AppTextInput } from '@/shared/components';
 import { useAppTheme } from '@/shared/hooks';
 import { toast } from '@/shared/utils/toast';
 import Ionicons from '@react-native-vector-icons/ionicons';
@@ -13,8 +14,6 @@ import {
   Platform,
   Pressable,
   SectionList,
-  Text,
-  TextInput,
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -209,12 +208,12 @@ export function ContactPickerSheet({
 
           {/* Title Header */}
           <View className="items-center py-2 px-6">
-            <Text
+            <AppText
               className="text-[20px] text-center"
               style={{ color: colors.text, fontFamily: 'SFPRODISPLAYBOLD' }}
             >
               Contact
-            </Text>
+            </AppText>
           </View>
 
           {/* Search Bar matching Mockup 1 & 2 with green active highlight */}
@@ -233,7 +232,7 @@ export function ContactPickerSheet({
                 color={isInputFocused ? colors.primary : colors.textMuted}
                 style={{ marginRight: 10 }}
               />
-              <TextInput
+              <AppTextInput
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 onFocus={() => setIsInputFocused(true)}
@@ -264,7 +263,7 @@ export function ContactPickerSheet({
           {(createDirectMutation.isPending || isSearchingApi) && (
             <View className="py-2 items-center justify-center flex-row">
               <ActivityIndicator size="small" color={colors.primary} />
-              <Text
+              <AppText
                 className="text-[13px] ml-2"
                 style={{
                   color: colors.primary,
@@ -274,7 +273,7 @@ export function ContactPickerSheet({
                 {createDirectMutation.isPending
                   ? 'Opening conversation...'
                   : 'Searching people...'}
-              </Text>
+              </AppText>
             </View>
           )}
 
@@ -297,7 +296,7 @@ export function ContactPickerSheet({
                   backgroundColor: isDark ? colors.surface : '#F3F4F6',
                 }}
               >
-                <Text
+                <AppText
                   className="text-[13px] uppercase tracking-wider"
                   style={{
                     color: isDark ? colors.textMuted : '#6B7280',
@@ -305,7 +304,7 @@ export function ContactPickerSheet({
                   }}
                 >
                   {title}
-                </Text>
+                </AppText>
               </View>
             )}
             renderItem={({ item }) => (
@@ -329,7 +328,7 @@ export function ContactPickerSheet({
                       contentFit="cover"
                     />
                   ) : (
-                    <Text
+                    <AppText
                       className="text-[18px]"
                       style={{
                         color: colors.primaryDark,
@@ -337,13 +336,13 @@ export function ContactPickerSheet({
                       }}
                     >
                       {item.name.charAt(0).toUpperCase()}
-                    </Text>
+                    </AppText>
                   )}
                 </View>
 
                 {/* Name & Phone Number */}
                 <View className="flex-1 mr-2">
-                  <Text
+                  <AppText
                     className="text-[16px]"
                     style={{
                       color: colors.text,
@@ -352,8 +351,8 @@ export function ContactPickerSheet({
                     numberOfLines={1}
                   >
                     {item.name}
-                  </Text>
-                  <Text
+                  </AppText>
+                  <AppText
                     className="text-[13px] mt-0.5"
                     style={{
                       color: colors.textSecondary,
@@ -362,7 +361,7 @@ export function ContactPickerSheet({
                     numberOfLines={1}
                   >
                     {item.phoneOrHandle}
-                  </Text>
+                  </AppText>
                 </View>
 
                 {/* Right Chevron > matching mockup */}
@@ -381,13 +380,13 @@ export function ContactPickerSheet({
                   color={colors.textMuted}
                   style={{ marginBottom: 10 }}
                 />
-                <Text
+                <AppText
                   className="text-[16px] text-center"
                   style={{ color: colors.text, fontFamily: 'SFPRODISPLAYBOLD' }}
                 >
                   No contacts found
-                </Text>
-                <Text
+                </AppText>
+                <AppText
                   className="text-[13px] text-center mt-1"
                   style={{
                     color: colors.textSecondary,
@@ -395,7 +394,7 @@ export function ContactPickerSheet({
                   }}
                 >
                   Try searching for another name or phone number
-                </Text>
+                </AppText>
               </View>
             )}
           />
