@@ -1,10 +1,10 @@
 // src/features/chat/components/ContactPickerSheet.tsx
-import { useAppTheme } from "@/shared/hooks";
-import { toast } from "@/shared/utils/toast";
-import Ionicons from "@react-native-vector-icons/ionicons";
-import { Image } from "expo-image";
-import { router } from "expo-router";
-import React, { useEffect, useMemo, useState } from "react";
+import { useAppTheme } from '@/shared/hooks';
+import { toast } from '@/shared/utils/toast';
+import Ionicons from '@react-native-vector-icons/ionicons';
+import { Image } from 'expo-image';
+import { router } from 'expo-router';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Dimensions,
@@ -16,10 +16,10 @@ import {
   Text,
   TextInput,
   View,
-} from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useCreateDirectConversation } from "../api/useCreateDirectConversation";
-import { useSearchUsers } from "../api/useSearchUsers";
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useCreateDirectConversation } from '../api/useCreateDirectConversation';
+import { useSearchUsers } from '../api/useSearchUsers';
 
 export interface ContactPickerItem {
   id: string;
@@ -34,80 +34,6 @@ interface ContactPickerSheetProps {
   onSelectContact?: (contact: ContactPickerItem) => void;
 }
 
-// Design-matched initial contacts for instant preview matching the UI mockups
-const MOCKUP_CONTACTS: ContactPickerItem[] = [
-  {
-    id: "annette-black",
-    name: "Annette Black",
-    phoneOrHandle: "+61-827-680-673",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80",
-  },
-  {
-    id: "arlene-mccoy",
-    name: "Arlene McCoy",
-    phoneOrHandle: "+61-827-680-673",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
-  },
-  {
-    id: "annie-miles",
-    name: "Annie Miles",
-    phoneOrHandle: "+61-827-680-673",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-  },
-  {
-    id: "bourtney-henry",
-    name: "Bourtney Henry",
-    phoneOrHandle: "+61-827-680-673",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80",
-  },
-  {
-    id: "bianne-russell",
-    name: "Bianne Russell",
-    phoneOrHandle: "+61-827-680-673",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80",
-  },
-  {
-    id: "bessie-cooper",
-    name: "Bessie Cooper",
-    phoneOrHandle: "+61-827-680-673",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=150&auto=format&fit=crop&q=80",
-  },
-  {
-    id: "braif-fatari",
-    name: "Braif Fatari",
-    phoneOrHandle: "+61-827-680-673",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
-  },
-  {
-    id: "keanu-murphy",
-    name: "Keanu Murphy",
-    phoneOrHandle: "+61-827-680-673",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
-  },
-  {
-    id: "kemal-pahlevi",
-    name: "Kemal Pahlevi",
-    phoneOrHandle: "+61-827-680-673",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=150&auto=format&fit=crop&q=80",
-  },
-  {
-    id: "kemana-malik",
-    name: "Kemana Malik",
-    phoneOrHandle: "+61-827-680-673",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=80",
-  },
-];
-
 export function ContactPickerSheet({
   visible,
   onClose,
@@ -115,16 +41,16 @@ export function ContactPickerSheet({
 }: ContactPickerSheetProps) {
   const { colors, isDark } = useAppTheme();
   const insets = useSafeAreaInsets();
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   // Track keyboard height to adjust scroll padding
   useEffect(() => {
     const showEvent =
-      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
     const hideEvent =
-      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
 
     const showSub = Keyboard.addListener(showEvent, (e) => {
       setKeyboardHeight(e.endCoordinates?.height || 0);
@@ -143,15 +69,15 @@ export function ContactPickerSheet({
   useEffect(() => {
     if (!visible) {
       setKeyboardHeight(0);
-      setSearchQuery("");
+      setSearchQuery('');
       setIsInputFocused(false);
     }
   }, [visible]);
 
   // Maintain consistent height matching Mockups 1 & 2 (~88% of screen)
   const screenHeight = Math.max(
-    Dimensions.get("screen").height,
-    Dimensions.get("window").height
+    Dimensions.get('screen').height,
+    Dimensions.get('window').height
   );
   const sheetHeight = Math.min(
     Math.round(screenHeight * 0.88),
@@ -162,28 +88,19 @@ export function ContactPickerSheet({
     useSearchUsers(searchQuery);
   const createDirectMutation = useCreateDirectConversation();
 
-  // Combine backend users with design contacts and group alphabetically
+  // Only users returned by the server may be selected for conversation creation.
   const sections = useMemo(() => {
-    let list: ContactPickerItem[] = [...MOCKUP_CONTACTS];
-
-    // If API returned real users from directory, prepend them
-    if (apiSearchResults?.items && apiSearchResults.items.length > 0) {
-      const apiUsers: ContactPickerItem[] = apiSearchResults.items.map((u) => ({
+    let list: ContactPickerItem[] = (apiSearchResults?.items || []).map(
+      (u) => ({
         id: u.id,
         name:
-          typeof u.displayName === "string" && u.displayName
+          typeof u.displayName === 'string' && u.displayName
             ? u.displayName
-            : "ChatMe User",
-        phoneOrHandle: (u as any).username
-          ? `@${(u as any).username}`
-          : (u as any).phoneNumber || "Available on Chatme",
+            : 'ChatMe User',
+        phoneOrHandle: 'Found on ChatMe',
         avatarUrl: u.avatarUrl,
-      }));
-
-      // Merge avoiding duplicate IDs
-      const apiIds = new Set(apiUsers.map((u) => u.id));
-      list = [...apiUsers, ...list.filter((c) => !apiIds.has(c.id))];
-    }
+      })
+    );
 
     // Filter by search query
     if (searchQuery.trim()) {
@@ -195,13 +112,12 @@ export function ContactPickerSheet({
       );
     }
 
-    // Sort alphabetically
     list.sort((a, b) => a.name.localeCompare(b.name));
 
     // Group into sections by first letter
     const grouped: { [letter: string]: ContactPickerItem[] } = {};
     for (const item of list) {
-      const letter = item.name.charAt(0).toUpperCase() || "#";
+      const letter = item.name.charAt(0).toUpperCase() || '#';
       if (!grouped[letter]) {
         grouped[letter] = [];
       }
@@ -219,38 +135,35 @@ export function ContactPickerSheet({
   const handleSelect = (contact: ContactPickerItem) => {
     if (createDirectMutation.isPending) return;
 
-    if (onSelectContact) {
-      onSelectContact(contact);
-    }
-
-    // Attempt direct conversation API creation
     createDirectMutation.mutate(
       { participantId: contact.id },
       {
         onSuccess: (newConv: any) => {
+          if (!newConv?.id) {
+            toast.error(
+              'Error',
+              'The conversation was not created. Please try again.'
+            );
+            return;
+          }
+
+          onSelectContact?.(contact);
           onClose();
           router.push({
-            pathname: "/chat/[id]",
+            pathname: '/chat/[id]',
             params: {
-              id: newConv.id || contact.id,
+              id: newConv.id,
               name: contact.name,
-              avatarUrl: contact.avatarUrl || "",
-              status: "Active 5 minutes ago",
+              avatarUrl: contact.avatarUrl || '',
+              status: 'Active 5 minutes ago',
             },
           } as any);
         },
-        onError: () => {
-          // If backend participant ID doesn't exist (e.g. mock user), still allow navigation into the 1-on-1 screen
-          onClose();
-          router.push({
-            pathname: "/chat/[id]",
-            params: {
-              id: contact.id,
-              name: contact.name,
-              avatarUrl: contact.avatarUrl || "",
-              status: "Active 5 minutes ago",
-            },
-          } as any);
+        onError: (error: any) => {
+          toast.error(
+            'Failed',
+            error?.message || 'Could not start conversation. Please try again.'
+          );
         },
       }
     );
@@ -263,7 +176,10 @@ export function ContactPickerSheet({
       transparent
       onRequestClose={onClose}
     >
-      <View className="flex-1 justify-end" style={{ backgroundColor: "rgba(0,0,0,0.45)" }}>
+      <View
+        className="flex-1 justify-end"
+        style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}
+      >
         {/* Top green backdrop background */}
         <Pressable
           onPress={() => {
@@ -287,7 +203,7 @@ export function ContactPickerSheet({
           <View className="items-center pt-3 pb-2">
             <View
               className="w-12 h-1 rounded-full"
-              style={{ backgroundColor: isDark ? "#4B5563" : "#D1D5DB" }}
+              style={{ backgroundColor: isDark ? '#4B5563' : '#D1D5DB' }}
             />
           </View>
 
@@ -295,7 +211,7 @@ export function ContactPickerSheet({
           <View className="items-center py-2 px-6">
             <Text
               className="text-[20px] text-center"
-              style={{ color: colors.text, fontFamily: "SFPRODISPLAYBOLD" }}
+              style={{ color: colors.text, fontFamily: 'SFPRODISPLAYBOLD' }}
             >
               Contact
             </Text>
@@ -306,7 +222,7 @@ export function ContactPickerSheet({
             <View
               className="flex-row items-center px-4 py-3 rounded-2xl border"
               style={{
-                backgroundColor: isDark ? colors.surface : "#F9FAFB",
+                backgroundColor: isDark ? colors.surface : '#F9FAFB',
                 borderColor: isInputFocused ? colors.primary : colors.border,
                 borderWidth: isInputFocused ? 1.5 : 1,
               }}
@@ -325,12 +241,15 @@ export function ContactPickerSheet({
                 placeholder="Search people..."
                 placeholderTextColor={colors.textMuted}
                 className="flex-1 text-[15px]"
-                style={{ color: colors.text, fontFamily: "SFPRODISPLAYREGULAR" }}
+                style={{
+                  color: colors.text,
+                  fontFamily: 'SFPRODISPLAYREGULAR',
+                }}
                 autoCapitalize="none"
                 returnKeyType="search"
               />
               {searchQuery.length > 0 && (
-                <Pressable onPress={() => setSearchQuery("")}>
+                <Pressable onPress={() => setSearchQuery('')}>
                   <Ionicons
                     name="close-circle"
                     size={18}
@@ -342,14 +261,19 @@ export function ContactPickerSheet({
           </View>
 
           {/* Loading Indicator */}
-          {createDirectMutation.isPending && (
+          {(createDirectMutation.isPending || isSearchingApi) && (
             <View className="py-2 items-center justify-center flex-row">
               <ActivityIndicator size="small" color={colors.primary} />
               <Text
                 className="text-[13px] ml-2"
-                style={{ color: colors.primary, fontFamily: "SFPRODISPLAYMEDIUM" }}
+                style={{
+                  color: colors.primary,
+                  fontFamily: 'SFPRODISPLAYMEDIUM',
+                }}
               >
-                Opening conversation...
+                {createDirectMutation.isPending
+                  ? 'Opening conversation...'
+                  : 'Searching people...'}
               </Text>
             </View>
           )}
@@ -370,14 +294,14 @@ export function ContactPickerSheet({
               <View
                 className="px-6 py-1.5"
                 style={{
-                  backgroundColor: isDark ? colors.surface : "#F3F4F6",
+                  backgroundColor: isDark ? colors.surface : '#F3F4F6',
                 }}
               >
                 <Text
                   className="text-[13px] uppercase tracking-wider"
                   style={{
-                    color: isDark ? colors.textMuted : "#6B7280",
-                    fontFamily: "SFPRODISPLAYBOLD",
+                    color: isDark ? colors.textMuted : '#6B7280',
+                    fontFamily: 'SFPRODISPLAYBOLD',
                   }}
                 >
                   {title}
@@ -401,7 +325,7 @@ export function ContactPickerSheet({
                   {item.avatarUrl ? (
                     <Image
                       source={{ uri: item.avatarUrl }}
-                      style={{ width: "100%", height: "100%" }}
+                      style={{ width: '100%', height: '100%' }}
                       contentFit="cover"
                     />
                   ) : (
@@ -409,7 +333,7 @@ export function ContactPickerSheet({
                       className="text-[18px]"
                       style={{
                         color: colors.primaryDark,
-                        fontFamily: "SFPRODISPLAYBOLD",
+                        fontFamily: 'SFPRODISPLAYBOLD',
                       }}
                     >
                       {item.name.charAt(0).toUpperCase()}
@@ -421,7 +345,10 @@ export function ContactPickerSheet({
                 <View className="flex-1 mr-2">
                   <Text
                     className="text-[16px]"
-                    style={{ color: colors.text, fontFamily: "SFPRODISPLAYBOLD" }}
+                    style={{
+                      color: colors.text,
+                      fontFamily: 'SFPRODISPLAYBOLD',
+                    }}
                     numberOfLines={1}
                   >
                     {item.name}
@@ -430,7 +357,7 @@ export function ContactPickerSheet({
                     className="text-[13px] mt-0.5"
                     style={{
                       color: colors.textSecondary,
-                      fontFamily: "SFPRODISPLAYREGULAR",
+                      fontFamily: 'SFPRODISPLAYREGULAR',
                     }}
                     numberOfLines={1}
                   >
@@ -442,7 +369,7 @@ export function ContactPickerSheet({
                 <Ionicons
                   name="chevron-forward"
                   size={18}
-                  color={isDark ? "#9CA3AF" : "#CBD5E1"}
+                  color={isDark ? '#9CA3AF' : '#CBD5E1'}
                 />
               </Pressable>
             )}
@@ -456,7 +383,7 @@ export function ContactPickerSheet({
                 />
                 <Text
                   className="text-[16px] text-center"
-                  style={{ color: colors.text, fontFamily: "SFPRODISPLAYBOLD" }}
+                  style={{ color: colors.text, fontFamily: 'SFPRODISPLAYBOLD' }}
                 >
                   No contacts found
                 </Text>
@@ -464,7 +391,7 @@ export function ContactPickerSheet({
                   className="text-[13px] text-center mt-1"
                   style={{
                     color: colors.textSecondary,
-                    fontFamily: "SFPRODISPLAYREGULAR",
+                    fontFamily: 'SFPRODISPLAYREGULAR',
                   }}
                 >
                   Try searching for another name or phone number

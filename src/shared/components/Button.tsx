@@ -1,5 +1,11 @@
-import { useAppTheme } from "@/shared/hooks";
-import { ActivityIndicator, Pressable, StyleSheet, Text, ViewStyle } from "react-native";
+import { useAppTheme } from '@/shared/hooks';
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  ViewStyle,
+} from 'react-native';
+import { AppText } from './AppText';
 
 interface BtnProps {
   title: string;
@@ -36,9 +42,12 @@ export default function Button({
       {isLoading ? (
         <ActivityIndicator color={colors.primaryText} />
       ) : (
-        <Text style={[styles.buttonText, { color: colors.primaryText }]}>
+        <AppText
+          variant="bold"
+          style={[styles.buttonText, { color: colors.primaryText }]}
+        >
           {title}
-        </Text>
+        </AppText>
       )}
     </Pressable>
   );
@@ -46,17 +55,17 @@ export default function Button({
 
 const styles = StyleSheet.create({
   button: {
-    width: "100%",
+    width: '100%',
     paddingVertical: 18,
     borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   disabled: {
     opacity: 0.6,
   },
   buttonText: {
     fontSize: 18,
-    fontFamily: "SFPRODISPLAYBOLD",
+    fontFamily: 'SFPRODISPLAYBOLD',
   },
 });
