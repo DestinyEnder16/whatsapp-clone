@@ -1,15 +1,15 @@
 // src/features/chat/api/useSendMessage.ts
-import { useAuthStore } from "@/core/store/useAuthStore";
-import { api } from "@/services/api/client";
-import type { components } from "@/services/api/schema";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuthStore } from '@/core/store/useAuthStore';
+import { api } from '@/services/api/client';
+import type { components } from '@/services/api/schema';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-export type MessageDto = components["schemas"]["MessageResponseDto"];
+export type MessageDto = components['schemas']['MessageResponseDto'];
 
-function generateUUID(): string {
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+export function generateClientMessageId(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
-    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
 }
@@ -18,6 +18,7 @@ interface SendMessageVariables {
   conversationId: string;
   text?: string;
   attachmentMediaIds?: string[];
+  clientMessageId?: string;
 }
 
 export function useSendMessage() {
@@ -28,11 +29,13 @@ export function useSendMessage() {
       conversationId,
       text,
       attachmentMediaIds,
+      clientMessageId: providedClientMessageId,
     }: SendMessageVariables) => {
-      const clientMessageId = generateUUID();
+      const clientMessageId =
+        providedClientMessageId || generateClientMessageId();
 
       const { data, error } = await api.POST(
-        "/v1/conversations/{conversationId}/messages",
+        '/v1/conversations/{conversationId}/messages',
         {
           params: {
             path: { conversationId },
@@ -46,38 +49,40 @@ export function useSendMessage() {
       );
 
       if (error) {
-        throw new Error(
-          (error as any)?.message || "Failed to send message"
-        );
+        throw new Error((error as any)?.message || 'Failed to send message');
       }
 
       return data as MessageDto;
     },
 
     // Optimistic Update implementation
-    onMutate: async ({ conversationId, text }) => {
-      await queryClient.cancelQueries({ queryKey: ["messages", conversationId] });
+    onMutate: async ({ conversationId, text, clientMessageId }) => {
+      await queryClient.cancelQueries({
+        queryKey: ['messages', conversationId],
+      });
 
       const previousMessages = queryClient.getQueryData<{
         items: MessageDto[];
         pageInfo: any;
-      }>(["messages", conversationId]);
+      }>(['messages', conversationId]);
 
-      const currentUserId = useAuthStore.getState().user?.id || "me";
+      const currentUserId = useAuthStore.getState().user?.id || 'me';
+      const stableClientMessageId =
+        clientMessageId || generateClientMessageId();
 
       const optimisticMessage: MessageDto = {
-        id: `optimistic-${Date.now()}`,
+        id: `optimistic-${stableClientMessageId}`,
         conversationId,
-        clientMessageId: `temp-${Date.now()}`,
+        clientMessageId: stableClientMessageId,
         senderId: currentUserId,
-        kind: "text",
-        text: text || "",
+        kind: 'text',
+        text: text || '',
         attachments: [],
         createdAt: new Date().toISOString(),
       };
 
       queryClient.setQueryData(
-        ["messages", conversationId],
+        ['messages', conversationId],
         (old: { items: MessageDto[]; pageInfo: any } | undefined) => {
           if (!old) {
             return {
@@ -93,27 +98,34 @@ export function useSendMessage() {
         }
       );
 
-      return { previousMessages, optimisticMessage };
+      return { previousMessages, optimisticMessage, stableClientMessageId };
     },
 
     onError: (_err, variables, context) => {
-      if (context?.previousMessages) {
-        queryClient.setQueryData(
-          ["messages", variables.conversationId],
-          context.previousMessages
-        );
-      }
+      queryClient.setQueryData(
+        ['messages', variables.conversationId],
+        (old: { items: MessageDto[]; pageInfo: any } | undefined) => {
+          if (!old?.items || !context?.stableClientMessageId) return old;
+          return {
+            ...old,
+            items: old.items.filter(
+              (item) => item.clientMessageId !== context.stableClientMessageId
+            ),
+          };
+        }
+      );
     },
 
     onSuccess: (serverMessage, variables, context) => {
       queryClient.setQueryData(
-        ["messages", variables.conversationId],
+        ['messages', variables.conversationId],
         (old: { items: MessageDto[]; pageInfo: any } | undefined) => {
           if (!old?.items) return old;
 
           // Replace optimistic message with the server confirmed message
           const updatedItems = old.items.map((item) =>
             item.id === context?.optimisticMessage?.id ||
+            item.clientMessageId === context?.stableClientMessageId ||
             item.clientMessageId === serverMessage.clientMessageId
               ? serverMessage
               : item
@@ -127,7 +139,7 @@ export function useSendMessage() {
       );
 
       // Invalidate conversations list so latest preview updates
-      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
     },
   });
 }
