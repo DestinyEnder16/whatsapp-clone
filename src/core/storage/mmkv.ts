@@ -1,14 +1,14 @@
 // src/core/storage/mmkv.ts
-import { createMMKV } from "react-native-mmkv";
-import type { StateStorage } from "zustand/middleware";
-import * as SecureStore from "expo-secure-store";
+import * as SecureStore from 'expo-secure-store';
+import { createMMKV } from 'react-native-mmkv';
+import type { StateStorage } from 'zustand/middleware';
 
 /**
  * Shared MMKV instance for high-performance, synchronous, JSI-backed storage.
  */
 export const storage = createMMKV();
 
-const AUTH_STORAGE_KEY = "auth-storage";
+const AUTH_STORAGE_KEY = 'auth-storage';
 let authMigration: Promise<void> | null = null;
 
 async function migrateAuthStorage() {

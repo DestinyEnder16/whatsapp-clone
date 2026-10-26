@@ -2,9 +2,12 @@
 import { clearAccountQueries } from '@/core/lib/accountQuery';
 import { queryClient } from '@/core/lib/queryClient';
 import { secureAuthStorage } from '@/core/storage/mmkv';
+import {
+  invalidateAuthSession,
+  revokeAuthSession,
+} from '@/services/api/authSession';
 import type { components } from '@/services/api/schema';
 import { unregisterPushDeviceAsync } from '@/services/notifications';
-import { invalidateAuthSession, revokeAuthSession } from '@/services/api/authSession';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 

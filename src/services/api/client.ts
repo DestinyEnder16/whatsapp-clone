@@ -1,7 +1,7 @@
-import createClient, { type Middleware } from 'openapi-fetch';
-import { paths } from './schema';
 import { useAuthStore } from '@/core/store/useAuthStore';
+import createClient, { type Middleware } from 'openapi-fetch';
 import { getAuthSessionGeneration } from './authSession';
+import { paths } from './schema';
 
 export const api = createClient<paths>({
   baseUrl: process.env.EXPO_PUBLIC_API_URL,
@@ -33,8 +33,11 @@ let refreshPromise: Promise<string | null> | null = null;
  * Retrieves a valid access token. If the current token is expired (or about to expire
  * in less than 30 seconds), it automatically rotates tokens using the refresh token.
  */
-export async function getValidAccessToken(forceRefresh = false): Promise<string | null> {
-  const { accessToken, refreshToken, logout, setRefreshStatus } = useAuthStore.getState();
+export async function getValidAccessToken(
+  forceRefresh = false
+): Promise<string | null> {
+  const { accessToken, refreshToken, logout, setRefreshStatus } =
+    useAuthStore.getState();
 
   if (!accessToken && !refreshToken) {
     return null;
@@ -63,11 +66,14 @@ export async function getValidAccessToken(forceRefresh = false): Promise<string 
   refreshPromise = (async () => {
     setRefreshStatus('retrying');
     try {
-      const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/v1/auth/refresh`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken }),
-      });
+      const res = await fetch(
+        `${process.env.EXPO_PUBLIC_API_URL}/v1/auth/refresh`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refreshToken }),
+        }
+      );
 
       if (!res.ok) {
         if (res.status === 401 || res.status === 403) logout();
@@ -78,11 +84,14 @@ export async function getValidAccessToken(forceRefresh = false): Promise<string 
       const data = await res.json();
       // Update global Zustand store and persisted AsyncStorage
       if (requestGeneration !== getAuthSessionGeneration()) return null;
-      useAuthStore.getState().setAuth(data.accessToken, data.refreshToken, data.user);
+      useAuthStore
+        .getState()
+        .setAuth(data.accessToken, data.refreshToken, data.user);
       return data.accessToken as string;
     } catch (err) {
       console.error('Error refreshing access token:', err);
-      if (requestGeneration === getAuthSessionGeneration()) setRefreshStatus('recoverable-error');
+      if (requestGeneration === getAuthSessionGeneration())
+        setRefreshStatus('recoverable-error');
       return null;
     } finally {
       refreshPromise = null;
