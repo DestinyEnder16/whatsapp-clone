@@ -1,6 +1,7 @@
 import createClient, { type Middleware } from 'openapi-fetch';
 import { paths } from './schema';
 import { useAuthStore } from '@/core/store/useAuthStore';
+import { getAuthSessionGeneration } from './authSession';
 
 export const api = createClient<paths>({
   baseUrl: process.env.EXPO_PUBLIC_API_URL,
@@ -28,13 +29,12 @@ function getJwtExpiration(token: string): number | null {
 
 // Holds any in-flight token refresh promise to prevent duplicate concurrent refresh requests
 let refreshPromise: Promise<string | null> | null = null;
-
 /**
  * Retrieves a valid access token. If the current token is expired (or about to expire
  * in less than 30 seconds), it automatically rotates tokens using the refresh token.
  */
 export async function getValidAccessToken(forceRefresh = false): Promise<string | null> {
-  const { accessToken, refreshToken, logout } = useAuthStore.getState();
+  const { accessToken, refreshToken, logout, setRefreshStatus } = useAuthStore.getState();
 
   if (!accessToken && !refreshToken) {
     return null;
@@ -59,7 +59,9 @@ export async function getValidAccessToken(forceRefresh = false): Promise<string 
     return refreshPromise;
   }
 
+  const requestGeneration = getAuthSessionGeneration();
   refreshPromise = (async () => {
+    setRefreshStatus('retrying');
     try {
       const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/v1/auth/refresh`, {
         method: 'POST',
@@ -68,17 +70,19 @@ export async function getValidAccessToken(forceRefresh = false): Promise<string 
       });
 
       if (!res.ok) {
-        logout();
+        if (res.status === 401 || res.status === 403) logout();
+        else setRefreshStatus('recoverable-error');
         return null;
       }
 
       const data = await res.json();
       // Update global Zustand store and persisted AsyncStorage
+      if (requestGeneration !== getAuthSessionGeneration()) return null;
       useAuthStore.getState().setAuth(data.accessToken, data.refreshToken, data.user);
       return data.accessToken as string;
     } catch (err) {
       console.error('Error refreshing access token:', err);
-      logout();
+      if (requestGeneration === getAuthSessionGeneration()) setRefreshStatus('recoverable-error');
       return null;
     } finally {
       refreshPromise = null;
@@ -102,9 +106,16 @@ const authMiddleware: Middleware = {
   },
 
   // 2. After receiving: if server returned 401, trigger background rotation for subsequent calls
-  async onResponse({ response, schemaPath }) {
+  async onResponse({ request, response, schemaPath }) {
     if (response.status === 401 && schemaPath !== '/v1/auth/refresh') {
-      await getValidAccessToken(true);
+      if (request.headers.get('x-auth-retried') === 'true') return;
+      const token = await getValidAccessToken(true);
+      if (token) {
+        const retryRequest = request.clone();
+        retryRequest.headers.set('Authorization', `Bearer ${token}`);
+        retryRequest.headers.set('x-auth-retried', 'true');
+        return fetch(retryRequest);
+      }
     }
     // Return undefined so openapi-fetch does not fail the React Native Hermes `instanceof Response` check
   },

@@ -1,9 +1,10 @@
 // src/core/store/useAuthStore.ts
 import { clearAccountQueries } from '@/core/lib/accountQuery';
 import { queryClient } from '@/core/lib/queryClient';
-import { mmkvStorage } from '@/core/storage/mmkv';
+import { secureAuthStorage } from '@/core/storage/mmkv';
 import type { components } from '@/services/api/schema';
 import { unregisterPushDeviceAsync } from '@/services/notifications';
+import { invalidateAuthSession, revokeAuthSession } from '@/services/api/authSession';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
@@ -16,6 +17,7 @@ interface AuthState {
   refreshToken: string | null;
   user: User | null;
   isAuthenticated: boolean;
+  refreshStatus: 'idle' | 'retrying' | 'recoverable-error';
 
   // --- Runtime / Hydration State ---
   /**
@@ -36,6 +38,7 @@ interface AuthState {
 
   /** Updates the hydration status once storage is loaded */
   setHasHydrated: (state: boolean) => void;
+  setRefreshStatus: (status: AuthState['refreshStatus']) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -46,6 +49,7 @@ export const useAuthStore = create<AuthState>()(
       refreshToken: null,
       user: null,
       isAuthenticated: false,
+      refreshStatus: 'idle',
       hasHydrated: false,
 
       // Called when user logs in or completes OTP verification
@@ -55,6 +59,7 @@ export const useAuthStore = create<AuthState>()(
           refreshToken,
           user,
           isAuthenticated: true,
+          refreshStatus: 'idle',
         }),
 
       // Called when user updates their profile name or avatar
@@ -62,25 +67,30 @@ export const useAuthStore = create<AuthState>()(
 
       // Called when user signs out: resets all auth fields back to null/false
       logout: () => {
+        const refreshToken = useAuthStore.getState().refreshToken;
+        invalidateAuthSession();
         clearAccountQueries(queryClient);
         unregisterPushDeviceAsync().catch(() => {});
+        revokeAuthSession(refreshToken).catch(() => {});
         set({
           accessToken: null,
           refreshToken: null,
           user: null,
           isAuthenticated: false,
+          refreshStatus: 'idle',
         });
       },
 
       // Marks hydration as complete so navigation guards can safely redirect
       setHasHydrated: (state) => set({ hasHydrated: state }),
+      setRefreshStatus: (refreshStatus) => set({ refreshStatus }),
     }),
     {
       // Key name under which auth data is saved in MMKV
       name: 'auth-storage',
 
       // Synchronous JSI storage adapter (wraps MMKV)
-      storage: createJSONStorage(() => mmkvStorage),
+      storage: createJSONStorage(() => secureAuthStorage),
 
       // Only save tokens and user to storage; exclude runtime flags like `hasHydrated`
       partialize: (state) => ({

@@ -1,5 +1,6 @@
 import { useAuthStore } from "@/core/store/useAuthStore";
 import { useVerifyOtp } from "@/features/auth/api/useVerifyOtp";
+import { useResendOtp } from "@/features/auth/api/useResendOtp";
 import { BackButton, Button } from "@/shared/components";
 import Heading from "@/shared/components/Heading";
 import Screen from "@/shared/components/Screen";
@@ -12,17 +13,20 @@ import Toast from "react-native-toast-message";
 
 export function OtpScreen() {
   const { colors } = useAppTheme();
-  const { challengeId, phoneNumberMasked, time } = useLocalSearchParams();
+  const { challengeId: initialChallengeId, phoneNumberMasked, time, codeLength: initialCodeLength } = useLocalSearchParams();
+  const [currentChallengeId, setCurrentChallengeId] = useState(initialChallengeId as string);
+  const [codeLength, setCodeLength] = useState(Number(initialCodeLength) || 4);
   const [timer, setTimer] = useState(+(time as string));
   const verifyOtpMutation = useVerifyOtp();
+  const resendOtpMutation = useResendOtp();
   const [otp, setOtp] = useState("");
   const setAuth = useAuthStore((state) => state.setAuth);
 
   function handleOtpVerify(code: string) {
-    if (code.length < 4) return;
+    if (code.length < codeLength) return;
     verifyOtpMutation.mutate(
       {
-        challengeId: challengeId as string,
+        challengeId: currentChallengeId,
         code: code,
       },
       {
@@ -78,7 +82,7 @@ export function OtpScreen() {
 
       <View className="mt-[40px]">
         <OtpInput
-          numberOfDigits={4}
+          numberOfDigits={codeLength}
           onTextChange={(code) => setOtp(code)}
           placeholder="****"
           onFilled={(code) => handleOtpVerify(code)}
@@ -118,7 +122,7 @@ export function OtpScreen() {
           seconds.
         </Text>
         {timer === 0 && (
-          <Pressable onPress={() => setTimer(25)} className="mt-4 active:opacity-75">
+          <Pressable onPress={() => resendOtpMutation.mutate({ challengeId: currentChallengeId }, { onSuccess: (challenge) => { setCurrentChallengeId(challenge.challengeId); setCodeLength(challenge.codeLength); setTimer(challenge.resendInSeconds); setOtp(""); }, onError: (error) => Toast.show({ type: "error", text1: "Error", text2: error.message }) })} disabled={resendOtpMutation.isPending} className="mt-4 active:opacity-75">
             <Text
               className="text-[15px] font-bold text-center"
               style={{ color: colors.primary }}
@@ -134,7 +138,7 @@ export function OtpScreen() {
           title="Next"
           onPress={() => handleOtpVerify(otp)}
           isLoading={verifyOtpMutation.isPending}
-          disabled={otp.length < 4}
+          disabled={otp.length < codeLength}
         />
       </View>
     </Screen>
