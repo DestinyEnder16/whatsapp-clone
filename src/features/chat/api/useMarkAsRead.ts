@@ -1,6 +1,8 @@
 // src/features/chat/api/useMarkAsRead.ts
-import { api } from "@/services/api/client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { accountQueryKeys } from '@/core/lib/accountQuery';
+import { useAuthStore } from '@/core/store/useAuthStore';
+import { api } from '@/services/api/client';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 export function useMarkAsRead() {
   const queryClient = useQueryClient();
@@ -8,7 +10,7 @@ export function useMarkAsRead() {
   return useMutation({
     mutationFn: async (conversationId: string) => {
       const { data, error } = await api.POST(
-        "/v1/conversations/{conversationId}/read",
+        '/v1/conversations/{conversationId}/read',
         {
           params: {
             path: { conversationId },
@@ -18,14 +20,18 @@ export function useMarkAsRead() {
 
       if (error) {
         throw new Error(
-          (error as any)?.message || "Failed to mark conversation as read"
+          (error as any)?.message || 'Failed to mark conversation as read'
         );
       }
 
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+      queryClient.invalidateQueries({
+        queryKey: accountQueryKeys.conversations(
+          useAuthStore.getState().user?.id || 'none'
+        ),
+      });
     },
   });
 }

@@ -1,15 +1,16 @@
 // src/features/chat/api/useReceipts.ts
-import { useAuthStore } from "@/core/store/useAuthStore";
-import { api } from "@/services/api/client";
-import type { components } from "@/services/api/schema";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { accountQueryKeys } from '@/core/lib/accountQuery';
+import { useAuthStore } from '@/core/store/useAuthStore';
+import { api } from '@/services/api/client';
+import type { components } from '@/services/api/schema';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 export type ReceiptFrontiersResponse =
-  components["schemas"]["ReceiptFrontiersResponseDto"];
+  components['schemas']['ReceiptFrontiersResponseDto'];
 export type ReceiptFrontier =
-  components["schemas"]["ReceiptFrontierResponseDto"];
+  components['schemas']['ReceiptFrontierResponseDto'];
 export type ReceiptUpdateResponse =
-  components["schemas"]["ReceiptUpdateResponseDto"];
+  components['schemas']['ReceiptUpdateResponseDto'];
 
 /**
  * Fetch the receipt frontiers for all participants in a conversation.
@@ -17,16 +18,19 @@ export type ReceiptUpdateResponse =
  */
 export function useReceipts(conversationId?: string) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const accountId = useAuthStore((s) => s.user?.id);
 
   return useQuery({
-    queryKey: ["receipts", conversationId],
+    queryKey: accountId
+      ? accountQueryKeys.receipts(accountId, conversationId)
+      : ['account', 'none', 'receipts', conversationId],
     queryFn: async () => {
       if (!conversationId) {
-        return { conversationId: "", items: [] } as ReceiptFrontiersResponse;
+        return { conversationId: '', items: [] } as ReceiptFrontiersResponse;
       }
 
       const { data, error } = await api.GET(
-        "/v1/conversations/{conversationId}/receipts",
+        '/v1/conversations/{conversationId}/receipts',
         {
           params: {
             path: { conversationId },
@@ -35,14 +39,12 @@ export function useReceipts(conversationId?: string) {
       );
 
       if (error) {
-        throw new Error(
-          (error as any)?.message || "Failed to load receipts"
-        );
+        throw new Error((error as any)?.message || 'Failed to load receipts');
       }
 
       return data as ReceiptFrontiersResponse;
     },
-    enabled: Boolean(isAuthenticated && conversationId),
+    enabled: Boolean(isAuthenticated && accountId && conversationId),
     refetchInterval: 5000, // Poll every 5s while in chat room to keep blue ticks in sync
     staleTime: 3000,
   });
@@ -65,14 +67,14 @@ export function useMarkReceiptAsRead() {
     }) => {
       // 1. Mark general conversation as read (resets unread counter)
       api
-        .POST("/v1/conversations/{conversationId}/read", {
+        .POST('/v1/conversations/{conversationId}/read', {
           params: { path: { conversationId } },
         })
         .catch(() => {});
 
       // 2. Mark delivered receipt boundary
       api
-        .PUT("/v1/conversations/{conversationId}/receipts/delivered", {
+        .PUT('/v1/conversations/{conversationId}/receipts/delivered', {
           params: { path: { conversationId } },
           body: { throughMessageId },
         })
@@ -80,7 +82,7 @@ export function useMarkReceiptAsRead() {
 
       // 3. Mark read receipt boundary (this updates the receipt frontier so sender sees blue ticks)
       const { data, error } = await api.PUT(
-        "/v1/conversations/{conversationId}/receipts/read",
+        '/v1/conversations/{conversationId}/receipts/read',
         {
           params: { path: { conversationId } },
           body: { throughMessageId },
@@ -89,16 +91,23 @@ export function useMarkReceiptAsRead() {
 
       if (error) {
         throw new Error(
-          (error as any)?.message || "Failed to mark receipts as read"
+          (error as any)?.message || 'Failed to mark receipts as read'
         );
       }
 
       return data as ReceiptUpdateResponse;
     },
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["conversations"] });
       queryClient.invalidateQueries({
-        queryKey: ["receipts", variables.conversationId],
+        queryKey: accountQueryKeys.conversations(
+          useAuthStore.getState().user?.id || 'none'
+        ),
+      });
+      queryClient.invalidateQueries({
+        queryKey: accountQueryKeys.receipts(
+          useAuthStore.getState().user?.id || 'none',
+          variables.conversationId
+        ),
       });
     },
   });

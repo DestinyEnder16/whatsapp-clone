@@ -1,12 +1,14 @@
 // src/core/store/useAuthStore.ts
-import { mmkvStorage } from "@/core/storage/mmkv";
-import type { components } from "@/services/api/schema";
-import { unregisterPushDeviceAsync } from "@/services/notifications";
-import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
+import { clearAccountQueries } from '@/core/lib/accountQuery';
+import { queryClient } from '@/core/lib/queryClient';
+import { mmkvStorage } from '@/core/storage/mmkv';
+import type { components } from '@/services/api/schema';
+import { unregisterPushDeviceAsync } from '@/services/notifications';
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
 
 // Extract the user type definition directly from the OpenAPI backend schema
-type User = components["schemas"]["UserResponseDto"];
+type User = components['schemas']['UserResponseDto'];
 
 interface AuthState {
   // --- Persisted State ---
@@ -60,6 +62,7 @@ export const useAuthStore = create<AuthState>()(
 
       // Called when user signs out: resets all auth fields back to null/false
       logout: () => {
+        clearAccountQueries(queryClient);
         unregisterPushDeviceAsync().catch(() => {});
         set({
           accessToken: null,
@@ -74,7 +77,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       // Key name under which auth data is saved in MMKV
-      name: "auth-storage",
+      name: 'auth-storage',
 
       // Synchronous JSI storage adapter (wraps MMKV)
       storage: createJSONStorage(() => mmkvStorage),
@@ -93,6 +96,6 @@ export const useAuthStore = create<AuthState>()(
           state?.setHasHydrated(true);
         }
       },
-    },
-  ),
+    }
+  )
 );

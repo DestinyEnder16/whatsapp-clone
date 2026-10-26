@@ -1,15 +1,18 @@
 // src/features/chat/screens/ChatScreen.tsx
-import { usePinStore } from "@/core/store/usePinStore";
-import { useSocketStore } from "@/core/store/useSocketStore";
-import { formatLastActive } from "../utils/formatLastActive";
-import { ContactsEmptyState } from "@/features/contacts";
-import { useAppTheme } from "@/shared/hooks";
-import { toast } from "@/shared/utils/toast";
-import Ionicons from "@react-native-vector-icons/ionicons";
-import { Image } from "expo-image";
-import { router } from "expo-router";
-import { StatusBar } from "expo-status-bar";
-import { useEffect, useMemo, useState } from "react";
+import { accountQueryKeys } from '@/core/lib/accountQuery';
+import { useAuthStore } from '@/core/store/useAuthStore';
+import { usePinStore } from '@/core/store/usePinStore';
+import { useSocketStore } from '@/core/store/useSocketStore';
+import { ContactsEmptyState } from '@/features/contacts';
+import { api } from '@/services/api/client';
+import { useAppTheme } from '@/shared/hooks';
+import { toast } from '@/shared/utils/toast';
+import Ionicons from '@react-native-vector-icons/ionicons';
+import { useQueryClient } from '@tanstack/react-query';
+import { Image } from 'expo-image';
+import { router } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -18,20 +21,19 @@ import {
   Text,
   TextInput,
   View,
-} from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useConversations } from "../api/useConversations";
-import { useCreateDirectConversation } from "../api/useCreateDirectConversation";
-import { useSearchUsers } from "../api/useSearchUsers";
-import { api } from "@/services/api/client";
-import { useQueryClient } from "@tanstack/react-query";
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useConversations } from '../api/useConversations';
+import { useCreateDirectConversation } from '../api/useCreateDirectConversation';
+import { useSearchUsers } from '../api/useSearchUsers';
 import {
   ContactPickerSheet,
   ConversationInfoModal,
   ConversationItem,
   type ConversationItemData,
   PinCodeModal,
-} from "../components";
+} from '../components';
+import { formatLastActive } from '../utils/formatLastActive';
 
 export function ChatScreen() {
   const { colors, isDark } = useAppTheme();
@@ -46,7 +48,7 @@ export function ChatScreen() {
     isRefetching,
   } = useConversations();
 
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [showStartModal, setShowStartModal] = useState(false);
   const [selectedConversation, setSelectedConversation] =
     useState<ConversationItemData | null>(null);
@@ -57,6 +59,7 @@ export function ChatScreen() {
   const onlineUsers = useSocketStore((s) => s.onlineUsers);
   const subscribePresence = useSocketStore((s) => s.subscribePresence);
   const queryClient = useQueryClient();
+  const accountId = useAuthStore((state) => state.user?.id);
 
   // Connect socket on mount
   useEffect(() => {
@@ -68,19 +71,27 @@ export function ChatScreen() {
     if (!conversations?.items) return;
     conversations.items.forEach((conv: any) => {
       queryClient.prefetchQuery({
-        queryKey: ["messages", conv.id],
+        queryKey: accountQueryKeys.messages(accountId || 'none', conv.id),
         queryFn: async () => {
           const { data, error } = await api.GET(
-            "/v1/conversations/{conversationId}/messages",
-            { params: { path: { conversationId: conv.id }, query: { limit: 50 } } }
+            '/v1/conversations/{conversationId}/messages',
+            {
+              params: {
+                path: { conversationId: conv.id },
+                query: { limit: 50 },
+              },
+            }
           );
-          if (error) throw new Error((error as any)?.message || "Failed to load messages");
+          if (error)
+            throw new Error(
+              (error as any)?.message || 'Failed to load messages'
+            );
           return data;
         },
         staleTime: 30_000,
       });
     });
-  }, [conversations?.items, queryClient]);
+  }, [accountId, conversations?.items, queryClient]);
 
   // Subscribe to presence updates for all contacts in conversation list
   useEffect(() => {
@@ -117,10 +128,10 @@ export function ChatScreen() {
     const query = searchQuery.toLowerCase().trim();
     return items.filter((item) => {
       const name =
-        item.type === "group"
-          ? (item as any).name || ""
-          : (item as any).otherParticipant?.displayName || "";
-      const preview = item.latestMessage?.preview || "";
+        item.type === 'group'
+          ? (item as any).name || ''
+          : (item as any).otherParticipant?.displayName || '';
+      const preview = item.latestMessage?.preview || '';
       return (
         name.toLowerCase().includes(query) ||
         preview.toLowerCase().includes(query)
@@ -135,27 +146,27 @@ export function ChatScreen() {
       { participantId: userId },
       {
         onSuccess: (newConv) => {
-          setSearchQuery("");
+          setSearchQuery('');
           router.push({
-            pathname: "/chat/[id]",
+            pathname: '/chat/[id]',
             params: {
               id: newConv.id,
               name,
-              avatarUrl: (newConv as any).otherParticipant?.avatarUrl || "",
-              status: "Online",
+              avatarUrl: (newConv as any).otherParticipant?.avatarUrl || '',
+              status: 'Online',
               otherParticipantId: userId,
             },
           } as any);
         },
         onError: (err: any) => {
-          toast.error("Error", err?.message || "Could not start conversation");
+          toast.error('Error', err?.message || 'Could not start conversation');
         },
-      },
+      }
     );
   };
 
   const handleOpenConversation = (item: ConversationItemData) => {
-    const isGroup = item.type === "group";
+    const isGroup = item.type === 'group';
     const otherParticipantId = !isGroup
       ? (item as any).otherParticipant?.id
       : undefined;
@@ -163,23 +174,25 @@ export function ChatScreen() {
       ? Boolean(onlineUsers[otherParticipantId]?.isOnline)
       : false;
     const name = isGroup
-      ? (item as any).name || "Group"
-      : (item as any).otherParticipant?.displayName || "Contact";
+      ? (item as any).name || 'Group'
+      : (item as any).otherParticipant?.displayName || 'Contact';
     const avatarUrl = isGroup
-      ? (item as any).avatarUrl || ""
-      : (item as any).otherParticipant?.avatarUrl || "";
+      ? (item as any).avatarUrl || ''
+      : (item as any).otherParticipant?.avatarUrl || '';
 
     router.push({
-      pathname: "/chat/[id]",
+      pathname: '/chat/[id]',
       params: {
         id: item.id,
         name,
         avatarUrl,
-        status: isOnline ? "Online" : formatLastActive({
-          isOnline: false,
-          lastActiveAt: onlineUsers[otherParticipantId]?.lastActiveAt,
-          fallback: "Offline",
-        }),
+        status: isOnline
+          ? 'Online'
+          : formatLastActive({
+              isOnline: false,
+              lastActiveAt: onlineUsers[otherParticipantId]?.lastActiveAt,
+              fallback: 'Offline',
+            }),
         otherParticipantId,
       },
     } as any);
@@ -204,7 +217,7 @@ export function ChatScreen() {
         {/* Title */}
         <Text
           className="text-white text-[28px] tracking-tight mb-3"
-          style={{ fontFamily: "SFPRODISPLAYBOLD" }}
+          style={{ fontFamily: 'SFPRODISPLAYBOLD' }}
         >
           Chats
         </Text>
@@ -212,7 +225,7 @@ export function ChatScreen() {
         {/* Search Bar inside Header */}
         <View
           className="flex-row items-center px-4 py-2.5 rounded-2xl"
-          style={{ backgroundColor: "rgba(255, 255, 255, 0.22)" }}
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.22)' }}
         >
           <Ionicons
             name="search"
@@ -226,12 +239,12 @@ export function ChatScreen() {
             placeholder="Search chat, people and more..."
             placeholderTextColor="rgba(255, 255, 255, 0.75)"
             className="flex-1 text-white text-[15px]"
-            style={{ fontFamily: "SFPRODISPLAYREGULAR" }}
+            style={{ fontFamily: 'SFPRODISPLAYREGULAR' }}
             autoCapitalize="none"
             returnKeyType="search"
           />
           {searchQuery.length > 0 && (
-            <Pressable onPress={() => setSearchQuery("")}>
+            <Pressable onPress={() => setSearchQuery('')}>
               <Ionicons
                 name="close-circle"
                 size={18}
@@ -306,17 +319,17 @@ export function ChatScreen() {
                     style={{ color: colors.primary }}
                   >
                     {createDirectMutation.isPending
-                      ? "Creating conversation..."
-                      : "Searching directory..."}
+                      ? 'Creating conversation...'
+                      : 'Searching directory...'}
                   </Text>
                 </View>
               ) : userSearchResults?.items &&
                 userSearchResults.items.length > 0 ? (
                 userSearchResults.items.map((user) => {
                   const userName =
-                    typeof user.displayName === "string" && user.displayName
+                    typeof user.displayName === 'string' && user.displayName
                       ? user.displayName
-                      : "ChatMe User";
+                      : 'ChatMe User';
 
                   return (
                     <Pressable
@@ -335,7 +348,7 @@ export function ChatScreen() {
                         {user.avatarUrl ? (
                           <Image
                             source={{ uri: user.avatarUrl }}
-                            style={{ width: "100%", height: "100%" }}
+                            style={{ width: '100%', height: '100%' }}
                             contentFit="cover"
                           />
                         ) : (
@@ -433,7 +446,7 @@ export function ChatScreen() {
         className="w-[64px] h-[64px] rounded-full items-center justify-center absolute bottom-6 right-6 active:opacity-85 shadow-lg"
         style={{
           backgroundColor: colors.primary,
-          shadowColor: "#000",
+          shadowColor: '#000',
           shadowOffset: { width: 0, height: 4 },
           shadowOpacity: 0.3,
           shadowRadius: 6,
@@ -462,7 +475,7 @@ export function ChatScreen() {
         onCancel={() => setShowPinModal(false)}
         onConfirm={() => {
           setShowPinModal(false);
-          router.push("/pin-setup" as any);
+          router.push('/pin-setup' as any);
         }}
       />
     </View>

@@ -1,4 +1,5 @@
 // src/core/store/useSocketStore.ts
+import { accountQueryKeys } from '@/core/lib/accountQuery';
 import { queryClient } from '@/core/lib/queryClient';
 import type {
   ClientToServerEvents,
@@ -150,7 +151,7 @@ export const useSocketStore = create<SocketState>((set, get) => ({
         // Reconcile only the matching optimistic send; never replace another pending message.
         const conversationId = msg.conversationId;
         queryClient.setQueryData(
-          ['messages', conversationId],
+          accountQueryKeys.messages(currentUserId || 'none', conversationId),
           (oldData: any) => {
             if (!oldData?.items) return oldData;
             const hasMatchingOptimistic = msg.clientMessageId
@@ -179,30 +180,37 @@ export const useSocketStore = create<SocketState>((set, get) => ({
       const conversationId = msg.conversationId;
 
       // Update React Query cache for this conversation's messages
-      queryClient.setQueryData(['messages', conversationId], (oldData: any) => {
-        if (!oldData) {
+      queryClient.setQueryData(
+        accountQueryKeys.messages(currentUserId || 'none', conversationId),
+        (oldData: any) => {
+          if (!oldData) {
+            return {
+              items: [msg],
+              pageInfo: { nextCursor: null, hasNextPage: false },
+            };
+          }
+
+          const existingItems: MessageDto[] = oldData.items || [];
+
+          // Check if message is already in cache
+          const alreadyExists = existingItems.some(
+            (item) => item.id === msg.id
+          );
+
+          if (alreadyExists) return oldData;
+
+          // Append incoming message at the end (items are stored newest-last after reversal)
           return {
-            items: [msg],
-            pageInfo: { nextCursor: null, hasNextPage: false },
+            ...oldData,
+            items: [...existingItems, msg],
           };
         }
-
-        const existingItems: MessageDto[] = oldData.items || [];
-
-        // Check if message is already in cache
-        const alreadyExists = existingItems.some((item) => item.id === msg.id);
-
-        if (alreadyExists) return oldData;
-
-        // Append incoming message at the end (items are stored newest-last after reversal)
-        return {
-          ...oldData,
-          items: [...existingItems, msg],
-        };
-      });
+      );
 
       // Invalidate conversations list so latest preview and timestamp are updated
-      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      queryClient.invalidateQueries({
+        queryKey: accountQueryKeys.conversations(currentUserId || 'none'),
+      });
     };
 
     socketInstance.on('message.created', handleNewMessage);
@@ -241,15 +249,23 @@ export const useSocketStore = create<SocketState>((set, get) => ({
 
     // 5. Read / Delivered receipt event listeners
     const handleReceiptUpdate = (payload: any) => {
+      const currentUserId = useAuthStore.getState().user?.id;
       const conversationId = payload?.conversationId;
       if (conversationId) {
         queryClient.invalidateQueries({
-          queryKey: ['receipts', conversationId],
+          queryKey: accountQueryKeys.receipts(
+            currentUserId || 'none',
+            conversationId
+          ),
         });
       } else {
-        queryClient.invalidateQueries({ queryKey: ['receipts'] });
+        queryClient.invalidateQueries({
+          queryKey: accountQueryKeys.root(currentUserId || 'none'),
+        });
       }
-      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      queryClient.invalidateQueries({
+        queryKey: accountQueryKeys.conversations(currentUserId || 'none'),
+      });
     };
 
     socketInstance.on('receipt.updated', handleReceiptUpdate);

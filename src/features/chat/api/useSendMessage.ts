@@ -1,4 +1,5 @@
 // src/features/chat/api/useSendMessage.ts
+import { accountQueryKeys } from '@/core/lib/accountQuery';
 import { useAuthStore } from '@/core/store/useAuthStore';
 import { api } from '@/services/api/client';
 import type { components } from '@/services/api/schema';
@@ -58,13 +59,19 @@ export function useSendMessage() {
     // Optimistic Update implementation
     onMutate: async ({ conversationId, text, clientMessageId }) => {
       await queryClient.cancelQueries({
-        queryKey: ['messages', conversationId],
+        queryKey: accountQueryKeys.messages(
+          useAuthStore.getState().user?.id || 'none',
+          conversationId
+        ),
       });
+
+      const accountId = useAuthStore.getState().user?.id || 'none';
+      const messagesKey = accountQueryKeys.messages(accountId, conversationId);
 
       const previousMessages = queryClient.getQueryData<{
         items: MessageDto[];
         pageInfo: any;
-      }>(['messages', conversationId]);
+      }>(messagesKey);
 
       const currentUserId = useAuthStore.getState().user?.id || 'me';
       const stableClientMessageId =
@@ -82,7 +89,7 @@ export function useSendMessage() {
       };
 
       queryClient.setQueryData(
-        ['messages', conversationId],
+        messagesKey,
         (old: { items: MessageDto[]; pageInfo: any } | undefined) => {
           if (!old) {
             return {
@@ -103,7 +110,10 @@ export function useSendMessage() {
 
     onError: (_err, variables, context) => {
       queryClient.setQueryData(
-        ['messages', variables.conversationId],
+        accountQueryKeys.messages(
+          useAuthStore.getState().user?.id || 'none',
+          variables.conversationId
+        ),
         (old: { items: MessageDto[]; pageInfo: any } | undefined) => {
           if (!old?.items || !context?.stableClientMessageId) return old;
           return {
@@ -118,7 +128,10 @@ export function useSendMessage() {
 
     onSuccess: (serverMessage, variables, context) => {
       queryClient.setQueryData(
-        ['messages', variables.conversationId],
+        accountQueryKeys.messages(
+          useAuthStore.getState().user?.id || 'none',
+          variables.conversationId
+        ),
         (old: { items: MessageDto[]; pageInfo: any } | undefined) => {
           if (!old?.items) return old;
 
@@ -139,7 +152,11 @@ export function useSendMessage() {
       );
 
       // Invalidate conversations list so latest preview updates
-      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      queryClient.invalidateQueries({
+        queryKey: accountQueryKeys.conversations(
+          useAuthStore.getState().user?.id || 'none'
+        ),
+      });
     },
   });
 }

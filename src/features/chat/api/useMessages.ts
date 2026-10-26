@@ -1,23 +1,31 @@
 // src/features/chat/api/useMessages.ts
-import { useAuthStore } from "@/core/store/useAuthStore";
-import { api } from "@/services/api/client";
-import type { components } from "@/services/api/schema";
-import { useQuery } from "@tanstack/react-query";
+import { accountQueryKeys } from '@/core/lib/accountQuery';
+import { useAuthStore } from '@/core/store/useAuthStore';
+import { api } from '@/services/api/client';
+import type { components } from '@/services/api/schema';
+import { useQuery } from '@tanstack/react-query';
 
-export type MessageDto = components["schemas"]["MessageResponseDto"];
+export type MessageDto = components['schemas']['MessageResponseDto'];
 export type MessageHistoryResponse =
-  components["schemas"]["MessageHistoryResponseDto"];
+  components['schemas']['MessageHistoryResponseDto'];
 
 export function useMessages(conversationId?: string) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const accountId = useAuthStore((s) => s.user?.id);
 
   return useQuery({
-    queryKey: ["messages", conversationId],
+    queryKey: accountId
+      ? accountQueryKeys.messages(accountId, conversationId)
+      : ['account', 'none', 'messages', conversationId],
     queryFn: async () => {
-      if (!conversationId) return { items: [], pageInfo: { nextCursor: null, hasNextPage: false } };
+      if (!conversationId)
+        return {
+          items: [],
+          pageInfo: { nextCursor: null, hasNextPage: false },
+        };
 
       const { data, error } = await api.GET(
-        "/v1/conversations/{conversationId}/messages",
+        '/v1/conversations/{conversationId}/messages',
         {
           params: {
             path: { conversationId },
@@ -27,14 +35,12 @@ export function useMessages(conversationId?: string) {
       );
 
       if (error) {
-        throw new Error(
-          (error as any)?.message || "Failed to load messages"
-        );
+        throw new Error((error as any)?.message || 'Failed to load messages');
       }
 
       return data as MessageHistoryResponse;
     },
-    enabled: Boolean(isAuthenticated && conversationId),
+    enabled: Boolean(isAuthenticated && accountId && conversationId),
     // Keep cached messages fresh for 30s so re-entering a chat is instant
     staleTime: 30_000,
     // Keep messages in cache for 10 minutes after leaving the chat

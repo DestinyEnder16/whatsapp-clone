@@ -1,10 +1,12 @@
 // src/features/chat/api/useCreateDirectConversation.ts
-import { api } from "@/services/api/client";
-import type { components } from "@/services/api/schema";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { accountQueryKeys } from '@/core/lib/accountQuery';
+import { useAuthStore } from '@/core/store/useAuthStore';
+import { api } from '@/services/api/client';
+import type { components } from '@/services/api/schema';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 export type DirectConversationResponseDto =
-  components["schemas"]["DirectConversationResponseDto"];
+  components['schemas']['DirectConversationResponseDto'];
 
 interface CreateDirectConversationParams {
   participantId: string;
@@ -19,7 +21,7 @@ export function useCreateDirectConversation() {
 
   return useMutation({
     mutationFn: async ({ participantId }: CreateDirectConversationParams) => {
-      const { data, error } = await api.POST("/v1/conversations/direct", {
+      const { data, error } = await api.POST('/v1/conversations/direct', {
         body: {
           participantId,
         },
@@ -27,7 +29,7 @@ export function useCreateDirectConversation() {
 
       if (error) {
         throw new Error(
-          (error as any)?.message || "Failed to create direct conversation"
+          (error as any)?.message || 'Failed to create direct conversation'
         );
       }
 
@@ -35,9 +37,14 @@ export function useCreateDirectConversation() {
     },
     onSuccess: (data) => {
       // Invalidate conversations list query so the new conversation immediately appears
-      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+      const accountId = useAuthStore.getState().user?.id || 'none';
+      queryClient.invalidateQueries({
+        queryKey: accountQueryKeys.conversations(accountId),
+      });
       if (data?.id) {
-        queryClient.invalidateQueries({ queryKey: ["conversation", data.id] });
+        queryClient.invalidateQueries({
+          queryKey: accountQueryKeys.conversation(accountId, data.id),
+        });
       }
     },
   });

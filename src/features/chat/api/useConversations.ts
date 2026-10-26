@@ -1,11 +1,15 @@
+import { accountQueryKeys } from '@/core/lib/accountQuery';
 import { useAuthStore } from '@/core/store/useAuthStore';
 import { api } from '@/services/api/client';
 import { useQuery } from '@tanstack/react-query';
 export function useConversations() {
   const isAuthenticated = useAuthStore((store) => store.isAuthenticated);
+  const accountId = useAuthStore((store) => store.user?.id);
 
   return useQuery({
-    queryKey: ['conversations'],
+    queryKey: accountId
+      ? accountQueryKeys.conversations(accountId)
+      : ['account', 'none', 'conversations'],
     queryFn: async () => {
       // Authorization header and automatic token refresh are handled globally by api middleware
       const { data, error } = await api.GET('/v1/conversations');
@@ -18,6 +22,6 @@ export function useConversations() {
       return data;
     },
     // Only fire this query when the user is authenticated (prevents firing on cold start before login)
-    enabled: isAuthenticated,
+    enabled: isAuthenticated && !!accountId,
   });
 }
