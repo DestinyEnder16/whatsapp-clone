@@ -29,6 +29,7 @@ function getJwtExpiration(token: string): number | null {
 
 // Holds any in-flight token refresh promise to prevent duplicate concurrent refresh requests
 let refreshPromise: Promise<string | null> | null = null;
+let refreshPromiseGeneration: number | null = null;
 /**
  * Retrieves a valid access token. If the current token is expired (or about to expire
  * in less than 30 seconds), it automatically rotates tokens using the refresh token.
@@ -58,11 +59,13 @@ export async function getValidAccessToken(
   }
 
   // 3. Deduplicate concurrent refresh calls
-  if (refreshPromise) {
+  const currentGeneration = getAuthSessionGeneration();
+  if (refreshPromise && refreshPromiseGeneration === currentGeneration) {
     return refreshPromise;
   }
 
-  const requestGeneration = getAuthSessionGeneration();
+  const requestGeneration = currentGeneration;
+  refreshPromiseGeneration = requestGeneration;
   refreshPromise = (async () => {
     setRefreshStatus('retrying');
     try {
@@ -83,7 +86,13 @@ export async function getValidAccessToken(
 
       const data = await res.json();
       // Update global Zustand store and persisted AsyncStorage
-      if (requestGeneration !== getAuthSessionGeneration()) return null;
+      const currentAuth = useAuthStore.getState();
+      if (
+        requestGeneration !== getAuthSessionGeneration() ||
+        currentAuth.refreshToken !== refreshToken
+      ) {
+        return null;
+      }
       useAuthStore
         .getState()
         .setAuth(data.accessToken, data.refreshToken, data.user);
@@ -94,7 +103,10 @@ export async function getValidAccessToken(
         setRefreshStatus('recoverable-error');
       return null;
     } finally {
-      refreshPromise = null;
+      if (refreshPromiseGeneration === requestGeneration) {
+        refreshPromise = null;
+        refreshPromiseGeneration = null;
+      }
     }
   })();
 
@@ -120,10 +132,14 @@ const authMiddleware: Middleware = {
       if (request.headers.get('x-auth-retried') === 'true') return;
       const token = await getValidAccessToken(true);
       if (token) {
-        const retryRequest = request.clone();
-        retryRequest.headers.set('Authorization', `Bearer ${token}`);
-        retryRequest.headers.set('x-auth-retried', 'true');
-        return fetch(retryRequest);
+        try {
+          const retryRequest = request.clone();
+          retryRequest.headers.set('Authorization', `Bearer ${token}`);
+          retryRequest.headers.set('x-auth-retried', 'true');
+          return fetch(retryRequest);
+        } catch {
+          return response;
+        }
       }
     }
     // Return undefined so openapi-fetch does not fail the React Native Hermes `instanceof Response` check

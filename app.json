@@ -77,7 +77,14 @@
           "color": "#208AEF"
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-navigation-bar",
+        {
+          "enforceContrast": false,
+          "style": "dark"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
