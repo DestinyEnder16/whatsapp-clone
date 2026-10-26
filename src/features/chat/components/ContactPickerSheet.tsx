@@ -1,4 +1,5 @@
 // src/features/chat/components/ContactPickerSheet.tsx
+import { useContactMatchesStore } from '@/features/contacts/store/useContactMatchesStore';
 import { AppText, AppTextInput } from '@/shared/components';
 import { useAppTheme } from '@/shared/hooks';
 import { toast } from '@/shared/utils/toast';
@@ -43,6 +44,7 @@ export function ContactPickerSheet({
   const [searchQuery, setSearchQuery] = useState('');
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const matchedContacts = useContactMatchesStore((state) => state.matches);
 
   // Track keyboard height to adjust scroll padding
   useEffect(() => {
@@ -89,17 +91,32 @@ export function ContactPickerSheet({
 
   // Only users returned by the server may be selected for conversation creation.
   const sections = useMemo(() => {
-    let list: ContactPickerItem[] = (apiSearchResults?.items || []).map(
-      (u) => ({
-        id: u.id,
-        name:
-          typeof u.displayName === 'string' && u.displayName
-            ? u.displayName
-            : 'ChatMe User',
-        phoneOrHandle: 'Found on ChatMe',
-        avatarUrl: u.avatarUrl,
-      })
+    const matchedItems: ContactPickerItem[] = matchedContacts.map((match) => ({
+      id: match.user.id,
+      name:
+        match.localName ||
+        (typeof match.user.displayName === 'string'
+          ? match.user.displayName
+          : 'ChatMe User'),
+      phoneOrHandle: 'From your contacts',
+      avatarUrl: match.user.avatarUrl,
+    }));
+    const searchedItems: ContactPickerItem[] = (
+      apiSearchResults?.items || []
+    ).map((u) => ({
+      id: u.id,
+      name:
+        typeof u.displayName === 'string' && u.displayName
+          ? u.displayName
+          : 'ChatMe User',
+      phoneOrHandle: 'Found on ChatMe',
+      avatarUrl: u.avatarUrl,
+    }));
+    const uniqueItems = new Map<string, ContactPickerItem>();
+    [...matchedItems, ...searchedItems].forEach((item) =>
+      uniqueItems.set(item.id, item)
     );
+    let list: ContactPickerItem[] = [...uniqueItems.values()];
 
     // Filter by search query
     if (searchQuery.trim()) {
@@ -129,7 +146,7 @@ export function ContactPickerSheet({
         title: letter,
         data: grouped[letter],
       }));
-  }, [apiSearchResults?.items, searchQuery]);
+  }, [apiSearchResults?.items, matchedContacts, searchQuery]);
 
   const handleSelect = (contact: ContactPickerItem) => {
     if (createDirectMutation.isPending) return;
@@ -155,6 +172,7 @@ export function ContactPickerSheet({
               name: contact.name,
               avatarUrl: contact.avatarUrl || '',
               status: 'Active 5 minutes ago',
+              otherParticipantId: contact.id,
             },
           } as any);
         },

@@ -1,7 +1,8 @@
 // src/features/chat/hooks/useChatRoomSocket.ts
-import { useSocketStore } from "@/core/store/useSocketStore";
-import { formatLastActive } from "../utils/formatLastActive";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useAuthStore } from '@/core/store/useAuthStore';
+import { useSocketStore } from '@/core/store/useSocketStore';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { formatLastActive } from '../utils/formatLastActive';
 
 interface UseChatRoomSocketOptions {
   conversationId?: string;
@@ -12,11 +13,12 @@ interface UseChatRoomSocketOptions {
 export function useChatRoomSocket({
   conversationId,
   otherParticipantId,
-  fallbackStatus = "Active recently",
+  fallbackStatus = 'Active recently',
 }: UseChatRoomSocketOptions) {
   const isConnected = useSocketStore((s) => s.isConnected);
   const onlineUsers = useSocketStore((s) => s.onlineUsers);
   const typingUsers = useSocketStore((s) => s.typingUsers);
+  const currentUserId = useAuthStore((s) => s.user?.id);
 
   const joinConversation = useSocketStore((s) => s.joinConversation);
   const leaveConversation = useSocketStore((s) => s.leaveConversation);
@@ -24,12 +26,13 @@ export function useChatRoomSocket({
   const emitTypingStop = useSocketStore((s) => s.emitTypingStop);
   const subscribePresence = useSocketStore((s) => s.subscribePresence);
 
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isCurrentlyTypingRef = useRef(false);
+  const [typingExpiryTick, setTypingExpiryTick] = useState(0);
 
-  // 1. Join room and subscribe to presence on mount
+  // Join exactly once for each connected conversation and leave on room changes.
   useEffect(() => {
-    if (!conversationId) return;
+    if (!conversationId || !isConnected) return;
 
     joinConversation(conversationId);
 
@@ -51,6 +54,7 @@ export function useChatRoomSocket({
       leaveConversation(conversationId);
     };
   }, [
+    isConnected,
     conversationId,
     otherParticipantId,
     joinConversation,
@@ -59,20 +63,7 @@ export function useChatRoomSocket({
     emitTypingStop,
   ]);
 
-  // Re-join if connection drops and reconnects
-  useEffect(() => {
-    if (isConnected && conversationId) {
-      joinConversation(conversationId);
-      if (otherParticipantId) {
-        subscribePresence({
-          userIds: [otherParticipantId],
-          conversationId,
-        });
-      }
-    }
-  }, [isConnected, conversationId, otherParticipantId, joinConversation, subscribePresence]);
-
-  // 2. Debounced handler to notify when this user is typing
+  // Debounced handler to notify when this user is typing
   const handleInputKeystroke = useCallback(() => {
     if (!conversationId) return;
 
@@ -102,13 +93,33 @@ export function useChatRoomSocket({
     }
   }, [conversationId, emitTypingStop]);
 
-  // 3. Remote typing & presence state calculation
+  // Remote typing & presence state calculation
   const typingInfo = conversationId ? typingUsers[conversationId] : undefined;
+  useEffect(() => {
+    if (!typingInfo?.isTyping) return;
+    const remaining = Math.max(0, typingInfo.timestamp + 4000 - Date.now());
+    const timer = setTimeout(
+      () => setTypingExpiryTick((tick) => tick + 1),
+      remaining
+    );
+    return () => clearTimeout(timer);
+  }, [typingInfo?.isTyping, typingInfo?.timestamp]);
+
   const isRemoteTyping = useMemo(() => {
+    void typingExpiryTick;
     if (!typingInfo) return false;
+    if (!typingInfo.isTyping || typingInfo.userId === currentUserId)
+      return false;
+    if (
+      otherParticipantId &&
+      typingInfo.userId &&
+      typingInfo.userId !== otherParticipantId
+    ) {
+      return false;
+    }
     const isRecent = Date.now() - typingInfo.timestamp < 4000;
-    return Boolean(typingInfo.isTyping && isRecent);
-  }, [typingInfo]);
+    return isRecent;
+  }, [currentUserId, otherParticipantId, typingExpiryTick, typingInfo]);
 
   const participantPresence = otherParticipantId
     ? onlineUsers[otherParticipantId]

@@ -1,15 +1,15 @@
 // src/features/settings/screens/EditProfileScreen.tsx
-import { useAuthStore } from "@/core/store/useAuthStore";
-import { useMe } from "@/features/auth/api/useMe";
-import { useUpdateProfile } from "@/features/auth/api/useUpdateProfile";
-import { PhotoPickerModal } from "@/shared/components/PhotoPickerModal";
-import { useAppTheme } from "@/shared/hooks";
-import { toast } from "@/shared/utils/toast";
-import { Ionicons } from "@react-native-vector-icons/ionicons";
-import { Image } from "expo-image";
-import { router } from "expo-router";
-import { StatusBar } from "expo-status-bar";
-import React, { useState } from "react";
+import { useAuthStore } from '@/core/store/useAuthStore';
+import { useMe } from '@/features/auth/api/useMe';
+import { useUpdateProfile } from '@/features/auth/api/useUpdateProfile';
+import { PhotoPickerModal } from '@/shared/components/PhotoPickerModal';
+import { useAppTheme } from '@/shared/hooks';
+import { toast } from '@/shared/utils/toast';
+import { Ionicons } from '@react-native-vector-icons/ionicons';
+import { Image } from 'expo-image';
+import { router } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -19,11 +19,11 @@ import {
   Text,
   TextInput,
   View,
-} from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const DEFAULT_AVATAR =
-  "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&auto=format&fit=crop&q=80";
+  'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&auto=format&fit=crop&q=80';
 
 export function EditProfileScreen() {
   const insets = useSafeAreaInsets();
@@ -35,23 +35,24 @@ export function EditProfileScreen() {
 
   const updateProfileMutation = useUpdateProfile();
 
-  const rawName = (activeUser as any)?.displayName ?? (user as any)?.displayName;
-  const initialName =
-    typeof rawName === "string" && rawName.trim()
-      ? rawName.trim()
-      : "Roberto William";
+  const readTextField = (value: unknown): string =>
+    typeof value === 'string' ? value : '';
 
-  const rawPhone = (activeUser as any)?.phoneNumber ?? (user as any)?.phoneNumber;
-  const initialPhone =
-    typeof rawPhone === "string" && rawPhone.trim()
-      ? rawPhone.replace(/^\+62\s*/, "")
-      : "85-830-544-382";
+  const rawName = activeUser?.displayName ?? user?.displayName;
+  const initialName = readTextField(rawName).trim()
+    ? readTextField(rawName).trim()
+    : 'Roberto William';
 
-  const rawAvatar = (activeUser as any)?.avatarUrl ?? (user as any)?.avatarUrl;
-  const initialAvatar =
-    typeof rawAvatar === "string" && rawAvatar.trim()
-      ? rawAvatar.trim()
-      : DEFAULT_AVATAR;
+  const rawPhone = activeUser?.phoneNumber ?? user?.phoneNumber;
+  const phoneText = readTextField(rawPhone);
+  const initialPhone = phoneText.trim()
+    ? phoneText.replace(/^\+62\s*/, '')
+    : '85-830-544-382';
+
+  const rawAvatar = activeUser?.avatarUrl ?? user?.avatarUrl;
+  const initialAvatar = readTextField(rawAvatar).trim()
+    ? readTextField(rawAvatar).trim()
+    : DEFAULT_AVATAR;
 
   const [name, setName] = useState<string>(initialName);
   const [phoneNumber, setPhoneNumber] = useState<string>(initialPhone);
@@ -64,60 +65,31 @@ export function EditProfileScreen() {
   function handleSelectPhoto(uri: string) {
     setAvatarUri(uri);
     setModalVisible(false);
-
-    // Persist immediately in local Zustand store
-    if (user) {
-      setUser({ ...user, avatarUrl: uri as any });
-    }
-
-    // Try background mutation; catch error if backend has issues as noted
-    updateProfileMutation.mutate(
-      { avatarUrl: uri } as any,
-      {
-        onError: (err) => {
-          console.warn("Avatar upload warning (fallback to local):", err.message);
-        },
-      },
-    );
   }
 
   // Handle saving profile changes
   function handleSave() {
     setIsSaving(true);
-    const finalDisplayName = name.trim() || "Roberto William";
-    const fullPhone = phoneNumber.startsWith("+")
-      ? phoneNumber
-      : `+62 ${phoneNumber.trim()}`;
-
-    // Update local Zustand store so changes persist immediately across the app
-    if (user) {
-      setUser({
-        ...user,
-        displayName: finalDisplayName as any,
-        phoneNumber: fullPhone as any,
-        avatarUrl: avatarUri as any,
-      });
-    }
-
-    // Attempt backend update
+    const finalDisplayName = name.trim() || 'Roberto William';
     updateProfileMutation.mutate(
       {
         displayName: finalDisplayName,
-      } as any,
+      },
       {
         onSuccess: (updatedUser) => {
           setUser(updatedUser);
           setIsSaving(false);
-          toast.success("Profile Updated", "Your profile was saved successfully!");
+          toast.success(
+            'Profile Updated',
+            'Your profile was saved successfully!'
+          );
           router.back();
         },
         onError: (err) => {
-          console.warn("Profile update warning (saved locally):", err.message);
           setIsSaving(false);
-          toast.success("Profile Saved", "Profile changes updated successfully!");
-          router.back();
+          toast.error('Profile Update Failed', err.message);
         },
-      },
+      }
     );
   }
 
@@ -163,13 +135,13 @@ export function EditProfileScreen() {
                 styles.avatarBorder,
                 {
                   backgroundColor: colors.surface,
-                  borderColor: isDark ? colors.border : "#FFFFFF",
+                  borderColor: isDark ? colors.border : '#FFFFFF',
                 },
               ]}
             >
               <Image
                 source={{ uri: avatarUri }}
-                style={{ width: "100%", height: "100%" }}
+                style={{ width: '100%', height: '100%' }}
                 contentFit="cover"
                 transition={200}
               />
@@ -193,7 +165,7 @@ export function EditProfileScreen() {
 
       {/* Main Content Area */}
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         className="flex-1"
       >
         <ScrollView
@@ -210,7 +182,7 @@ export function EditProfileScreen() {
           <View className="mb-5">
             <Text
               className="text-[14px] mb-2"
-              style={{ color: colors.text, fontFamily: "SFPRODISPLAYBOLD" }}
+              style={{ color: colors.text, fontFamily: 'SFPRODISPLAYBOLD' }}
             >
               Name
             </Text>
@@ -223,7 +195,7 @@ export function EditProfileScreen() {
             >
               <View className="w-6 items-center justify-center">
                 <Image
-                  source={require("@/assets/icons/solid/user.svg")}
+                  source={require('@/assets/icons/solid/user.svg')}
                   style={{ width: 18, height: 18 }}
                   contentFit="contain"
                   tintColor={colors.textMuted}
@@ -237,7 +209,7 @@ export function EditProfileScreen() {
                 className="flex-1 ml-3 text-[16px] h-full"
                 style={{
                   color: colors.text,
-                  fontFamily: "SFPRODISPLAYMEDIUM",
+                  fontFamily: 'SFPRODISPLAYMEDIUM',
                 }}
                 cursorColor={colors.primary}
                 selectionColor={colors.primaryLight}
@@ -250,7 +222,7 @@ export function EditProfileScreen() {
           <View className="mb-6">
             <Text
               className="text-[14px] mb-2"
-              style={{ color: colors.text, fontFamily: "SFPRODISPLAYBOLD" }}
+              style={{ color: colors.text, fontFamily: 'SFPRODISPLAYBOLD' }}
             >
               Phone Number
             </Text>
@@ -272,7 +244,7 @@ export function EditProfileScreen() {
                 className="text-[15px] ml-2.5"
                 style={{
                   color: colors.text,
-                  fontFamily: "SFPRODISPLAYBOLD",
+                  fontFamily: 'SFPRODISPLAYBOLD',
                 }}
               >
                 +62
@@ -281,14 +253,14 @@ export function EditProfileScreen() {
               {/* Phone Input */}
               <TextInput
                 value={phoneNumber}
-                onChangeText={setPhoneNumber}
                 keyboardType="phone-pad"
+                editable={false}
                 placeholder="Phone number"
                 placeholderTextColor={colors.textMuted}
                 className="flex-1 ml-3 text-[15px] h-full"
                 style={{
                   color: colors.text,
-                  fontFamily: "SFPRODISPLAYMEDIUM",
+                  fontFamily: 'SFPRODISPLAYMEDIUM',
                 }}
                 cursorColor={colors.primary}
                 selectionColor={colors.primaryLight}
@@ -311,9 +283,9 @@ export function EditProfileScreen() {
           >
             <Text
               className="text-white text-[17px]"
-              style={{ fontFamily: "SFPRODISPLAYBOLD" }}
+              style={{ fontFamily: 'SFPRODISPLAYBOLD' }}
             >
-              {isSaving ? "Saving..." : "Save"}
+              {isSaving ? 'Saving...' : 'Save'}
             </Text>
           </Pressable>
         </ScrollView>
@@ -332,8 +304,8 @@ export function EditProfileScreen() {
 const styles = StyleSheet.create({
   avatarBorder: {
     borderWidth: 4,
-    borderColor: "#FFFFFF",
-    shadowColor: "#000",
+    borderColor: '#FFFFFF',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.12,
     shadowRadius: 8,

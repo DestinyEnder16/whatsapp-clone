@@ -1,5 +1,3 @@
-import { useAuthStore } from '@/core/store/useAuthStore';
-import { useUpdateProfile } from '@/features/auth/api/useUpdateProfile';
 import { AppText, BackButton, Button } from '@/shared/components';
 import { PhotoPickerModal } from '@/shared/components/PhotoPickerModal';
 import Screen from '@/shared/components/Screen';
@@ -18,38 +16,12 @@ export function UploadPhotoScreen() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [uploadStatus, setUploadStatus] = useState<UploadStatus>('idle');
 
-  const user = useAuthStore((state) => state.user);
-  const setUser = useAuthStore((state) => state.setUser);
-  const updateProfileMutation = useUpdateProfile();
-
   async function handleSelectPhoto(uri: string) {
     setSelectedImage(uri);
     setModalVisible(false);
     setUploadStatus('uploading');
 
-    const startTime = Date.now();
-
-    updateProfileMutation.mutate({ avatarUrl: uri } as any, {
-      onSuccess: async (updatedUser) => {
-        const elapsed = Date.now() - startTime;
-        if (elapsed < 1200) {
-          await new Promise((resolve) => setTimeout(resolve, 1200 - elapsed));
-        }
-        setUser(updatedUser);
-        setUploadStatus('done');
-      },
-      onError: async (err: Error) => {
-        console.warn('Update profile API warning:', err.message);
-        const elapsed = Date.now() - startTime;
-        if (elapsed < 1200) {
-          await new Promise((resolve) => setTimeout(resolve, 1200 - elapsed));
-        }
-        if (user) {
-          setUser({ ...user, avatarUrl: uri as any });
-        }
-        setUploadStatus('done');
-      },
-    });
+    setUploadStatus('done');
   }
 
   function handleBack() {

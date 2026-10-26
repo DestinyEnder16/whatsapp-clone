@@ -1,12 +1,12 @@
 // src/features/chat/screens/ChatRoomScreen.tsx
-import { useAuthStore } from "@/core/store/useAuthStore";
-import { useAppTheme } from "@/shared/hooks";
-import { toast } from "@/shared/utils/toast";
-import Ionicons from "@react-native-vector-icons/ionicons";
-import { Image } from "expo-image";
-import { router, useLocalSearchParams } from "expo-router";
-import { StatusBar } from "expo-status-bar";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useAuthStore } from '@/core/store/useAuthStore';
+import { useAppTheme } from '@/shared/hooks';
+import { toast } from '@/shared/utils/toast';
+import Ionicons from '@react-native-vector-icons/ionicons';
+import { Image } from 'expo-image';
+import { router, useLocalSearchParams } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -16,25 +16,25 @@ import {
   Text,
   TextInput,
   View,
-} from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useMarkAsRead } from "../api/useMarkAsRead";
-import { useMessages, type MessageDto } from "../api/useMessages";
-import { useReceipts, useMarkReceiptAsRead } from "../api/useReceipts";
-import { useSendMessage } from "../api/useSendMessage";
-import { AnimatedMessageBubble } from "../components/AnimatedMessageBubble";
-import { ChatAttachmentMenu } from "../components/ChatAttachmentMenu";
-import { DateSeparator } from "../components/DateSeparator";
-import { TypingIndicator } from "../components/TypingIndicator";
-import { useChatRoomSocket } from "../hooks/useChatRoomSocket";
-import { formatMessageTime } from "../utils/formatChatDate";
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useMarkAsRead } from '../api/useMarkAsRead';
+import { useMessages, type MessageDto } from '../api/useMessages';
+import { useMarkReceiptAsRead, useReceipts } from '../api/useReceipts';
+import { generateClientMessageId, useSendMessage } from '../api/useSendMessage';
+import { AnimatedMessageBubble } from '../components/AnimatedMessageBubble';
+import { ChatAttachmentMenu } from '../components/ChatAttachmentMenu';
+import { DateSeparator } from '../components/DateSeparator';
+import { TypingIndicator } from '../components/TypingIndicator';
+import { useChatRoomSocket } from '../hooks/useChatRoomSocket';
+import { formatMessageTime } from '../utils/formatChatDate';
 
 // --- Helpers ---
 
 /** Format a date into a WhatsApp-style label: "Today", "Yesterday", or "19th September 2026" */
 function getDateLabel(dateStr: string): string {
   const date = new Date(dateStr);
-  if (isNaN(date.getTime())) return "";
+  if (isNaN(date.getTime())) return '';
 
   const now = new Date();
 
@@ -42,7 +42,7 @@ function getDateLabel(dateStr: string): string {
     date.getDate() === now.getDate() &&
     date.getMonth() === now.getMonth() &&
     date.getFullYear() === now.getFullYear();
-  if (isToday) return "Today";
+  if (isToday) return 'Today';
 
   const yesterday = new Date(now);
   yesterday.setDate(now.getDate() - 1);
@@ -50,21 +50,31 @@ function getDateLabel(dateStr: string): string {
     date.getDate() === yesterday.getDate() &&
     date.getMonth() === yesterday.getMonth() &&
     date.getFullYear() === yesterday.getFullYear();
-  if (isYesterday) return "Yesterday";
+  if (isYesterday) return 'Yesterday';
 
   const day = date.getDate();
   const suffix =
     day === 1 || day === 21 || day === 31
-      ? "st"
+      ? 'st'
       : day === 2 || day === 22
-      ? "nd"
-      : day === 3 || day === 23
-      ? "rd"
-      : "th";
+        ? 'nd'
+        : day === 3 || day === 23
+          ? 'rd'
+          : 'th';
 
   const monthNames = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December",
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ];
 
   return `${day}${suffix} ${monthNames[date.getMonth()]} ${date.getFullYear()}`;
@@ -73,14 +83,14 @@ function getDateLabel(dateStr: string): string {
 /** Get a plain date key like "2026-09-22" for grouping */
 function getDateKey(dateStr: string): string {
   const date = new Date(dateStr);
-  if (isNaN(date.getTime())) return "";
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  if (isNaN(date.getTime())) return '';
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
 // Each item in the FlatList is either a date separator or a message
 type ListItem =
-  | { type: "date"; key: string; label: string }
-  | { type: "message"; key: string; message: MessageDto; isNew: boolean };
+  | { type: 'date'; key: string; label: string }
+  | { type: 'message'; key: string; message: MessageDto; isNew: boolean };
 
 // --- Component ---
 
@@ -98,9 +108,9 @@ export function ChatRoomScreen() {
   }>();
 
   const conversationId = params.id;
-  const contactName = params.name || "Chat";
-  const contactAvatar = params.avatarUrl || "";
-  const initialStatus = params.status || "Active 5 minutes ago";
+  const contactName = params.name || 'Chat';
+  const contactAvatar = params.avatarUrl || '';
+  const initialStatus = params.status || 'Active 5 minutes ago';
 
   // 1. Load real messages via REST + TanStack Query cache
   const { data: messageHistory, isLoading: isLoadingMessages } =
@@ -124,9 +134,10 @@ export function ChatRoomScreen() {
   const { data: receipts } = useReceipts(conversationId);
   const markReceiptAsRead = useMarkReceiptAsRead();
 
-  const [inputText, setInputText] = useState("");
+  const [inputText, setInputText] = useState('');
   const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
   const flatListRef = useRef<FlatList>(null);
+  const isNearBottomRef = useRef(true);
 
   // Track the count of messages at first load so we can tell new from old
   const initialCountRef = useRef<number | null>(null);
@@ -136,7 +147,8 @@ export function ChatRoomScreen() {
     if (!messageHistory?.items) return [];
     const items = [...messageHistory.items];
     items.sort(
-      (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      (a, b) =>
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
     );
     return items;
   }, [messageHistory?.items]);
@@ -153,7 +165,8 @@ export function ChatRoomScreen() {
     if (!receipts?.items) return null;
     if (params.otherParticipantId) {
       return (
-        receipts.items.find((r) => r.userId === params.otherParticipantId) || null
+        receipts.items.find((r) => r.userId === params.otherParticipantId) ||
+        null
       );
     }
     return receipts.items.find((r) => r.userId !== currentUserId) || null;
@@ -165,7 +178,7 @@ export function ChatRoomScreen() {
       (m) => m.senderId && m.senderId !== currentUserId
     );
     const last = incoming[incoming.length - 1];
-    return last && !last.id.startsWith("optimistic-") ? last.id : null;
+    return last && !last.id.startsWith('optimistic-') ? last.id : null;
   }, [sortedMessages, currentUserId]);
 
   // Mark incoming messages as read when opening room and whenever new incoming messages arrive
@@ -186,7 +199,7 @@ export function ChatRoomScreen() {
   // Build the flat list data with date separators interleaved
   const listData: ListItem[] = useMemo(() => {
     const result: ListItem[] = [];
-    let lastDateKey = "";
+    let lastDateKey = '';
     const initialCount = initialCountRef.current ?? sortedMessages.length;
 
     sortedMessages.forEach((msg, index) => {
@@ -195,7 +208,7 @@ export function ChatRoomScreen() {
       if (dateKey && dateKey !== lastDateKey) {
         lastDateKey = dateKey;
         result.push({
-          type: "date",
+          type: 'date',
           key: `date-${dateKey}`,
           label: getDateLabel(msg.createdAt),
         });
@@ -205,7 +218,7 @@ export function ChatRoomScreen() {
       const isNew = index >= initialCount;
 
       result.push({
-        type: "message",
+        type: 'message',
         key: `msg-${msg.id}`,
         message: msg,
         isNew,
@@ -215,28 +228,35 @@ export function ChatRoomScreen() {
     return result;
   }, [sortedMessages]);
 
-  // Auto-scroll to bottom whenever new items arrive
+  // Keep live content visible without pulling users away from older messages.
   useEffect(() => {
-    if (listData.length > 0) {
-      const timer = setTimeout(() => {
-        flatListRef.current?.scrollToEnd({ animated: true });
-      }, 150);
-      return () => clearTimeout(timer);
-    }
-  }, [listData.length]);
+    if (listData.length === 0 || !isNearBottomRef.current) return;
+    const timer = setTimeout(() => {
+      flatListRef.current?.scrollToEnd({ animated: true });
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [isRemoteTyping, listData.length]);
+
+  const handleListScroll = (event: any) => {
+    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+    const distanceFromBottom =
+      contentSize.height - (contentOffset.y + layoutMeasurement.height);
+    isNearBottomRef.current = distanceFromBottom < 80;
+  };
 
   // 4. Send message handler with optimistic updates
   const handleSendMessage = () => {
     if (!inputText.trim() || !conversationId) return;
 
     const textToSend = inputText.trim();
-    setInputText("");
+    setInputText('');
     handleMessageSent();
 
     sendMessageMutation.mutate(
       {
         conversationId,
         text: textToSend,
+        clientMessageId: generateClientMessageId(),
       },
       {
         onSuccess: () => {
@@ -245,7 +265,7 @@ export function ChatRoomScreen() {
           }, 150);
         },
         onError: (err: any) => {
-          toast.error("Error", err?.message || "Failed to send message");
+          toast.error('Error', err?.message || 'Failed to send message');
         },
       }
     );
@@ -253,13 +273,13 @@ export function ChatRoomScreen() {
 
   const handleSendPhoto = (uri: string) => {
     if (!conversationId) return;
-    toast.info("Attachment", "Uploading media...");
+    toast.info('Attachment', 'Uploading media...');
   };
 
   return (
     <View
       className="flex-1"
-      style={{ backgroundColor: isDark ? colors.background : "#F4F7F9" }}
+      style={{ backgroundColor: isDark ? colors.background : '#F4F7F9' }}
     >
       <StatusBar style="light" />
 
@@ -287,13 +307,13 @@ export function ChatRoomScreen() {
             {contactAvatar ? (
               <Image
                 source={{ uri: contactAvatar }}
-                style={{ width: "100%", height: "100%" }}
+                style={{ width: '100%', height: '100%' }}
                 contentFit="cover"
               />
             ) : (
               <Text
                 className="text-white text-[16px]"
-                style={{ fontFamily: "SFPRODISPLAYBOLD" }}
+                style={{ fontFamily: 'SFPRODISPLAYBOLD' }}
               >
                 {contactName.charAt(0).toUpperCase()}
               </Text>
@@ -304,18 +324,18 @@ export function ChatRoomScreen() {
           <View className="flex-1">
             <Text
               className="text-white text-[17px]"
-              style={{ fontFamily: "SFPRODISPLAYBOLD" }}
+              style={{ fontFamily: 'SFPRODISPLAYBOLD' }}
               numberOfLines={1}
             >
               {contactName}
             </Text>
             <Text
               className={`text-[12px] mt-0.5 ${
-                statusText === "Typing..."
-                  ? "text-white font-semibold"
-                  : "text-white/80"
+                statusText === 'Typing...'
+                  ? 'text-white font-semibold'
+                  : 'text-white/80'
               }`}
-              style={{ fontFamily: "SFPRODISPLAYREGULAR" }}
+              style={{ fontFamily: 'SFPRODISPLAYREGULAR' }}
               numberOfLines={1}
             >
               {statusText}
@@ -327,7 +347,10 @@ export function ChatRoomScreen() {
         <View className="flex-row items-center space-x-3">
           <Pressable
             onPress={() =>
-              toast.info("Video Call", `Starting video call with ${contactName}`)
+              toast.info(
+                'Video Call',
+                `Starting video call with ${contactName}`
+              )
             }
             hitSlop={8}
             className="w-9 h-9 items-center justify-center active:opacity-75"
@@ -336,7 +359,7 @@ export function ChatRoomScreen() {
           </Pressable>
           <Pressable
             onPress={() =>
-              toast.info("Voice Call", `Starting call with ${contactName}`)
+              toast.info('Voice Call', `Starting call with ${contactName}`)
             }
             hitSlop={8}
             className="w-9 h-9 items-center justify-center active:opacity-75 ml-1"
@@ -348,7 +371,7 @@ export function ChatRoomScreen() {
 
       {/* Messages List Area */}
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         className="flex-1"
       >
         {isLoadingMessages && sortedMessages.length === 0 ? (
@@ -372,14 +395,16 @@ export function ChatRoomScreen() {
               flexGrow: 1,
             }}
             showsVerticalScrollIndicator={false}
+            onScroll={handleListScroll}
+            scrollEventThrottle={100}
             ListEmptyComponent={() => (
               <View className="flex-1 items-center justify-center py-12">
                 <View
                   className="px-4 py-2 rounded-full"
                   style={{
                     backgroundColor: isDark
-                      ? "rgba(255,255,255,0.06)"
-                      : "rgba(0,0,0,0.04)",
+                      ? 'rgba(255,255,255,0.06)'
+                      : 'rgba(0,0,0,0.04)',
                   }}
                 >
                   <Text
@@ -392,17 +417,17 @@ export function ChatRoomScreen() {
               </View>
             )}
             renderItem={({ item }) => {
-              if (item.type === "date") {
+              if (item.type === 'date') {
                 return <DateSeparator label={item.label} />;
               }
 
               const msg = item.message;
               const isMe =
                 msg.senderId === currentUserId ||
-                msg.id.startsWith("optimistic-");
+                msg.id.startsWith('optimistic-');
               const isPending =
-                msg.id.startsWith("optimistic-") ||
-                msg.clientMessageId?.startsWith("temp-");
+                msg.id.startsWith('optimistic-') ||
+                msg.clientMessageId?.startsWith('temp-');
               const firstAttachment = (msg.attachments as any)?.[0];
               const imageUri = firstAttachment?.url || null;
 
@@ -417,7 +442,11 @@ export function ChatRoomScreen() {
                   } else {
                     const msgTime = new Date(msg.createdAt).getTime();
                     const readTime = new Date(otherReceipt.read.at).getTime();
-                    if (!isNaN(msgTime) && !isNaN(readTime) && msgTime <= readTime) {
+                    if (
+                      !isNaN(msgTime) &&
+                      !isNaN(readTime) &&
+                      msgTime <= readTime
+                    ) {
                       isRead = true;
                     }
                   }
@@ -428,8 +457,14 @@ export function ChatRoomScreen() {
                     isDelivered = true;
                   } else {
                     const msgTime = new Date(msg.createdAt).getTime();
-                    const deliveredTime = new Date(otherReceipt.delivered.at).getTime();
-                    if (!isNaN(msgTime) && !isNaN(deliveredTime) && msgTime <= deliveredTime) {
+                    const deliveredTime = new Date(
+                      otherReceipt.delivered.at
+                    ).getTime();
+                    if (
+                      !isNaN(msgTime) &&
+                      !isNaN(deliveredTime) &&
+                      msgTime <= deliveredTime
+                    ) {
                       isDelivered = true;
                     }
                   }
@@ -460,7 +495,7 @@ export function ChatRoomScreen() {
         <View
           className="flex-row items-center px-4 py-3 border-t"
           style={{
-            backgroundColor: isDark ? colors.surface : "#FFFFFF",
+            backgroundColor: isDark ? colors.surface : '#FFFFFF',
             borderColor: colors.divider,
             paddingBottom: Math.max(insets.bottom, 12),
           }}
@@ -476,7 +511,7 @@ export function ChatRoomScreen() {
           <View
             className="flex-1 flex-row items-center px-4 py-2.5 rounded-full mr-2 border"
             style={{
-              backgroundColor: isDark ? colors.background : "#F9FAFB",
+              backgroundColor: isDark ? colors.background : '#F9FAFB',
               borderColor: colors.border,
             }}
           >
@@ -491,7 +526,7 @@ export function ChatRoomScreen() {
               className="flex-1 text-[15px] max-h-24"
               style={{
                 color: colors.text,
-                fontFamily: "SFPRODISPLAYREGULAR",
+                fontFamily: 'SFPRODISPLAYREGULAR',
               }}
               multiline
             />
