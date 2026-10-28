@@ -1,7 +1,8 @@
 import { useAuthStore } from '@/core/store/useAuthStore';
+import { getAuthSessionGeneration } from '@/services/api/authSession';
 import * as Contacts from 'expo-contacts';
 import { Contact, ContactField } from 'expo-contacts';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ContactMatchDto, useMatchContacts } from '../api/useMatchContacts';
 import { useContactMatchesStore } from '../store/useContactMatchesStore';
 import {
@@ -51,6 +52,12 @@ export function useSyncContacts() {
   const [error, setError] = useState<string | null>(null);
 
   const matchMutation = useMatchContacts();
+  const syncControllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    syncControllerRef.current?.abort();
+    return () => syncControllerRef.current?.abort();
+  }, [accountId]);
 
   // Phase 0: Non-intrusive check of current permission status on mount
   // (Does NOT trigger a system prompt popup, only reads existing permission state)
@@ -69,6 +76,11 @@ export function useSyncContacts() {
    * Main sync workflow: executed when the user taps "Find Contacts" or "Sync Contacts".
    */
   const requestAndSync = useCallback(async () => {
+    syncControllerRef.current?.abort();
+    const controller = new AbortController();
+    syncControllerRef.current = controller;
+    const syncAccountId = accountId;
+    const sessionGeneration = getAuthSessionGeneration();
     setIsSyncing(true);
     setError(null);
 
@@ -162,6 +174,8 @@ export function useSyncContacts() {
       // -----------------------------------------------------------------------
       const result = await matchMutation.mutateAsync({
         phoneNumbers: normalizedNumbers,
+        signal: controller.signal,
+        sessionGeneration,
       });
 
       // -----------------------------------------------------------------------
@@ -181,12 +195,23 @@ export function useSyncContacts() {
         })
       );
 
-      if (accountId) setStoredMatches(accountId, enriched);
+      if (
+        syncAccountId &&
+        !controller.signal.aborted &&
+        syncAccountId === useAuthStore.getState().user?.id &&
+        sessionGeneration === getAuthSessionGeneration()
+      ) {
+        setStoredMatches(syncAccountId, enriched);
+      }
     } catch (err: any) {
+      if (err?.name === 'AbortError') return;
       console.error('Failed to sync contacts:', err);
       setError(err?.message || 'Failed to sync contacts');
     } finally {
-      setIsSyncing(false);
+      if (syncControllerRef.current === controller) {
+        syncControllerRef.current = null;
+        setIsSyncing(false);
+      }
     }
   }, [accountId, matchMutation, permissionStatus, setStoredMatches]);
 
