@@ -1,18 +1,35 @@
-import { useAuthStore } from "@/core/store/useAuthStore";
-import { api } from "@/services/api/client";
-import type { components } from "@/services/api/schema";
-import { useMutation } from "@tanstack/react-query";
+import { useAuthStore } from '@/core/store/useAuthStore';
+import { getAuthSessionGeneration } from '@/services/api/authSession';
+import { api } from '@/services/api/client';
+import type { components } from '@/services/api/schema';
+import { useMutation } from '@tanstack/react-query';
 
-export type MatchContactsDto = components["schemas"]["MatchContactsDto"];
+export type MatchContactsDto = components['schemas']['MatchContactsDto'];
 export type ContactMatchesResponseDto =
-  components["schemas"]["ContactMatchesResponseDto"];
-export type ContactMatchDto = components["schemas"]["ContactMatchDto"];
+  components['schemas']['ContactMatchesResponseDto'];
+export type ContactMatchDto = components['schemas']['ContactMatchDto'];
 
 /**
  * The backend API schema defines `maxItems: 100` on the `/v1/contacts/match` payload.
  * Any request with >100 phone numbers will be rejected immediately by server-side validation.
  */
 const MAX_BATCH_SIZE = 100;
+const BATCH_TIMEOUT_MS = 15_000;
+
+function createRequestSignal(parentSignal: AbortSignal) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), BATCH_TIMEOUT_MS);
+  const abort = () => controller.abort();
+  parentSignal.addEventListener('abort', abort, { once: true });
+
+  return {
+    signal: controller.signal,
+    dispose: () => {
+      clearTimeout(timeout);
+      parentSignal.removeEventListener('abort', abort);
+    },
+  };
+}
 
 /**
  * Sends a single batch of up to 100 phone numbers to `/v1/contacts/match`.
@@ -36,7 +53,8 @@ const MAX_BATCH_SIZE = 100;
 async function sendBatchWithRetry(
   batch: string[],
   accessToken: string | null,
-  batchIndex: number
+  batchIndex: number,
+  parentSignal: AbortSignal
 ): Promise<ContactMatchDto[]> {
   let currentBatch = [...batch];
   const maxRetries = 3;
@@ -46,14 +64,22 @@ async function sendBatchWithRetry(
       `[useMatchContacts] Batch ${batchIndex + 1} (Attempt ${attempt}): Sending ${currentBatch.length} numbers`
     );
 
-    const { data, error } = await api.POST("/v1/contacts/match", {
-      body: { phoneNumbers: currentBatch },
-      headers: accessToken
-        ? {
-            Authorization: `Bearer ${accessToken}`,
-          }
-        : undefined,
-    });
+    const request = createRequestSignal(parentSignal);
+    let data;
+    let error;
+    try {
+      ({ data, error } = await api.POST('/v1/contacts/match', {
+        body: { phoneNumbers: currentBatch },
+        headers: accessToken
+          ? {
+              Authorization: `Bearer ${accessToken}`,
+            }
+          : undefined,
+        signal: request.signal,
+      }));
+    } finally {
+      request.dispose();
+    }
 
     // Success case: Server returned matched users
     if (!error && data?.matches) {
@@ -102,7 +128,7 @@ async function sendBatchWithRetry(
       const errorMessage =
         (error as any)?.message ||
         (error as any)?.error ||
-        "Failed to match contacts";
+        'Failed to match contacts';
       throw new Error(errorMessage);
     }
   }
@@ -124,7 +150,10 @@ async function sendBatchWithRetry(
 export function useMatchContacts() {
   return useMutation({
     mutationFn: async (
-      payload: MatchContactsDto
+      payload: MatchContactsDto & {
+        signal?: AbortSignal;
+        sessionGeneration?: number;
+      }
     ): Promise<ContactMatchesResponseDto> => {
       const accessToken = useAuthStore.getState().accessToken;
       const allNumbers = payload.phoneNumbers || [];
@@ -138,16 +167,28 @@ export function useMatchContacts() {
       );
 
       const allMatches: ContactMatchDto[] = [];
+      const signal = payload.signal ?? new AbortController().signal;
+      const sessionGeneration =
+        payload.sessionGeneration ?? getAuthSessionGeneration();
 
       // Chunk numbers into batches of at most 100 to respect the backend API limit
       for (let i = 0; i < allNumbers.length; i += MAX_BATCH_SIZE) {
+        if (
+          signal.aborted ||
+          sessionGeneration !== getAuthSessionGeneration()
+        ) {
+          const cancellationError = new Error('Contact sync was cancelled');
+          cancellationError.name = 'AbortError';
+          throw cancellationError;
+        }
         const batch = allNumbers.slice(i, i + MAX_BATCH_SIZE);
         const batchIndex = Math.floor(i / MAX_BATCH_SIZE);
 
         const matches = await sendBatchWithRetry(
           batch,
           accessToken,
-          batchIndex
+          batchIndex,
+          signal
         );
 
         allMatches.push(...matches);
@@ -160,4 +201,3 @@ export function useMatchContacts() {
     },
   });
 }
-

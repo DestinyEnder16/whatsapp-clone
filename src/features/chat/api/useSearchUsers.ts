@@ -4,6 +4,7 @@ import { useAuthStore } from '@/core/store/useAuthStore';
 import { api } from '@/services/api/client';
 import type { components } from '@/services/api/schema';
 import { useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 
 export type PublicDiscoveryUserDto =
   components['schemas']['PublicDiscoveryUserDto'];
@@ -18,12 +19,18 @@ export function useSearchUsers(query: string) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const accountId = useAuthStore((s) => s.user?.id);
   const trimmed = query.trim();
+  const [debouncedQuery, setDebouncedQuery] = useState(trimmed);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedQuery(trimmed), 300);
+    return () => clearTimeout(timer);
+  }, [trimmed]);
 
   return useQuery({
     queryKey: accountId
-      ? accountQueryKeys.userSearch(accountId, trimmed)
-      : ['account', 'none', 'users', 'search', trimmed],
-    queryFn: async () => {
+      ? accountQueryKeys.userSearch(accountId, debouncedQuery)
+      : ['account', 'none', 'users', 'search', debouncedQuery],
+    queryFn: async ({ signal }) => {
       const { data, error } = await api.GET('/v1/users/search', {
         params: {
           query: {
@@ -31,6 +38,7 @@ export function useSearchUsers(query: string) {
             limit: 20,
           },
         },
+        signal,
       });
 
       if (error) {
@@ -39,7 +47,7 @@ export function useSearchUsers(query: string) {
 
       return data as UserSearchResponseDto;
     },
-    enabled: isAuthenticated && !!accountId && trimmed.length >= 3,
+    enabled: isAuthenticated && !!accountId && debouncedQuery.length >= 3,
     staleTime: 1000 * 60, // 1 minute
   });
 }

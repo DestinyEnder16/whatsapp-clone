@@ -105,8 +105,12 @@ export function ChatScreen() {
     }
   }, [conversations?.items, subscribePresence]);
 
-  const { data: userSearchResults, isLoading: isSearchingUsers } =
-    useSearchUsers(searchQuery);
+  const {
+    data: userSearchResults,
+    isLoading: isSearchingUsers,
+    error: userSearchError,
+    refetch: refetchUsers,
+  } = useSearchUsers(searchQuery);
   const createDirectMutation = useCreateDirectConversation();
 
   // Show PIN modal 5 seconds after load if not yet configured
@@ -260,6 +264,23 @@ export function ChatScreen() {
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
+      ) : error ? (
+        <View className="flex-1 items-center justify-center px-8">
+          <Text
+            className="text-[16px] text-center font-semibold"
+            style={{ color: colors.text }}
+          >
+            Could not load your conversations.
+          </Text>
+          <Pressable onPress={() => refetch()} className="mt-3">
+            <Text
+              className="text-[14px] font-semibold"
+              style={{ color: colors.primary }}
+            >
+              Retry
+            </Text>
+          </Pressable>
+        </View>
       ) : isSearching ? (
         /* Search Results View */
         <FlatList
@@ -322,6 +343,23 @@ export function ChatScreen() {
                       ? 'Creating conversation...'
                       : 'Searching directory...'}
                   </Text>
+                </View>
+              ) : userSearchError ? (
+                <View className="py-4 items-center px-4">
+                  <Text
+                    className="text-[13px] text-center"
+                    style={{ color: colors.textSecondary }}
+                  >
+                    Could not search people. Please try again.
+                  </Text>
+                  <Pressable onPress={() => refetchUsers()} className="mt-2">
+                    <Text
+                      className="text-[14px] font-semibold"
+                      style={{ color: colors.primary }}
+                    >
+                      Retry search
+                    </Text>
+                  </Pressable>
                 </View>
               ) : userSearchResults?.items &&
                 userSearchResults.items.length > 0 ? (

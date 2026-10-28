@@ -2,12 +2,16 @@
 import { clearAccountQueries } from '@/core/lib/accountQuery';
 import { queryClient } from '@/core/lib/queryClient';
 import { secureAuthStorage } from '@/core/storage/mmkv';
+import { useNotificationStore } from '@/core/store/useNotificationStore';
 import {
   invalidateAuthSession,
   revokeAuthSession,
 } from '@/services/api/authSession';
 import type { components } from '@/services/api/schema';
-import { unregisterPushDeviceAsync } from '@/services/notifications';
+import {
+  registerForPushNotificationsAsync,
+  unregisterPushDeviceAsync,
+} from '@/services/notifications';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
@@ -57,13 +61,32 @@ export const useAuthStore = create<AuthState>()(
 
       // Called when user logs in or completes OTP verification
       setAuth: (accessToken, refreshToken, user) =>
-        set({
-          accessToken,
-          refreshToken,
-          user,
-          isAuthenticated: true,
-          refreshStatus: 'idle',
-        }),
+        (() => {
+          const notifications = useNotificationStore.getState();
+          notifications.setRegistrationStatus(
+            notifications.registeredAccountId === user.id
+              ? notifications.registrationStatus
+              : 'unregistered'
+          );
+          if (notifications.registeredAccountId !== user.id) {
+            notifications.setRegisteredAccountId(null);
+          }
+          const result = set({
+            accessToken,
+            refreshToken,
+            user,
+            isAuthenticated: true,
+            refreshStatus: 'idle',
+          });
+          if (
+            notifications.permissionStatus === 'granted' &&
+            (notifications.expoPushToken ||
+              notifications.registrationStatus !== 'registered')
+          ) {
+            void registerForPushNotificationsAsync(user.id);
+          }
+          return result;
+        })(),
 
       // Called when user updates their profile name or avatar
       setUser: (user) => set({ user }),
@@ -82,6 +105,8 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: false,
           refreshStatus: 'idle',
         });
+        useNotificationStore.getState().setRegisteredAccountId(null);
+        useNotificationStore.getState().setRegistrationStatus('unregistered');
       },
 
       // Marks hydration as complete so navigation guards can safely redirect
