@@ -3,6 +3,7 @@ import { configureNotificationHandler } from '@/services/notifications';
 import { useAppTheme } from '@/shared/hooks';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
+import { NavigationBar } from 'expo-navigation-bar';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -40,6 +41,10 @@ export default function RootLayout() {
   useEffect(() => {
     configureNotificationHandler();
   }, []);
+
+  useEffect(() => {
+    NavigationBar.setStyle(isDark ? 'light' : 'dark');
+  }, [isDark]);
 
   // Hide splash screen once fonts are loaded or log on error
   useEffect(() => {

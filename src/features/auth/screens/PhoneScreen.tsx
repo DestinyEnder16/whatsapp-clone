@@ -35,6 +35,7 @@ export function PhoneScreen() {
               challengeId: challenge.challengeId,
               phoneNumberMasked: challenge.phoneNumberMasked,
               time: challenge.resendInSeconds.toString(),
+              codeLength: challenge.codeLength.toString(),
             },
           });
         },

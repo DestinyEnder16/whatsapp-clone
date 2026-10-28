@@ -1,28 +1,39 @@
-import { useAuthStore } from "@/core/store/useAuthStore";
-import { useVerifyOtp } from "@/features/auth/api/useVerifyOtp";
-import { BackButton, Button } from "@/shared/components";
-import Heading from "@/shared/components/Heading";
-import Screen from "@/shared/components/Screen";
-import { useAppTheme } from "@/shared/hooks";
-import { router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
-import { Pressable, Text, View } from "react-native";
-import { OtpInput } from "react-native-otp-entry";
-import Toast from "react-native-toast-message";
+import { useAuthStore } from '@/core/store/useAuthStore';
+import { useResendOtp } from '@/features/auth/api/useResendOtp';
+import { useVerifyOtp } from '@/features/auth/api/useVerifyOtp';
+import { BackButton, Button } from '@/shared/components';
+import Heading from '@/shared/components/Heading';
+import Screen from '@/shared/components/Screen';
+import { useAppTheme } from '@/shared/hooks';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { Pressable, Text, View } from 'react-native';
+import { OtpInput } from 'react-native-otp-entry';
+import Toast from 'react-native-toast-message';
 
 export function OtpScreen() {
   const { colors } = useAppTheme();
-  const { challengeId, phoneNumberMasked, time } = useLocalSearchParams();
+  const {
+    challengeId: initialChallengeId,
+    phoneNumberMasked,
+    time,
+    codeLength: initialCodeLength,
+  } = useLocalSearchParams();
+  const [currentChallengeId, setCurrentChallengeId] = useState(
+    initialChallengeId as string
+  );
+  const [codeLength, setCodeLength] = useState(Number(initialCodeLength) || 4);
   const [timer, setTimer] = useState(+(time as string));
   const verifyOtpMutation = useVerifyOtp();
-  const [otp, setOtp] = useState("");
+  const resendOtpMutation = useResendOtp();
+  const [otp, setOtp] = useState('');
   const setAuth = useAuthStore((state) => state.setAuth);
 
   function handleOtpVerify(code: string) {
-    if (code.length < 4) return;
+    if (code.length < codeLength) return;
     verifyOtpMutation.mutate(
       {
-        challengeId: challengeId as string,
+        challengeId: currentChallengeId,
         code: code,
       },
       {
@@ -30,19 +41,19 @@ export function OtpScreen() {
           setAuth(authData.accessToken, authData.refreshToken, authData.user);
 
           if (!authData.user.profileComplete) {
-            router.replace("/profile");
+            router.replace('/profile');
           } else {
-            router.replace("/(tabs)");
+            router.replace('/(tabs)');
           }
         },
         onError: (err) => {
           Toast.show({
-            type: "error",
-            text1: "Error",
+            type: 'error',
+            text1: 'Error',
             text2: err.message,
           });
         },
-      },
+      }
     );
   }
 
@@ -56,7 +67,7 @@ export function OtpScreen() {
         clearInterval(id);
       };
     },
-    [timer],
+    [timer]
   );
 
   return (
@@ -70,7 +81,7 @@ export function OtpScreen() {
         className="mt-2 text-[14px] leading-5"
         style={{ color: colors.textSecondary }}
       >
-        Enter the code number we sent to{" "}
+        Enter the code number we sent to{' '}
         <Text className="font-semibold" style={{ color: colors.text }}>
           {phoneNumberMasked}
         </Text>
@@ -78,7 +89,7 @@ export function OtpScreen() {
 
       <View className="mt-[40px]">
         <OtpInput
-          numberOfDigits={4}
+          numberOfDigits={codeLength}
           onTextChange={(code) => setOtp(code)}
           placeholder="****"
           onFilled={(code) => handleOtpVerify(code)}
@@ -93,7 +104,7 @@ export function OtpScreen() {
             pinCodeTextStyle: {
               color: colors.text,
               fontSize: 22,
-              fontWeight: "700",
+              fontWeight: '700',
             },
             focusedPinCodeContainerStyle: {
               borderColor: colors.primary,
@@ -111,14 +122,36 @@ export function OtpScreen() {
           className="text-[14px] mt-8 text-center"
           style={{ color: colors.textSecondary }}
         >
-          If you didn't get the code, resend it in{" "}
+          If you didn't get the code, resend it in{' '}
           <Text className="font-bold" style={{ color: colors.primary }}>
             {timer}
-          </Text>{" "}
+          </Text>{' '}
           seconds.
         </Text>
         {timer === 0 && (
-          <Pressable onPress={() => setTimer(25)} className="mt-4 active:opacity-75">
+          <Pressable
+            onPress={() =>
+              resendOtpMutation.mutate(
+                { challengeId: currentChallengeId },
+                {
+                  onSuccess: (challenge) => {
+                    setCurrentChallengeId(challenge.challengeId);
+                    setCodeLength(challenge.codeLength);
+                    setTimer(challenge.resendInSeconds);
+                    setOtp('');
+                  },
+                  onError: (error) =>
+                    Toast.show({
+                      type: 'error',
+                      text1: 'Error',
+                      text2: error.message,
+                    }),
+                }
+              )
+            }
+            disabled={resendOtpMutation.isPending}
+            className="mt-4 active:opacity-75"
+          >
             <Text
               className="text-[15px] font-bold text-center"
               style={{ color: colors.primary }}
@@ -134,10 +167,9 @@ export function OtpScreen() {
           title="Next"
           onPress={() => handleOtpVerify(otp)}
           isLoading={verifyOtpMutation.isPending}
-          disabled={otp.length < 4}
+          disabled={otp.length < codeLength}
         />
       </View>
     </Screen>
   );
 }
-
