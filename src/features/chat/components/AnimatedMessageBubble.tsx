@@ -34,16 +34,33 @@ export function AnimatedMessageBubble({
 }: AnimatedMessageBubbleProps) {
   const { colors, isDark } = useAppTheme();
 
-  // Only animate messages that arrived live (not loaded from history)
-  // Subtle, quick animations — no big drops from top of screen
+  // Subtle entrance animation only for live arriving messages
   const enteringAnimation = animate
     ? isMe
       ? ZoomIn.duration(200)
       : FadeInLeft.duration(200)
     : undefined;
 
+  const statusDescription = !isMe
+    ? ''
+    : sendStatus === 'failed'
+      ? 'Failed to send'
+      : isPending
+        ? 'Sending'
+        : isRead
+          ? 'Read'
+          : isDelivered
+            ? 'Delivered'
+            : 'Sent';
+
+  const fullAccessibilityLabel = `${isMe ? 'You' : 'Contact'}, ${time}: ${
+    text || 'Photo attachment'
+  }. ${statusDescription}`;
+
   const bubbleContent = (
     <View
+      accessible={true}
+      accessibilityLabel={fullAccessibilityLabel}
       className={`max-w-[78%] px-4 py-2.5 rounded-2xl shadow-sm ${
         isMe ? 'rounded-tr-sm' : 'rounded-tl-sm'
       }`}
@@ -57,11 +74,17 @@ export function AnimatedMessageBubble({
     >
       {/* Photo attachment preview if present */}
       {Boolean(imageUri) && (
-        <View className="w-56 h-48 rounded-xl overflow-hidden mb-2">
+        <View
+          className="w-56 h-48 rounded-xl overflow-hidden mb-2"
+          accessible={true}
+          accessibilityRole="image"
+          accessibilityLabel="Message image attachment"
+        >
           <Image
             source={{ uri: imageUri! }}
             style={{ width: '100%', height: '100%' }}
             contentFit="cover"
+            accessibilityLabel="Image attachment"
           />
         </View>
       )}
@@ -87,6 +110,8 @@ export function AnimatedMessageBubble({
             color: isMe ? 'rgba(255,255,255,0.75)' : colors.textMuted,
             fontFamily: 'SFPRODISPLAYREGULAR',
           }}
+          accessibilityElementsHidden={true}
+          importantForAccessibility="no"
         >
           {time}
         </AppText>
@@ -94,28 +119,42 @@ export function AnimatedMessageBubble({
         {isMe && (
           <View className="ml-1 flex-row items-center">
             {sendStatus === 'failed' ? (
-              <Pressable onPress={onRetry} hitSlop={8}>
-                <Ionicons name="alert-circle" size={14} color="#FFB4AB" />
+              <Pressable
+                onPress={onRetry}
+                hitSlop={12}
+                accessibilityRole="button"
+                accessibilityLabel="Failed to send message. Tap to retry."
+                accessibilityHint="Retries sending this message"
+              >
+                <Ionicons name="alert-circle" size={16} color="#FFB4AB" />
               </Pressable>
             ) : isPending ? (
               <Ionicons
                 name="time-outline"
                 size={12}
                 color="rgba(255,255,255,0.65)"
+                accessibilityLabel="Sending in progress"
               />
             ) : isRead ? (
-              <Ionicons name="checkmark-done" size={15} color="#34B7F1" />
+              <Ionicons
+                name="checkmark-done"
+                size={15}
+                color="#34B7F1"
+                accessibilityLabel="Read by recipient"
+              />
             ) : isDelivered ? (
               <Ionicons
                 name="checkmark-done"
                 size={15}
                 color="rgba(255,255,255,0.75)"
+                accessibilityLabel="Delivered to recipient"
               />
             ) : (
               <Ionicons
                 name="checkmark"
                 size={15}
                 color="rgba(255,255,255,0.75)"
+                accessibilityLabel="Sent"
               />
             )}
           </View>
@@ -144,3 +183,5 @@ export function AnimatedMessageBubble({
     </View>
   );
 }
+
+export default AnimatedMessageBubble;

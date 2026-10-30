@@ -221,6 +221,7 @@ export function ChatScreen() {
         <Text
           className="text-white text-[28px] tracking-tight mb-3"
           style={{ fontFamily: 'SFPRODISPLAYBOLD' }}
+          accessibilityRole="header"
         >
           Chats
         </Text>
@@ -245,9 +246,15 @@ export function ChatScreen() {
             style={{ fontFamily: 'SFPRODISPLAYREGULAR' }}
             autoCapitalize="none"
             returnKeyType="search"
+            accessibilityLabel="Search chats, people and more"
+            accessibilityHint="Type to filter conversations or search the directory"
           />
           {searchQuery.length > 0 && (
-            <Pressable onPress={() => setSearchQuery('')}>
+            <Pressable
+              onPress={() => setSearchQuery('')}
+              accessibilityRole="button"
+              accessibilityLabel="Clear search query"
+            >
               <Ionicons
                 name="close-circle"
                 size={18}
@@ -489,6 +496,9 @@ export function ChatScreen() {
           shadowRadius: 6,
           elevation: 8,
         }}
+        accessibilityRole="button"
+        accessibilityLabel="Start new chat"
+        accessibilityHint="Opens contact picker to start a new direct conversation"
       >
         <Ionicons name="add" size={32} color="#FFFFFF" />
       </Pressable>

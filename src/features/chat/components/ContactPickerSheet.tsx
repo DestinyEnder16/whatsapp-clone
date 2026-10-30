@@ -191,12 +191,13 @@ export function ContactPickerSheet({
       animationType="slide"
       transparent
       onRequestClose={onClose}
+      accessibilityViewIsModal={true}
     >
       <View
         className="flex-1 justify-end"
         style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}
       >
-        {/* Top green backdrop background */}
+        {/* Top backdrop background */}
         <Pressable
           onPress={() => {
             Keyboard.dismiss();
@@ -204,6 +205,9 @@ export function ContactPickerSheet({
           }}
           className="flex-1"
           style={{ backgroundColor: colors.primary, opacity: 0.15 }}
+          accessibilityRole="button"
+          accessibilityLabel="Close contacts sheet"
+          accessibilityHint="Dismisses the contacts list"
         />
 
         {/* Modal Sheet Card matching Mockup 1 & 2 with maintained height */}
@@ -223,14 +227,27 @@ export function ContactPickerSheet({
             />
           </View>
 
-          {/* Title Header */}
-          <View className="items-center py-2 px-6">
+          {/* Title Header with Close Button */}
+          <View className="flex-row items-center justify-between py-2 px-6">
+            <View className="w-8" />
             <AppText
               className="text-[20px] text-center"
               style={{ color: colors.text, fontFamily: 'SFPRODISPLAYBOLD' }}
+              accessibilityRole="header"
             >
               Contact
             </AppText>
+            <Pressable
+              onPress={onClose}
+              hitSlop={8}
+              className="w-8 h-8 items-center justify-center rounded-full active:opacity-75"
+              style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : '#F3F4F6' }}
+              accessibilityRole="button"
+              accessibilityLabel="Close"
+              accessibilityHint="Closes the contact picker"
+            >
+              <Ionicons name="close" size={18} color={colors.text} />
+            </Pressable>
           </View>
 
           {/* Search Bar matching Mockup 1 & 2 with green active highlight */}

@@ -24,7 +24,11 @@ export default function TabHeader({
   if (right) {
     return (
       <View className={`flex-row items-center justify-between ${className}`}>
-        <AppText className={titleClassName} style={{ color: colors.text }}>
+        <AppText
+          className={titleClassName}
+          style={{ color: colors.text }}
+          accessibilityRole="header"
+        >
           {title}
         </AppText>
         {right}
@@ -36,6 +40,7 @@ export default function TabHeader({
     <AppText
       className={`${className} ${titleClassName}`}
       style={{ color: colors.text }}
+      accessibilityRole="header"
     >
       {title}
     </AppText>

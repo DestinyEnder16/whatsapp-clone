@@ -165,13 +165,21 @@ export function PhotoPickerModal({
       transparent
       animationType="slide"
       onRequestClose={onClose}
+      accessibilityViewIsModal={true}
     >
-      <Pressable className="flex-1 bg-black/50 justify-end" onPress={onClose}>
+      <Pressable
+        className="flex-1 bg-black/50 justify-end"
+        onPress={onClose}
+        accessibilityRole="button"
+        accessibilityLabel="Close photo picker"
+        accessibilityHint="Dismisses the dialog without selecting a photo"
+      >
         {/* Modal Container */}
         <Pressable
           className="rounded-t-3xl pt-5 pb-8 px-5 shadow-2xl"
           style={{ backgroundColor: colors.card }}
           onPress={(e) => e.stopPropagation()}
+          accessible={false}
         >
           {/* Recent Photos Horizontal Strip */}
           <ScrollView
@@ -185,6 +193,8 @@ export function PhotoPickerModal({
               onPress={handleTakePhoto}
               className="mx-1.5 rounded-2xl overflow-hidden relative justify-center items-center"
               style={{ width: 68, height: 68, backgroundColor: colors.surface }}
+              accessibilityRole="button"
+              accessibilityLabel="Open camera to take photo"
             >
               {recentPhotos.length > 0 ? (
                 <Image
@@ -207,7 +217,7 @@ export function PhotoPickerModal({
             </TouchableOpacity>
 
             {/* Next Tiles: Recent device photos */}
-            {recentPhotos.slice(1).map((photo) => (
+            {recentPhotos.slice(1).map((photo, index) => (
               <TouchableOpacity
                 key={photo.id}
                 activeOpacity={0.8}
@@ -216,6 +226,9 @@ export function PhotoPickerModal({
                   onClose();
                 }}
                 className="mx-1.5 rounded-2xl overflow-hidden"
+                accessibilityRole="button"
+                accessibilityLabel={`Recent photo ${index + 1}`}
+                accessibilityHint="Selects this photo"
               >
                 <Image
                   source={{ uri: photo.uri }}
@@ -232,6 +245,9 @@ export function PhotoPickerModal({
               onPress={handleTakePhoto}
               className="flex-row items-center py-2.5"
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Take Photo"
+              accessibilityHint="Opens camera to take a photo"
             >
               <Ionicons name="camera" size={22} color={colors.primary} />
               <AppText
@@ -246,6 +262,9 @@ export function PhotoPickerModal({
               onPress={handleChooseFromLibrary}
               className="flex-row items-center py-2.5"
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Choose From Library"
+              accessibilityHint="Opens system photo gallery to pick a picture"
             >
               <Ionicons name="images" size={22} color={colors.primary} />
               <AppText
@@ -256,6 +275,23 @@ export function PhotoPickerModal({
               </AppText>
             </TouchableOpacity>
           </View>
+
+          {/* Explicit Accessible Dismiss Button */}
+          <Pressable
+            onPress={onClose}
+            className="mt-4 py-3 items-center justify-center rounded-2xl"
+            style={{ backgroundColor: colors.surface }}
+            accessibilityRole="button"
+            accessibilityLabel="Cancel"
+            accessibilityHint="Dismisses photo picker"
+          >
+            <AppText
+              className="text-[15px] font-semibold"
+              style={{ color: colors.textSecondary }}
+            >
+              Cancel
+            </AppText>
+          </Pressable>
         </Pressable>
       </Pressable>
     </Modal>

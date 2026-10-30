@@ -1,4 +1,5 @@
 import { useAuthStore } from '@/core/store/useAuthStore';
+import { useNavigationStore } from '@/core/store/useNavigationStore';
 import {
   assignProfileAvatar,
   uploadMedia,
@@ -140,8 +141,19 @@ export function UploadPhotoScreen() {
               onPress={() => setModalVisible(true)}
             />
             <Pressable
-              onPress={() => router.replace('/(tabs)')}
+              onPress={() => {
+                const pending =
+                  useNavigationStore.getState().consumePendingDestination();
+                if (pending?.pathname) {
+                  router.replace(pending.pathname as any);
+                } else {
+                  router.replace('/(tabs)');
+                }
+              }}
               className="items-center py-2"
+              accessibilityRole="button"
+              accessibilityLabel="Skip for now"
+              accessibilityHint="Proceed to your conversations without uploading a photo"
             >
               <AppText style={{ color: colors.textSecondary }}>
                 Skip for now
@@ -154,10 +166,25 @@ export function UploadPhotoScreen() {
           <Button
             title="Retry"
             onPress={() => selectedImage && handleSelectPhoto(selectedImage)}
+            accessibilityLabel="Retry photo upload"
+            accessibilityHint="Retries uploading your selected photo"
           />
         )}
         {uploadStatus === 'done' && (
-          <Button title="Next" onPress={() => router.replace('/(tabs)')} />
+          <Button
+            title="Next"
+            onPress={() => {
+              const pending =
+                useNavigationStore.getState().consumePendingDestination();
+              if (pending?.pathname) {
+                router.replace(pending.pathname as any);
+              } else {
+                router.replace('/(tabs)');
+              }
+            }}
+            accessibilityLabel="Next"
+            accessibilityHint="Continues to your conversations"
+          />
         )}
       </View>
       <PhotoPickerModal

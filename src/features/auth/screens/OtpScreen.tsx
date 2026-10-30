@@ -1,4 +1,5 @@
 import { useAuthStore } from '@/core/store/useAuthStore';
+import { useNavigationStore } from '@/core/store/useNavigationStore';
 import { useResendOtp } from '@/features/auth/api/useResendOtp';
 import { useVerifyOtp } from '@/features/auth/api/useVerifyOtp';
 import { BackButton, Button } from '@/shared/components';
@@ -43,7 +44,13 @@ export function OtpScreen() {
           if (!authData.user.profileComplete) {
             router.replace('/profile');
           } else {
-            router.replace('/(tabs)');
+            const pending =
+              useNavigationStore.getState().consumePendingDestination();
+            if (pending?.pathname) {
+              router.replace(pending.pathname as any);
+            } else {
+              router.replace('/(tabs)');
+            }
           }
         },
         onError: (err) => {
