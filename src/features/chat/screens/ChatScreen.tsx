@@ -157,7 +157,6 @@ export function ChatScreen() {
               id: newConv.id,
               name,
               avatarUrl: (newConv as any).otherParticipant?.avatarUrl || '',
-              status: 'Online',
               otherParticipantId: userId,
             },
           } as any);
@@ -174,9 +173,9 @@ export function ChatScreen() {
     const otherParticipantId = !isGroup
       ? (item as any).otherParticipant?.id
       : undefined;
-    const isOnline = otherParticipantId
-      ? Boolean(onlineUsers[otherParticipantId]?.isOnline)
-      : false;
+    const presence = otherParticipantId
+      ? onlineUsers[otherParticipantId]
+      : undefined;
     const name = isGroup
       ? (item as any).name || 'Group'
       : (item as any).otherParticipant?.displayName || 'Contact';
@@ -190,13 +189,13 @@ export function ChatScreen() {
         id: item.id,
         name,
         avatarUrl,
-        status: isOnline
-          ? 'Online'
-          : formatLastActive({
-              isOnline: false,
-              lastActiveAt: onlineUsers[otherParticipantId]?.lastActiveAt,
-              fallback: 'Offline',
-            }),
+        status: presence
+          ? formatLastActive({
+              isOnline: presence.isOnline,
+              lastActiveAt: presence.lastActiveAt,
+              fallback: 'Status unavailable',
+            })
+          : 'Status unavailable',
         otherParticipantId,
       },
     } as any);

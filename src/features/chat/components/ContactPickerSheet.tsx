@@ -171,7 +171,6 @@ export function ContactPickerSheet({
               id: newConv.id,
               name: contact.name,
               avatarUrl: contact.avatarUrl || '',
-              status: 'Active 5 minutes ago',
               otherParticipantId: contact.id,
             },
           } as any);

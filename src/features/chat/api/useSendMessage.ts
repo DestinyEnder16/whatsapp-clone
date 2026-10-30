@@ -6,6 +6,13 @@ import type { components } from '@/services/api/schema';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 export type MessageDto = components['schemas']['MessageResponseDto'];
+export type LocalMessageDto = MessageDto & {
+  sendStatus?: 'pending' | 'failed';
+};
+type MessageCache = {
+  pages: Array<{ items: MessageDto[]; pageInfo: any }>;
+  pageParams: unknown[];
+};
 
 export function generateClientMessageId(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -57,7 +64,12 @@ export function useSendMessage() {
     },
 
     // Optimistic Update implementation
-    onMutate: async ({ conversationId, text, clientMessageId }) => {
+    onMutate: async ({
+      conversationId,
+      text,
+      attachmentMediaIds,
+      clientMessageId,
+    }) => {
       await queryClient.cancelQueries({
         queryKey: accountQueryKeys.messages(
           useAuthStore.getState().user?.id || 'none',
@@ -68,42 +80,62 @@ export function useSendMessage() {
       const accountId = useAuthStore.getState().user?.id || 'none';
       const messagesKey = accountQueryKeys.messages(accountId, conversationId);
 
-      const previousMessages = queryClient.getQueryData<{
-        items: MessageDto[];
-        pageInfo: any;
-      }>(messagesKey);
+      const previousMessages =
+        queryClient.getQueryData<MessageCache>(messagesKey);
 
       const currentUserId = useAuthStore.getState().user?.id || 'me';
       const stableClientMessageId =
         clientMessageId || generateClientMessageId();
 
-      const optimisticMessage: MessageDto = {
+      const optimisticMessage: LocalMessageDto = {
         id: `optimistic-${stableClientMessageId}`,
         conversationId,
         clientMessageId: stableClientMessageId,
         senderId: currentUserId,
-        kind: 'text',
+        kind: attachmentMediaIds?.length ? 'image' : 'text',
         text: text || '',
         attachments: [],
         createdAt: new Date().toISOString(),
+        sendStatus: 'pending',
       };
 
-      queryClient.setQueryData(
-        messagesKey,
-        (old: { items: MessageDto[]; pageInfo: any } | undefined) => {
-          if (!old) {
-            return {
-              items: [optimisticMessage],
-              pageInfo: { nextCursor: null, hasNextPage: false },
-            };
-          }
-
+      queryClient.setQueryData(messagesKey, (old: MessageCache | undefined) => {
+        if (!old) {
           return {
-            ...old,
-            items: [...old.items, optimisticMessage],
+            pages: [
+              {
+                items: [optimisticMessage],
+                pageInfo: { nextCursor: null, hasNextPage: false },
+              },
+            ],
+            pageParams: [null],
           };
         }
-      );
+
+        const firstPage = old.pages[0];
+        const existingIndex = firstPage.items.findIndex(
+          (item) => item.clientMessageId === stableClientMessageId
+        );
+        if (existingIndex >= 0) {
+          const items = [...firstPage.items] as LocalMessageDto[];
+          items[existingIndex] = {
+            ...items[existingIndex],
+            sendStatus: 'pending',
+          };
+          return {
+            ...old,
+            pages: [{ ...firstPage, items }, ...old.pages.slice(1)],
+          };
+        }
+
+        return {
+          ...old,
+          pages: [
+            { ...firstPage, items: [...firstPage.items, optimisticMessage] },
+            ...old.pages.slice(1),
+          ],
+        };
+      });
 
       return { previousMessages, optimisticMessage, stableClientMessageId };
     },
@@ -114,13 +146,18 @@ export function useSendMessage() {
           useAuthStore.getState().user?.id || 'none',
           variables.conversationId
         ),
-        (old: { items: MessageDto[]; pageInfo: any } | undefined) => {
-          if (!old?.items || !context?.stableClientMessageId) return old;
+        (old: MessageCache | undefined) => {
+          if (!old?.pages || !context?.stableClientMessageId) return old;
           return {
             ...old,
-            items: old.items.filter(
-              (item) => item.clientMessageId !== context.stableClientMessageId
-            ),
+            pages: old.pages.map((page) => ({
+              ...page,
+              items: page.items.map((item) =>
+                item.clientMessageId === context.stableClientMessageId
+                  ? { ...item, sendStatus: 'failed' }
+                  : item
+              ),
+            })),
           };
         }
       );
@@ -132,21 +169,22 @@ export function useSendMessage() {
           useAuthStore.getState().user?.id || 'none',
           variables.conversationId
         ),
-        (old: { items: MessageDto[]; pageInfo: any } | undefined) => {
-          if (!old?.items) return old;
+        (old: MessageCache | undefined) => {
+          if (!old?.pages) return old;
 
           // Replace optimistic message with the server confirmed message
-          const updatedItems = old.items.map((item) =>
-            item.id === context?.optimisticMessage?.id ||
-            item.clientMessageId === context?.stableClientMessageId ||
-            item.clientMessageId === serverMessage.clientMessageId
-              ? serverMessage
-              : item
-          );
-
           return {
             ...old,
-            items: updatedItems,
+            pages: old.pages.map((page) => ({
+              ...page,
+              items: page.items.map((item) =>
+                item.id === context?.optimisticMessage?.id ||
+                item.clientMessageId === context?.stableClientMessageId ||
+                item.clientMessageId === serverMessage.clientMessageId
+                  ? serverMessage
+                  : item
+              ),
+            })),
           };
         }
       );

@@ -13,7 +13,7 @@ interface UseChatRoomSocketOptions {
 export function useChatRoomSocket({
   conversationId,
   otherParticipantId,
-  fallbackStatus = 'Active recently',
+  fallbackStatus = 'Status unavailable',
 }: UseChatRoomSocketOptions) {
   const isConnected = useSocketStore((s) => s.isConnected);
   const onlineUsers = useSocketStore((s) => s.onlineUsers);
