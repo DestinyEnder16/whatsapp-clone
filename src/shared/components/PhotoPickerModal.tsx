@@ -17,13 +17,15 @@ import {
   View,
 } from 'react-native';
 // Replace the old @expo/vector-icons import:
+import type { SelectedMedia } from '@/services/media/uploadMedia';
 import { useAppTheme } from '@/shared/hooks';
+import { toast } from '@/shared/utils/toast';
 import { Ionicons } from '@react-native-vector-icons/ionicons';
 
 interface PhotoPickerModalProps {
   visible: boolean;
   onClose: () => void;
-  onSelectPhoto: (uri: string) => void;
+  onSelectPhoto: (media: SelectedMedia) => void;
 }
 
 interface RecentPhotoItem {
@@ -95,7 +97,13 @@ export function PhotoPickerModal({
   // 1. Take Photo via Camera
   async function handleTakePhoto() {
     const perm = await ImagePicker.requestCameraPermissionsAsync();
-    if (!perm.granted) return;
+    if (!perm.granted) {
+      toast.error(
+        'Permission Denied',
+        'Camera permission is required to take a photo.'
+      );
+      return;
+    }
 
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
@@ -103,22 +111,48 @@ export function PhotoPickerModal({
       quality: 0.8,
     });
 
+    if (result.canceled) {
+      toast.info('Cancelled', 'Camera capture was cancelled.');
+      return;
+    }
     if (!result.canceled && result.assets[0]?.uri) {
-      onSelectPhoto(result.assets[0].uri);
+      onSelectPhoto({
+        uri: result.assets[0].uri,
+        mimeType: result.assets[0].mimeType,
+        fileName: result.assets[0].fileName,
+        fileSize: result.assets[0].fileSize,
+      });
       onClose();
     }
   }
 
   // 2. Full System Media Library Picker
   async function handleChooseFromLibrary() {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted && permission.accessPrivileges !== 'limited') {
+      toast.error(
+        'Permission Denied',
+        'Photo library access is required to choose an image.'
+      );
+      return;
+    }
     const result = await ImagePicker.launchImageLibraryAsync({
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
     });
 
+    if (result.canceled) {
+      toast.info('Cancelled', 'Photo selection was cancelled.');
+      return;
+    }
     if (!result.canceled && result.assets[0]?.uri) {
-      onSelectPhoto(result.assets[0].uri);
+      onSelectPhoto({
+        uri: result.assets[0].uri,
+        mimeType: result.assets[0].mimeType,
+        fileName: result.assets[0].fileName,
+        fileSize: result.assets[0].fileSize,
+      });
       onClose();
     }
   }
@@ -178,7 +212,7 @@ export function PhotoPickerModal({
                 key={photo.id}
                 activeOpacity={0.8}
                 onPress={() => {
-                  onSelectPhoto(photo.uri);
+                  onSelectPhoto({ uri: photo.uri, mimeType: 'image/jpeg' });
                   onClose();
                 }}
                 className="mx-1.5 rounded-2xl overflow-hidden"

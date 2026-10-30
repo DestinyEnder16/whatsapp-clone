@@ -1,9 +1,8 @@
 // src/features/settings/components/ChatStorageItem.tsx
-import { useAppTheme } from "@/shared/hooks";
-import { Image } from "expo-image";
-import React from "react";
-import { Alert, Pressable, Text, View } from "react-native";
-import { ChatStorageItemData } from "../api/useManageStorageData";
+import { useAppTheme } from '@/shared/hooks';
+import { Image } from 'expo-image';
+import { Alert, Pressable, Text, View } from 'react-native';
+import { ChatStorageItemData } from '../api/useManageStorageData';
 
 export interface ChatStorageItemProps {
   item: ChatStorageItemData;
@@ -16,13 +15,13 @@ export function ChatStorageItem({ item, onClear }: ChatStorageItemProps) {
   const handlePress = () => {
     if (!onClear) return;
     Alert.alert(
-      "Manage Chat Storage",
-      `Clear stored media and messages for ${item.name}? (${item.sizeFormatted})`,
+      'Clear Server History',
+      `Clear server history for ${item.name}? Device cache is managed separately.`,
       [
-        { text: "Cancel", style: "cancel" },
+        { text: 'Cancel', style: 'cancel' },
         {
-          text: "Clear",
-          style: "destructive",
+          text: 'Clear',
+          style: 'destructive',
           onPress: () => onClear(item.conversationId),
         },
       ]
@@ -45,7 +44,7 @@ export function ChatStorageItem({ item, onClear }: ChatStorageItemProps) {
         {item.avatarUrl ? (
           <Image
             source={{ uri: item.avatarUrl }}
-            style={{ width: "100%", height: "100%" }}
+            style={{ width: '100%', height: '100%' }}
             contentFit="cover"
             transition={200}
           />
@@ -83,7 +82,7 @@ export function ChatStorageItem({ item, onClear }: ChatStorageItemProps) {
         className="text-[13px] font-medium"
         style={{ color: colors.textSecondary }}
       >
-        {item.sizeFormatted}
+        Server history
       </Text>
     </Pressable>
   );

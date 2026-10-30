@@ -1,7 +1,7 @@
 // src/features/settings/hooks/useDeviceStorage.ts
-import { useDataStorageStore } from "@/core/store/useDataStorageStore";
-import { Directory, File, Paths } from "expo-file-system";
-import { useCallback, useEffect, useState } from "react";
+import { useDataStorageStore } from '@/core/store/useDataStorageStore';
+import { Directory, File, Paths } from 'expo-file-system';
+import { useCallback, useEffect, useState } from 'react';
 
 export interface StorageCategoryBreakdown {
   label: string;
@@ -20,7 +20,6 @@ export interface DeviceStorageInfo {
   usedBytes: number;
   usedFormatted: string;
 
-  // App & Media Storage (matching Figma 2,1 GB / dynamic)
   mediaBytes: number;
   mediaFormatted: string;
   mediaPercentage: number; // percentage of total or visual progress bar
@@ -30,7 +29,6 @@ export interface DeviceStorageInfo {
   cacheFormatted: string;
   isCacheCleared: boolean;
 
-  // Dummy breakdown of media categories as requested
   categories: StorageCategoryBreakdown[];
 
   // Actions
@@ -40,14 +38,14 @@ export interface DeviceStorageInfo {
 }
 
 function formatBytes(bytes: number): string {
-  if (bytes <= 0) return "0 B";
+  if (bytes <= 0) return '0 B';
   const gb = bytes / (1024 * 1024 * 1024);
   if (gb >= 1) {
-    return `${gb.toFixed(1).replace(".", ",")} GB`;
+    return `${gb.toFixed(1).replace('.', ',')} GB`;
   }
   const mb = bytes / (1024 * 1024);
   if (mb >= 1) {
-    return `${mb.toFixed(1).replace(".", ",")} MB`;
+    return `${mb.toFixed(1).replace('.', ',')} MB`;
   }
   const kb = bytes / 1024;
   if (kb >= 1) {
@@ -57,8 +55,8 @@ function formatBytes(bytes: number): string {
 }
 
 export function useDeviceStorage(): DeviceStorageInfo {
-  const [totalBytes, setTotalBytes] = useState<number>(128 * 1024 * 1024 * 1024); // 128 GB default
-  const [freeBytes, setFreeBytes] = useState<number>(62.5 * 1024 * 1024 * 1024); // 62.5 GB default
+  const [totalBytes, setTotalBytes] = useState<number>(0);
+  const [freeBytes, setFreeBytes] = useState<number>(0);
   const [cacheBytes, setCacheBytes] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -79,13 +77,13 @@ export function useDeviceStorage(): DeviceStorageInfo {
         try {
           if (item instanceof File) {
             const size = (item as any).size;
-            if (typeof size === "number") total += size;
+            if (typeof size === 'number') total += size;
           } else if (item instanceof Directory) {
             const subItems = item.list();
             for (const sub of subItems) {
               if (sub instanceof File) {
                 const subSize = (sub as any).size;
-                if (typeof subSize === "number") total += subSize;
+                if (typeof subSize === 'number') total += subSize;
               }
             }
           }
@@ -105,20 +103,20 @@ export function useDeviceStorage(): DeviceStorageInfo {
       // 1. Get real total and free disk space via modern Expo SDK 57 Paths API
       try {
         const total = Paths.totalDiskSpace;
-        if (typeof total === "number" && total > 0) {
+        if (typeof total === 'number' && total > 0) {
           setTotalBytes(total);
         }
       } catch (err) {
-        console.warn("Could not read total disk space:", err);
+        console.warn('Could not read total disk space:', err);
       }
 
       try {
         const free = Paths.availableDiskSpace;
-        if (typeof free === "number" && free > 0) {
+        if (typeof free === 'number' && free > 0) {
           setFreeBytes(free);
         }
       } catch (err) {
-        console.warn("Could not read available disk space:", err);
+        console.warn('Could not read available disk space:', err);
       }
 
       // 2. Measure real app cache size
@@ -148,84 +146,41 @@ export function useDeviceStorage(): DeviceStorageInfo {
         }
       }
     } catch (e) {
-      console.warn("Error wiping cache directory:", e);
+      console.warn('Error wiping cache directory:', e);
     }
 
     clearStoreCache();
     setCacheBytes(0);
   }, [clearStoreCache]);
 
-  // Media & Files usage
-  // Matches Figma default of 2,1 GB before cache clear, or drops after clear
-  const baseMediaBytes = isCacheCleared
-    ? 420 * 1024 * 1024 // 420 MB when cleared
-    : 2.1 * 1024 * 1024 * 1024; // 2,1 GB default
-
-  const mediaBytes = baseMediaBytes + cacheBytes;
+  const mediaBytes = cacheBytes;
   const mediaFormatted = formatBytes(mediaBytes);
-
-  // Free bytes adjusted if cache was cleared
-  const adjustedFreeBytes = isCacheCleared
-    ? freeBytes + 1.68 * 1024 * 1024 * 1024 // +1.68 GB freed
-    : freeBytes;
-  const freeFormatted = formatBytes(adjustedFreeBytes);
+  const freeFormatted = freeBytes > 0 ? formatBytes(freeBytes) : 'Unavailable';
 
   const totalFormatted = formatBytes(totalBytes);
-  const usedBytes = Math.max(0, totalBytes - adjustedFreeBytes);
+  const usedBytes = totalBytes > 0 ? Math.max(0, totalBytes - freeBytes) : 0;
   const usedFormatted = formatBytes(usedBytes);
 
   // Media percentage for dual progress bar:
   // Visual ratio tailored to look balanced like Figma (24% filled green, remainder free grey)
-  const mediaPercentage = isCacheCleared ? 8 : 24;
+  const mediaPercentage =
+    totalBytes > 0 ? Math.min(100, (mediaBytes / totalBytes) * 100) : 0;
 
   // Proportional dummy media categories as requested (Pictures, Videos, Audio, Documents, Real Cache)
   const categories: StorageCategoryBreakdown[] = [
     {
-      label: "Photos & Pictures",
-      sizeFormatted: isCacheCleared ? "240 MB" : "1,2 GB",
-      percentage: 57,
-      color: "#57B77D",
-      iconName: "images-outline",
-    },
-    {
-      label: "Videos",
-      sizeFormatted: isCacheCleared ? "110 MB" : "680 MB",
-      percentage: 32,
-      color: "#007CFF",
-      iconName: "videocam-outline",
-    },
-    {
-      label: "Audio",
-      sizeFormatted: isCacheCleared ? "45 MB" : "140 MB",
-      percentage: 7,
-      color: "#FFB23F",
-      iconName: "musical-notes-outline",
-    },
-    {
-      label: "Documents & Files",
-      sizeFormatted: isCacheCleared ? "25 MB" : "80 MB",
-      percentage: 4,
-      color: "#8EA3B3",
-      iconName: "document-text-outline",
-    },
-    {
-      label: "Temporary App Cache",
-      sizeFormatted:
-        isCacheCleared
-          ? "0 B"
-          : cacheBytes > 0
-          ? formatBytes(cacheBytes)
-          : "18,4 MB",
-      percentage: 2,
-      color: "#E8503A",
-      iconName: "trash-bin-outline",
+      label: 'Temporary App Cache',
+      sizeFormatted: formatBytes(cacheBytes),
+      percentage: mediaPercentage,
+      color: '#E8503A',
+      iconName: 'trash-bin-outline',
     },
   ];
 
   return {
     totalBytes,
     totalFormatted,
-    freeBytes: adjustedFreeBytes,
+    freeBytes,
     freeFormatted,
     usedBytes,
     usedFormatted,

@@ -8,6 +8,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 export type MessageDto = components['schemas']['MessageResponseDto'];
 export type LocalMessageDto = MessageDto & {
   sendStatus?: 'pending' | 'failed';
+  attachmentMediaIds?: string[];
 };
 type MessageCache = {
   pages: Array<{ items: MessageDto[]; pageInfo: any }>;
@@ -95,6 +96,7 @@ export function useSendMessage() {
         kind: attachmentMediaIds?.length ? 'image' : 'text',
         text: text || '',
         attachments: [],
+        attachmentMediaIds,
         createdAt: new Date().toISOString(),
         sendStatus: 'pending',
       };
