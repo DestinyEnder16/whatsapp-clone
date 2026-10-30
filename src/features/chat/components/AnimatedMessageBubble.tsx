@@ -3,7 +3,7 @@ import { AppText } from '@/shared/components';
 import { useAppTheme } from '@/shared/hooks';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import { Image } from 'expo-image';
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import Animated, { FadeInLeft, ZoomIn } from 'react-native-reanimated';
 
 interface AnimatedMessageBubbleProps {
@@ -16,6 +16,8 @@ interface AnimatedMessageBubbleProps {
   animate?: boolean;
   isRead?: boolean;
   isDelivered?: boolean;
+  sendStatus?: 'pending' | 'failed';
+  onRetry?: () => void;
 }
 
 export function AnimatedMessageBubble({
@@ -27,6 +29,8 @@ export function AnimatedMessageBubble({
   animate = false,
   isRead = false,
   isDelivered = false,
+  sendStatus,
+  onRetry,
 }: AnimatedMessageBubbleProps) {
   const { colors, isDark } = useAppTheme();
 
@@ -89,7 +93,11 @@ export function AnimatedMessageBubble({
 
         {isMe && (
           <View className="ml-1 flex-row items-center">
-            {isPending ? (
+            {sendStatus === 'failed' ? (
+              <Pressable onPress={onRetry} hitSlop={8}>
+                <Ionicons name="alert-circle" size={14} color="#FFB4AB" />
+              </Pressable>
+            ) : isPending ? (
               <Ionicons
                 name="time-outline"
                 size={12}

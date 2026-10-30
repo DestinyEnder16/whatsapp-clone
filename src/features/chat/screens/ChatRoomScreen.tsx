@@ -1,5 +1,6 @@
 // src/features/chat/screens/ChatRoomScreen.tsx
 import { useAuthStore } from '@/core/store/useAuthStore';
+import { api } from '@/services/api/client';
 import { useAppTheme } from '@/shared/hooks';
 import { toast } from '@/shared/utils/toast';
 import Ionicons from '@react-native-vector-icons/ionicons';
@@ -27,6 +28,7 @@ import { ChatAttachmentMenu } from '../components/ChatAttachmentMenu';
 import { DateSeparator } from '../components/DateSeparator';
 import { TypingIndicator } from '../components/TypingIndicator';
 import { useChatRoomSocket } from '../hooks/useChatRoomSocket';
+import { useChatDraftStore } from '../store/useChatDraftStore';
 import { formatMessageTime } from '../utils/formatChatDate';
 
 // --- Helpers ---
@@ -110,11 +112,16 @@ export function ChatRoomScreen() {
   const conversationId = params.id;
   const contactName = params.name || 'Chat';
   const contactAvatar = params.avatarUrl || '';
-  const initialStatus = params.status || 'Active 5 minutes ago';
+  const initialStatus = params.status || 'Status unavailable';
 
   // 1. Load real messages via REST + TanStack Query cache
-  const { data: messageHistory, isLoading: isLoadingMessages } =
-    useMessages(conversationId);
+  const {
+    data: messagePages,
+    isLoading: isLoadingMessages,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useMessages(conversationId);
   const sendMessageMutation = useSendMessage();
   const markAsReadMutation = useMarkAsRead();
 
@@ -134,10 +141,29 @@ export function ChatRoomScreen() {
   const { data: receipts } = useReceipts(conversationId);
   const markReceiptAsRead = useMarkReceiptAsRead();
 
-  const [inputText, setInputText] = useState('');
+  const draft = useChatDraftStore((state) =>
+    currentUserId && conversationId
+      ? state.drafts[`${currentUserId}:${conversationId}`] || ''
+      : ''
+  );
+  const setDraft = useChatDraftStore((state) => state.setDraft);
+  const clearDraft = useChatDraftStore((state) => state.clearDraft);
+  const [inputText, setInputText] = useState(draft);
   const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
   const flatListRef = useRef<FlatList>(null);
   const isNearBottomRef = useRef(true);
+
+  const messageHistory = useMemo(() => {
+    if (!messagePages?.pages) return undefined;
+    return {
+      items: messagePages.pages.flatMap((page) => page.items),
+      pageInfo: messagePages.pages[messagePages.pages.length - 1].pageInfo,
+    };
+  }, [messagePages]);
+
+  useEffect(() => {
+    setInputText(draft);
+  }, [conversationId]);
 
   // Track the count of messages at first load so we can tell new from old
   const initialCountRef = useRef<number | null>(null);
@@ -154,6 +180,10 @@ export function ChatRoomScreen() {
   }, [messageHistory?.items]);
 
   // Record the initial message count on first load
+  useEffect(() => {
+    initialCountRef.current = null;
+  }, [conversationId]);
+
   useEffect(() => {
     if (initialCountRef.current === null && sortedMessages.length > 0) {
       initialCountRef.current = sortedMessages.length;
@@ -242,6 +272,10 @@ export function ChatRoomScreen() {
     const distanceFromBottom =
       contentSize.height - (contentOffset.y + layoutMeasurement.height);
     isNearBottomRef.current = distanceFromBottom < 80;
+
+    if (contentOffset.y < 80 && hasNextPage && !isFetchingNextPage) {
+      void fetchNextPage();
+    }
   };
 
   // 4. Send message handler with optimistic updates
@@ -250,6 +284,7 @@ export function ChatRoomScreen() {
 
     const textToSend = inputText.trim();
     setInputText('');
+    if (currentUserId) clearDraft(currentUserId, conversationId);
     handleMessageSent();
 
     sendMessageMutation.mutate(
@@ -271,9 +306,68 @@ export function ChatRoomScreen() {
     );
   };
 
-  const handleSendPhoto = (uri: string) => {
+  const handleSendPhoto = async (uri: string) => {
     if (!conversationId) return;
-    toast.info('Attachment', 'Uploading media...');
+
+    try {
+      toast.info('Attachment', 'Uploading media...');
+      const file = await fetch(uri);
+      const blob = await file.blob();
+      const contentType =
+        blob.type === 'image/png' || blob.type === 'image/webp'
+          ? blob.type
+          : 'image/jpeg';
+      const clientUploadId = generateClientMessageId();
+      const { data: uploadData, error: uploadError } = await api.POST(
+        '/v1/media/uploads',
+        {
+          body: {
+            clientUploadId,
+            purpose: 'message_attachment',
+            contentType,
+            sizeBytes: blob.size,
+            originalFilename: 'photo',
+          },
+        }
+      );
+
+      if (uploadError || !uploadData?.media) {
+        throw new Error(
+          (uploadError as any)?.message || 'Could not prepare upload'
+        );
+      }
+
+      if (uploadData.upload) {
+        const formData = new FormData();
+        Object.entries(uploadData.upload.fields).forEach(([key, value]) => {
+          formData.append(key, value);
+        });
+        formData.append('file', blob as any, 'photo');
+        const cloudinaryResponse = await fetch(uploadData.upload.url, {
+          method: 'POST',
+          body: formData,
+        });
+        if (!cloudinaryResponse.ok) throw new Error('Photo upload failed');
+      }
+
+      const { data: media, error: completeError } = await api.POST(
+        '/v1/media/uploads/{mediaId}/complete',
+        { params: { path: { mediaId: uploadData.media.id } } }
+      );
+      if (completeError || !media || media.status !== 'ready') {
+        throw new Error(
+          (completeError as any)?.message || 'Photo could not be processed'
+        );
+      }
+
+      sendMessageMutation.mutate({
+        conversationId,
+        attachmentMediaIds: [media.id],
+        clientMessageId: generateClientMessageId(),
+      });
+    } catch (error: any) {
+      toast.error('Error', error?.message || 'Failed to send photo');
+    }
   };
 
   return (
@@ -397,6 +491,11 @@ export function ChatRoomScreen() {
             showsVerticalScrollIndicator={false}
             onScroll={handleListScroll}
             scrollEventThrottle={100}
+            ListHeaderComponent={
+              isFetchingNextPage ? (
+                <ActivityIndicator size="small" color={colors.primary} />
+              ) : null
+            }
             ListEmptyComponent={() => (
               <View className="flex-1 items-center justify-center py-12">
                 <View
@@ -428,6 +527,9 @@ export function ChatRoomScreen() {
               const isPending =
                 msg.id.startsWith('optimistic-') ||
                 msg.clientMessageId?.startsWith('temp-');
+              const sendStatus = (
+                msg as MessageDto & { sendStatus?: 'pending' | 'failed' }
+              ).sendStatus;
               const firstAttachment = (msg.attachments as any)?.[0];
               const imageUri = firstAttachment?.url || null;
 
@@ -482,6 +584,17 @@ export function ChatRoomScreen() {
                   animate={item.isNew}
                   isRead={isRead}
                   isDelivered={isDelivered}
+                  sendStatus={sendStatus}
+                  onRetry={
+                    sendStatus === 'failed'
+                      ? () =>
+                          sendMessageMutation.mutate({
+                            conversationId: conversationId!,
+                            text: msg.text || undefined,
+                            clientMessageId: msg.clientMessageId,
+                          })
+                      : undefined
+                  }
                 />
               );
             }}
@@ -519,6 +632,9 @@ export function ChatRoomScreen() {
               value={inputText}
               onChangeText={(text) => {
                 setInputText(text);
+                if (currentUserId && conversationId) {
+                  setDraft(currentUserId, conversationId, text);
+                }
                 handleInputKeystroke();
               }}
               placeholder="Type a message..."

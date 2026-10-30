@@ -54,6 +54,7 @@ interface SocketState {
 let socketInstance: Socket<ServerToClientEvents, ClientToServerEvents> | null =
   null;
 let socketAuthToken: string | null = null;
+const joinedConversationIds = new Set<string>();
 
 export function getSocket(): Socket<
   ServerToClientEvents,
@@ -79,8 +80,14 @@ export const useSocketStore = create<SocketState>((set, get) => ({
         socketInstance.disconnect();
         socketInstance = null;
       }
+      joinedConversationIds.clear();
       socketAuthToken = null;
-      set({ isConnected: false, isConnecting: false });
+      set({
+        isConnected: false,
+        isConnecting: false,
+        onlineUsers: {},
+        typingUsers: {},
+      });
       return;
     }
 
@@ -127,6 +134,19 @@ export const useSocketStore = create<SocketState>((set, get) => ({
     // 1. Connection lifecycle handlers
     socketInstance.on('connect', () => {
       set({ isConnected: true, isConnecting: false });
+
+      // Socket.IO does not preserve room membership across reconnects. Rejoin
+      // every room still owned by a mounted chat screen, then catch up from REST.
+      joinedConversationIds.forEach((conversationId) => {
+        socketInstance?.emit('conversation.join', { conversationId });
+        socketInstance?.emit('room.join', { conversationId });
+        queryClient.invalidateQueries({
+          queryKey: accountQueryKeys.messages(
+            useAuthStore.getState().user?.id || 'none',
+            conversationId
+          ),
+        });
+      });
     });
 
     socketInstance.on('disconnect', () => {
@@ -153,24 +173,35 @@ export const useSocketStore = create<SocketState>((set, get) => ({
         queryClient.setQueryData(
           accountQueryKeys.messages(currentUserId || 'none', conversationId),
           (oldData: any) => {
-            if (!oldData?.items) return oldData;
+            if (!oldData?.pages) return oldData;
+            const items = oldData.pages.flatMap(
+              (page: any) => page.items || []
+            );
             const hasMatchingOptimistic = msg.clientMessageId
-              ? oldData.items.some(
+              ? items.some(
                   (item: any) => item.clientMessageId === msg.clientMessageId
                 )
               : false;
-            const alreadyConfirmed = oldData.items.some(
+            const alreadyConfirmed = items.some(
               (item: any) => item.id === msg.id
             );
             if (alreadyConfirmed) return oldData;
             if (!hasMatchingOptimistic) {
-              return { ...oldData, items: [...oldData.items, msg] };
+              return {
+                ...oldData,
+                pages: oldData.pages.map((page: any, index: number) =>
+                  index === 0 ? { ...page, items: [...page.items, msg] } : page
+                ),
+              };
             }
             return {
               ...oldData,
-              items: oldData.items.map((item: any) =>
-                item.clientMessageId === msg.clientMessageId ? msg : item
-              ),
+              pages: oldData.pages.map((page: any) => ({
+                ...page,
+                items: page.items.map((item: any) =>
+                  item.clientMessageId === msg.clientMessageId ? msg : item
+                ),
+              })),
             };
           }
         );
@@ -185,12 +216,20 @@ export const useSocketStore = create<SocketState>((set, get) => ({
         (oldData: any) => {
           if (!oldData) {
             return {
-              items: [msg],
-              pageInfo: { nextCursor: null, hasNextPage: false },
+              pages: [
+                {
+                  items: [msg],
+                  pageInfo: { nextCursor: null, hasNextPage: false },
+                },
+              ],
+              pageParams: [null],
             };
           }
 
-          const existingItems: MessageDto[] = oldData.items || [];
+          if (!oldData.pages) return oldData;
+          const existingItems: MessageDto[] = oldData.pages.flatMap(
+            (page: any) => page.items || []
+          );
 
           // Check if message is already in cache
           const alreadyExists = existingItems.some(
@@ -202,7 +241,9 @@ export const useSocketStore = create<SocketState>((set, get) => ({
           // Append incoming message at the end (items are stored newest-last after reversal)
           return {
             ...oldData,
-            items: [...existingItems, msg],
+            pages: oldData.pages.map((page: any, index: number) =>
+              index === 0 ? { ...page, items: [...page.items, msg] } : page
+            ),
           };
         }
       );
@@ -281,17 +322,25 @@ export const useSocketStore = create<SocketState>((set, get) => ({
       socketInstance.disconnect();
       socketInstance = null;
     }
+    joinedConversationIds.clear();
     socketAuthToken = null;
-    set({ isConnected: false, isConnecting: false, typingUsers: {} });
+    set({
+      isConnected: false,
+      isConnecting: false,
+      onlineUsers: {},
+      typingUsers: {},
+    });
   },
 
   joinConversation: (conversationId: string) => {
+    joinedConversationIds.add(conversationId);
     if (!socketInstance?.connected) return;
     socketInstance.emit('conversation.join', { conversationId });
     socketInstance.emit('room.join', { conversationId });
   },
 
   leaveConversation: (conversationId: string) => {
+    joinedConversationIds.delete(conversationId);
     if (!socketInstance?.connected) return;
     socketInstance.emit('conversation.leave', { conversationId });
     socketInstance.emit('room.leave', { conversationId });
