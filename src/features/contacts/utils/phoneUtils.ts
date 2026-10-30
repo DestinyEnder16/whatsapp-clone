@@ -1,4 +1,4 @@
-import { useAuthStore } from "@/core/store/useAuthStore";
+import { useAuthStore } from '@/core/store/useAuthStore';
 
 /**
  * Extracts the international dial code (e.g., "+234", "+1", "+44") from an E.164 phone number.
@@ -12,10 +12,13 @@ import { useAuthStore } from "@/core/store/useAuthStore";
  * @returns Dial code string (e.g., "+234") or null if invalid/missing
  */
 export function extractCountryCode(phoneNumber?: string | null): string | null {
-  if (!phoneNumber || !phoneNumber.startsWith("+")) return null;
-  // Match '+' followed by 1 to 4 digits (standard ITU-T E.164 country code range)
-  const match = phoneNumber.match(/^\+(\d{1,4})/);
-  return match ? `+${match[1]}` : null;
+  if (!phoneNumber || !phoneNumber.startsWith('+')) return null;
+  const digits = phoneNumber.slice(1).replace(/\D/g, '');
+  const knownCodes = ['234', '62', '1', '44', '61', '81', '33', '49', '91'];
+  const code = knownCodes
+    .sort((a, b) => b.length - a.length)
+    .find((candidate) => digits.startsWith(candidate));
+  return code ? `+${code}` : null;
 }
 
 /**
@@ -48,29 +51,29 @@ export function normalizePhoneNumber(
   if (/[*#a-zA-Z]/.test(rawNumber)) return null;
 
   // Step 2: Strip non-numeric formatting characters (spaces, dashes, parens, dots)
-  let cleaned = rawNumber.trim().replace(/[\s\-().]/g, "");
+  let cleaned = rawNumber.trim().replace(/[\s\-().]/g, '');
 
   // Step 3: Replace international direct dialing prefix "00" with "+" (e.g., "00234..." -> "+234...")
-  if (cleaned.startsWith("00")) {
-    cleaned = "+" + cleaned.slice(2);
+  if (cleaned.startsWith('00')) {
+    cleaned = '+' + cleaned.slice(2);
   }
 
   // Step 4: Determine the fallback country dial code
   // Priority: 1. Explicit argument -> 2. Current user's country code -> 3. Default to Nigeria (+234)
   const userPhone = useAuthStore.getState().user?.phoneNumber;
   const defaultCountryCode =
-    fallbackCountryCode || extractCountryCode(userPhone) || "+234";
-  const defaultCodeWithoutPlus = defaultCountryCode.replace("+", "");
+    fallbackCountryCode || extractCountryCode(userPhone) || '+234';
+  const defaultCodeWithoutPlus = defaultCountryCode.replace('+', '');
 
-  let e164Candidate = "";
+  let e164Candidate = '';
 
-  if (cleaned.startsWith("+")) {
+  if (cleaned.startsWith('+')) {
     // Already has leading '+': keep '+' and strip any remaining non-digit characters
-    const digits = cleaned.slice(1).replace(/\D/g, "");
+    const digits = cleaned.slice(1).replace(/\D/g, '');
     e164Candidate = `+${digits}`;
   } else {
     // Number lacks '+'. We need to convert it based on local vs international notation:
-    const digits = cleaned.replace(/\D/g, "");
+    const digits = cleaned.replace(/\D/g, '');
     if (digits.length === 0) return null;
 
     // Case A: Number was saved with full country code but without '+' (e.g., "2348012345678")
@@ -79,7 +82,7 @@ export function normalizePhoneNumber(
       digits.length >= defaultCodeWithoutPlus.length + 9
     ) {
       e164Candidate = `+${digits}`;
-    } else if (digits.startsWith("0")) {
+    } else if (digits.startsWith('0')) {
       // Case B: Local format with domestic trunk zero (e.g., "08012345678" -> strip '0' -> "+2348012345678")
       e164Candidate = `${defaultCountryCode}${digits.slice(1)}`;
     } else {
@@ -97,7 +100,7 @@ export function normalizePhoneNumber(
   // Step 6: Country-specific business logic rules
   // Nigeria (+234): Mobile numbers have exactly 10 digits after +234, starting with 7, 8, or 9
   // (e.g., MTN, Airtel, Glo, 9mobile prefixes: 080..., 081..., 070..., 090..., 091...)
-  if (e164Candidate.startsWith("+234")) {
+  if (e164Candidate.startsWith('+234')) {
     const digitsAfter234 = e164Candidate.slice(4);
     if (!/^[789]\d{9}$/.test(digitsAfter234)) {
       return null;
@@ -135,4 +138,3 @@ export function normalizePhoneNumbers(numbers: string[]): string[] {
 
   return Array.from(unique);
 }
-

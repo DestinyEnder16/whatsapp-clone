@@ -1,6 +1,6 @@
 // src/features/chat/screens/ChatRoomScreen.tsx
 import { useAuthStore } from '@/core/store/useAuthStore';
-import { api } from '@/services/api/client';
+import { uploadMedia, type SelectedMedia } from '@/services/media/uploadMedia';
 import { useAppTheme } from '@/shared/hooks';
 import { toast } from '@/shared/utils/toast';
 import Ionicons from '@react-native-vector-icons/ionicons';
@@ -306,65 +306,28 @@ export function ChatRoomScreen() {
     );
   };
 
-  const handleSendPhoto = async (uri: string) => {
+  const handleSendPhoto = async (media: SelectedMedia) => {
     if (!conversationId) return;
 
     try {
       toast.info('Attachment', 'Uploading media...');
-      const file = await fetch(uri);
-      const blob = await file.blob();
-      const contentType =
-        blob.type === 'image/png' || blob.type === 'image/webp'
-          ? blob.type
-          : 'image/jpeg';
-      const clientUploadId = generateClientMessageId();
-      const { data: uploadData, error: uploadError } = await api.POST(
-        '/v1/media/uploads',
+      const completedMedia = await uploadMedia(media, 'message_attachment');
+
+      sendMessageMutation.mutate(
         {
-          body: {
-            clientUploadId,
-            purpose: 'message_attachment',
-            contentType,
-            sizeBytes: blob.size,
-            originalFilename: 'photo',
+          conversationId,
+          attachmentMediaIds: [completedMedia.id],
+          clientMessageId: generateClientMessageId(),
+        },
+        {
+          onError: (error: any) => {
+            toast.error(
+              'Attachment Send Failed',
+              error?.message || 'Please retry the message.'
+            );
           },
         }
       );
-
-      if (uploadError || !uploadData?.media) {
-        throw new Error(
-          (uploadError as any)?.message || 'Could not prepare upload'
-        );
-      }
-
-      if (uploadData.upload) {
-        const formData = new FormData();
-        Object.entries(uploadData.upload.fields).forEach(([key, value]) => {
-          formData.append(key, value);
-        });
-        formData.append('file', blob as any, 'photo');
-        const cloudinaryResponse = await fetch(uploadData.upload.url, {
-          method: 'POST',
-          body: formData,
-        });
-        if (!cloudinaryResponse.ok) throw new Error('Photo upload failed');
-      }
-
-      const { data: media, error: completeError } = await api.POST(
-        '/v1/media/uploads/{mediaId}/complete',
-        { params: { path: { mediaId: uploadData.media.id } } }
-      );
-      if (completeError || !media || media.status !== 'ready') {
-        throw new Error(
-          (completeError as any)?.message || 'Photo could not be processed'
-        );
-      }
-
-      sendMessageMutation.mutate({
-        conversationId,
-        attachmentMediaIds: [media.id],
-        clientMessageId: generateClientMessageId(),
-      });
     } catch (error: any) {
       toast.error('Error', error?.message || 'Failed to send photo');
     }
@@ -591,6 +554,11 @@ export function ChatRoomScreen() {
                           sendMessageMutation.mutate({
                             conversationId: conversationId!,
                             text: msg.text || undefined,
+                            attachmentMediaIds: (
+                              msg as MessageDto & {
+                                attachmentMediaIds?: string[];
+                              }
+                            ).attachmentMediaIds,
                             clientMessageId: msg.clientMessageId,
                           })
                       : undefined

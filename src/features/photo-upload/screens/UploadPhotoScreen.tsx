@@ -1,3 +1,9 @@
+import { useAuthStore } from '@/core/store/useAuthStore';
+import {
+  assignProfileAvatar,
+  uploadMedia,
+  type SelectedMedia,
+} from '@/services/media/uploadMedia';
 import { AppText, BackButton, Button } from '@/shared/components';
 import { PhotoPickerModal } from '@/shared/components/PhotoPickerModal';
 import Screen from '@/shared/components/Screen';
@@ -8,38 +14,40 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 
-type UploadStatus = 'idle' | 'uploading' | 'done';
+type UploadStatus = 'idle' | 'uploading' | 'done' | 'failed';
 
 export function UploadPhotoScreen() {
   const { colors, isDark } = useAppTheme();
+  const setUser = useAuthStore((state) => state.setUser);
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<SelectedMedia | null>(
+    null
+  );
   const [uploadStatus, setUploadStatus] = useState<UploadStatus>('idle');
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
-  async function handleSelectPhoto(uri: string) {
-    setSelectedImage(uri);
+  async function handleSelectPhoto(media: SelectedMedia) {
+    setSelectedImage(media);
     setModalVisible(false);
     setUploadStatus('uploading');
-
-    setUploadStatus('done');
-  }
-
-  function handleBack() {
-    if (uploadStatus === 'done') {
-      setUploadStatus('idle');
-    } else if (uploadStatus === 'uploading') {
-      setUploadStatus('idle');
-    } else if (router.canGoBack()) {
-      router.back();
+    setUploadError(null);
+    try {
+      const completedMedia = await uploadMedia(media, 'profile_avatar');
+      setUser(await assignProfileAvatar(completedMedia.id));
+      setUploadStatus('done');
+    } catch (error: any) {
+      setUploadStatus('failed');
+      setUploadError(error?.message || 'Photo upload failed');
+      toast.error('Photo Upload Failed', error?.message || 'Please try again.');
     }
   }
 
-  function handleNext() {
-    toast.success(
-      'Profile Setup Complete',
-      'Your photo was successfully uploaded!'
-    );
-    router.replace('/(tabs)');
+  function handleBack() {
+    if (uploadStatus !== 'idle') {
+      setUploadStatus('idle');
+      return;
+    }
+    if (router.canGoBack()) router.back();
   }
 
   return (
@@ -47,17 +55,14 @@ export function UploadPhotoScreen() {
       <View className="mb-4">
         <BackButton onPress={handleBack} />
       </View>
-
       <View className="mt-4 items-center">
         <AppText
-          className="text-[24px] font-bold tracking-tight text-center"
+          className="text-[24px] font-bold text-center"
           style={{ color: colors.text }}
         >
           Upload a photo
         </AppText>
       </View>
-
-      {/* Center illustration & feedback */}
       {uploadStatus === 'idle' && (
         <Pressable
           onPress={() => setModalVisible(true)}
@@ -74,7 +79,6 @@ export function UploadPhotoScreen() {
           />
         </Pressable>
       )}
-
       {uploadStatus === 'uploading' && (
         <View className="flex-1 items-center justify-center">
           <Image
@@ -83,85 +87,79 @@ export function UploadPhotoScreen() {
             contentFit="contain"
           />
           <AppText
-            className="mt-8 text-[16px] font-medium text-center leading-6"
+            className="mt-8 text-[16px]"
             style={{ color: colors.textSecondary }}
           >
-            Wait a second, your photo{'\n'}still uploading
+            Uploading your photo...
           </AppText>
         </View>
       )}
-
-      {uploadStatus === 'done' && (
+      {(uploadStatus === 'done' || uploadStatus === 'failed') && (
         <View className="flex-1 items-center justify-center">
-          <Pressable
-            onPress={() => setModalVisible(true)}
-            className="relative items-center justify-center"
-          >
+          <Pressable onPress={() => setModalVisible(true)} className="relative">
             <View
               className="w-[150px] h-[150px] rounded-full overflow-hidden"
               style={{ backgroundColor: colors.surface }}
             >
-              {selectedImage ? (
+              {selectedImage && (
                 <Image
-                  source={{ uri: selectedImage }}
+                  source={{ uri: selectedImage.uri }}
                   style={{ width: '100%', height: '100%' }}
                   contentFit="cover"
                 />
-              ) : null}
+              )}
             </View>
-
-            {/* Green checkmark badge on top right */}
-            <View
-              className="absolute top-1 right-2 w-9 h-9 rounded-full items-center justify-center border-[2.5px] border-white"
-              style={{ backgroundColor: colors.primary }}
-            >
-              <Image
-                source={require('@/assets/icons/solid/check.svg')}
-                style={{ width: 18, height: 18 }}
-                tintColor="#FFFFFF"
-                contentFit="contain"
-              />
-            </View>
+            {uploadStatus === 'done' && (
+              <View
+                className="absolute top-1 right-2 w-9 h-9 rounded-full items-center justify-center"
+                style={{ backgroundColor: colors.primary }}
+              >
+                <Image
+                  source={require('@/assets/icons/solid/check.svg')}
+                  style={{ width: 18, height: 18 }}
+                  tintColor="#FFFFFF"
+                />
+              </View>
+            )}
           </Pressable>
-
           <AppText
-            className="mt-8 text-[16px] font-medium text-center leading-6"
+            className="mt-8 text-[16px] text-center"
             style={{ color: colors.textSecondary }}
           >
-            Done! Your photo{'\n'}successfully uploaded
+            {uploadStatus === 'done'
+              ? 'Done! Your photo was uploaded.'
+              : uploadError || 'Upload failed. Try again.'}
           </AppText>
         </View>
       )}
-
-      {/* Bottom Action Area */}
       <View className="mt-auto pb-4">
         {uploadStatus === 'idle' && (
-          <View className="gap-y-3">
+          <>
             <Button
               title="Upload Photo"
               onPress={() => setModalVisible(true)}
             />
             <Pressable
               onPress={() => router.replace('/(tabs)')}
-              className="items-center py-2 active:opacity-70"
+              className="items-center py-2"
             >
-              <AppText
-                className="text-[15px] font-semibold"
-                style={{ color: colors.textSecondary }}
-              >
+              <AppText style={{ color: colors.textSecondary }}>
                 Skip for now
               </AppText>
             </Pressable>
-          </View>
+          </>
         )}
-
         {uploadStatus === 'uploading' && <View className="h-[56px]" />}
-
+        {uploadStatus === 'failed' && (
+          <Button
+            title="Retry"
+            onPress={() => selectedImage && handleSelectPhoto(selectedImage)}
+          />
+        )}
         {uploadStatus === 'done' && (
-          <Button title="Next" onPress={handleNext} />
+          <Button title="Next" onPress={() => router.replace('/(tabs)')} />
         )}
       </View>
-
       <PhotoPickerModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}

@@ -96,10 +96,8 @@ async function sendBatchWithRetry(
 
       // If specific invalid numbers were flagged, strip them out and retry
       if (Array.isArray(invalidIndices) && invalidIndices.length > 0) {
-        const rejectedNumbers = invalidIndices.map((idx) => currentBatch[idx]);
         console.warn(
-          `[useMatchContacts] Server flagged ${invalidIndices.length} invalid numbers in batch ${batchIndex + 1}:`,
-          rejectedNumbers
+          `[useMatchContacts] Server flagged ${invalidIndices.length} invalid numbers in batch ${batchIndex + 1}`
         );
 
         // Remove the rejected numbers from the current batch
@@ -121,8 +119,7 @@ async function sendBatchWithRetry(
 
       // If the error was not an invalid-index validation error, throw to halt or be handled by React Query
       console.error(
-        `[useMatchContacts] Batch ${batchIndex + 1} failed with error:`,
-        JSON.stringify(error, null, 2)
+        `[useMatchContacts] Batch ${batchIndex + 1} failed (${(error as any)?.status || 'unknown status'})`
       );
 
       const errorMessage =
