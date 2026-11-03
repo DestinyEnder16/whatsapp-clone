@@ -1,14 +1,10 @@
 // src/features/chat/screens/ChatScreen.tsx
-import { accountQueryKeys } from '@/core/lib/accountQuery';
-import { useAuthStore } from '@/core/store/useAuthStore';
 import { usePinStore } from '@/core/store/usePinStore';
 import { useSocketStore } from '@/core/store/useSocketStore';
 import { ContactsEmptyState } from '@/features/contacts';
-import { api } from '@/services/api/client';
 import { useAppTheme } from '@/shared/hooks';
 import { toast } from '@/shared/utils/toast';
 import Ionicons from '@react-native-vector-icons/ionicons';
-import { useQueryClient } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -58,40 +54,11 @@ export function ChatScreen() {
   const connectSocket = useSocketStore((s) => s.connect);
   const onlineUsers = useSocketStore((s) => s.onlineUsers);
   const subscribePresence = useSocketStore((s) => s.subscribePresence);
-  const queryClient = useQueryClient();
-  const accountId = useAuthStore((state) => state.user?.id);
 
   // Connect socket on mount
   useEffect(() => {
     connectSocket();
   }, [connectSocket]);
-
-  // Prefetch messages for all conversations so chats open instantly
-  useEffect(() => {
-    if (!conversations?.items) return;
-    conversations.items.forEach((conv: any) => {
-      queryClient.prefetchQuery({
-        queryKey: accountQueryKeys.messages(accountId || 'none', conv.id),
-        queryFn: async () => {
-          const { data, error } = await api.GET(
-            '/v1/conversations/{conversationId}/messages',
-            {
-              params: {
-                path: { conversationId: conv.id },
-                query: { limit: 50 },
-              },
-            }
-          );
-          if (error)
-            throw new Error(
-              (error as any)?.message || 'Failed to load messages'
-            );
-          return data;
-        },
-        staleTime: 30_000,
-      });
-    });
-  }, [accountId, conversations?.items, queryClient]);
 
   // Subscribe to presence updates for all contacts in conversation list
   useEffect(() => {

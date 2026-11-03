@@ -16,6 +16,7 @@ export function useChatRoomSocket({
   fallbackStatus = 'Status unavailable',
 }: UseChatRoomSocketOptions) {
   const isConnected = useSocketStore((s) => s.isConnected);
+  const connectSocket = useSocketStore((s) => s.connect);
   const onlineUsers = useSocketStore((s) => s.onlineUsers);
   const typingUsers = useSocketStore((s) => s.typingUsers);
   const currentUserId = useAuthStore((s) => s.user?.id);
@@ -31,6 +32,10 @@ export function useChatRoomSocket({
   const [typingExpiryTick, setTypingExpiryTick] = useState(0);
 
   // Join exactly once for each connected conversation and leave on room changes.
+  useEffect(() => {
+    connectSocket();
+  }, [connectSocket]);
+
   useEffect(() => {
     if (!conversationId || !isConnected) return;
 
@@ -55,6 +60,7 @@ export function useChatRoomSocket({
     };
   }, [
     isConnected,
+    connectSocket,
     conversationId,
     otherParticipantId,
     joinConversation,
