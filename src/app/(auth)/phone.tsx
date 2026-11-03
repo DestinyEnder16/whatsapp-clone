@@ -1,7 +1,5 @@
-import { PhoneScreen } from "@/features/auth";
+import { PhoneScreen } from '@/features/auth';
 
 export default function PhonePage() {
-    return (
-        <PhoneScreen />
-    )
+  return <PhoneScreen />;
 }

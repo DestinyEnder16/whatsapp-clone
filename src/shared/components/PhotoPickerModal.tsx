@@ -1,31 +1,31 @@
 // src/shared/components/PhotoPickerModal.tsx
-import React, { useEffect, useState } from "react";
+import { AppText } from '@/shared/components';
+import { Image } from 'expo-image';
+import * as ImagePicker from 'expo-image-picker';
 import {
-  Modal,
-  Pressable,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { Image } from "expo-image";
-import * as ImagePicker from "expo-image-picker";
-import {
-  Asset,
   AssetField,
   MediaType,
   Query,
   requestPermissionsAsync,
-} from "expo-media-library";
+} from 'expo-media-library';
+import { useEffect, useState } from 'react';
+import {
+  Modal,
+  Pressable,
+  ScrollView,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 // Replace the old @expo/vector-icons import:
-import { Ionicons } from "@react-native-vector-icons/ionicons";
-import { useAppTheme } from "@/shared/hooks";
-
+import type { SelectedMedia } from '@/services/media/uploadMedia';
+import { useAppTheme } from '@/shared/hooks';
+import { toast } from '@/shared/utils/toast';
+import { Ionicons } from '@react-native-vector-icons/ionicons';
 
 interface PhotoPickerModalProps {
   visible: boolean;
   onClose: () => void;
-  onSelectPhoto: (uri: string) => void;
+  onSelectPhoto: (media: SelectedMedia) => void;
 }
 
 interface RecentPhotoItem {
@@ -51,12 +51,17 @@ export function PhotoPickerModal({
     try {
       setIsLoadingPhotos(true);
       const permission = await requestPermissionsAsync();
-      
+
       const hasPermission =
-        permission.granted || permission.accessPrivileges === "limited" || permission.status === "granted";
+        permission.granted ||
+        permission.accessPrivileges === 'limited' ||
+        permission.status === 'granted';
 
       if (!hasPermission) {
-        console.warn("Photo library permission not granted:", permission.status);
+        console.warn(
+          'Photo library permission not granted:',
+          permission.status
+        );
         setIsLoadingPhotos(false);
         return;
       }
@@ -83,7 +88,7 @@ export function PhotoPickerModal({
 
       setRecentPhotos(items);
     } catch (e) {
-      console.warn("Could not load recent photos:", e);
+      console.warn('Could not load recent photos:', e);
     } finally {
       setIsLoadingPhotos(false);
     }
@@ -92,7 +97,13 @@ export function PhotoPickerModal({
   // 1. Take Photo via Camera
   async function handleTakePhoto() {
     const perm = await ImagePicker.requestCameraPermissionsAsync();
-    if (!perm.granted) return;
+    if (!perm.granted) {
+      toast.error(
+        'Permission Denied',
+        'Camera permission is required to take a photo.'
+      );
+      return;
+    }
 
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
@@ -100,22 +111,48 @@ export function PhotoPickerModal({
       quality: 0.8,
     });
 
+    if (result.canceled) {
+      toast.info('Cancelled', 'Camera capture was cancelled.');
+      return;
+    }
     if (!result.canceled && result.assets[0]?.uri) {
-      onSelectPhoto(result.assets[0].uri);
+      onSelectPhoto({
+        uri: result.assets[0].uri,
+        mimeType: result.assets[0].mimeType,
+        fileName: result.assets[0].fileName,
+        fileSize: result.assets[0].fileSize,
+      });
       onClose();
     }
   }
 
   // 2. Full System Media Library Picker
   async function handleChooseFromLibrary() {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted && permission.accessPrivileges !== 'limited') {
+      toast.error(
+        'Permission Denied',
+        'Photo library access is required to choose an image.'
+      );
+      return;
+    }
     const result = await ImagePicker.launchImageLibraryAsync({
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
     });
 
+    if (result.canceled) {
+      toast.info('Cancelled', 'Photo selection was cancelled.');
+      return;
+    }
     if (!result.canceled && result.assets[0]?.uri) {
-      onSelectPhoto(result.assets[0].uri);
+      onSelectPhoto({
+        uri: result.assets[0].uri,
+        mimeType: result.assets[0].mimeType,
+        fileName: result.assets[0].fileName,
+        fileSize: result.assets[0].fileSize,
+      });
       onClose();
     }
   }
@@ -128,16 +165,21 @@ export function PhotoPickerModal({
       transparent
       animationType="slide"
       onRequestClose={onClose}
+      accessibilityViewIsModal={true}
     >
       <Pressable
         className="flex-1 bg-black/50 justify-end"
         onPress={onClose}
+        accessibilityRole="button"
+        accessibilityLabel="Close photo picker"
+        accessibilityHint="Dismisses the dialog without selecting a photo"
       >
         {/* Modal Container */}
         <Pressable
           className="rounded-t-3xl pt-5 pb-8 px-5 shadow-2xl"
           style={{ backgroundColor: colors.card }}
           onPress={(e) => e.stopPropagation()}
+          accessible={false}
         >
           {/* Recent Photos Horizontal Strip */}
           <ScrollView
@@ -151,6 +193,8 @@ export function PhotoPickerModal({
               onPress={handleTakePhoto}
               className="mx-1.5 rounded-2xl overflow-hidden relative justify-center items-center"
               style={{ width: 68, height: 68, backgroundColor: colors.surface }}
+              accessibilityRole="button"
+              accessibilityLabel="Open camera to take photo"
             >
               {recentPhotos.length > 0 ? (
                 <Image
@@ -159,7 +203,10 @@ export function PhotoPickerModal({
                   contentFit="cover"
                 />
               ) : (
-                <View className="w-full h-full" style={{ backgroundColor: colors.surface }} />
+                <View
+                  className="w-full h-full"
+                  style={{ backgroundColor: colors.surface }}
+                />
               )}
               {/* Semi-transparent dark overlay with white camera icon */}
               <View className="absolute inset-0 bg-black/30 justify-center items-center">
@@ -170,15 +217,18 @@ export function PhotoPickerModal({
             </TouchableOpacity>
 
             {/* Next Tiles: Recent device photos */}
-            {recentPhotos.slice(1).map((photo) => (
+            {recentPhotos.slice(1).map((photo, index) => (
               <TouchableOpacity
                 key={photo.id}
                 activeOpacity={0.8}
                 onPress={() => {
-                  onSelectPhoto(photo.uri);
+                  onSelectPhoto({ uri: photo.uri, mimeType: 'image/jpeg' });
                   onClose();
                 }}
                 className="mx-1.5 rounded-2xl overflow-hidden"
+                accessibilityRole="button"
+                accessibilityLabel={`Recent photo ${index + 1}`}
+                accessibilityHint="Selects this photo"
               >
                 <Image
                   source={{ uri: photo.uri }}
@@ -195,30 +245,53 @@ export function PhotoPickerModal({
               onPress={handleTakePhoto}
               className="flex-row items-center py-2.5"
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Take Photo"
+              accessibilityHint="Opens camera to take a photo"
             >
               <Ionicons name="camera" size={22} color={colors.primary} />
-              <Text
+              <AppText
                 className="ml-4 text-[16px] font-semibold"
                 style={{ color: colors.text }}
               >
                 Take Photo
-              </Text>
+              </AppText>
             </TouchableOpacity>
 
             <TouchableOpacity
               onPress={handleChooseFromLibrary}
               className="flex-row items-center py-2.5"
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Choose From Library"
+              accessibilityHint="Opens system photo gallery to pick a picture"
             >
               <Ionicons name="images" size={22} color={colors.primary} />
-              <Text
+              <AppText
                 className="ml-4 text-[16px] font-semibold"
                 style={{ color: colors.text }}
               >
                 Choose From Library
-              </Text>
+              </AppText>
             </TouchableOpacity>
           </View>
+
+          {/* Explicit Accessible Dismiss Button */}
+          <Pressable
+            onPress={onClose}
+            className="mt-4 py-3 items-center justify-center rounded-2xl"
+            style={{ backgroundColor: colors.surface }}
+            accessibilityRole="button"
+            accessibilityLabel="Cancel"
+            accessibilityHint="Dismisses photo picker"
+          >
+            <AppText
+              className="text-[15px] font-semibold"
+              style={{ color: colors.textSecondary }}
+            >
+              Cancel
+            </AppText>
+          </Pressable>
         </Pressable>
       </Pressable>
     </Modal>

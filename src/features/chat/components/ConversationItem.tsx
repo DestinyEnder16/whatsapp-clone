@@ -1,16 +1,16 @@
 // src/features/chat/components/ConversationItem.tsx
-import { useAuthStore } from "@/core/store/useAuthStore";
-import type { components } from "@/services/api/schema";
-import { useAppTheme } from "@/shared/hooks";
-import Ionicons from "@react-native-vector-icons/ionicons";
-import { Image } from "expo-image";
-import React from "react";
-import { Pressable, Text, View } from "react-native";
-import { formatChatDate } from "../utils/formatChatDate";
+import { useAuthStore } from '@/core/store/useAuthStore';
+import type { components } from '@/services/api/schema';
+import { AppText } from '@/shared/components';
+import { useAppTheme } from '@/shared/hooks';
+import Ionicons from '@react-native-vector-icons/ionicons';
+import { Image } from 'expo-image';
+import { Pressable, View } from 'react-native';
+import { formatChatDate } from '../utils/formatChatDate';
 
 type DirectConversation =
-  components["schemas"]["DirectConversationResponseDto"];
-type GroupConversation = components["schemas"]["GroupConversationResponseDto"];
+  components['schemas']['DirectConversationResponseDto'];
+type GroupConversation = components['schemas']['GroupConversationResponseDto'];
 export type ConversationItemData = DirectConversation | GroupConversation;
 
 interface ConversationItemProps {
@@ -27,17 +27,17 @@ export function ConversationItem({
   const { colors } = useAppTheme();
   const currentUserId = useAuthStore((s) => s.user?.id);
 
-  const isGroup = item.type === "group";
+  const isGroup = item.type === 'group';
   const rawDisplayName = !isGroup
     ? (item as DirectConversation).otherParticipant?.displayName
     : null;
 
   const strName =
-    typeof rawDisplayName === "string" ? (rawDisplayName as string) : "";
+    typeof rawDisplayName === 'string' ? (rawDisplayName as string) : '';
 
   const name: string = isGroup
-    ? (item as GroupConversation).name || "Group"
-    : strName.trim() || "Contact";
+    ? (item as GroupConversation).name || 'Group'
+    : strName.trim() || 'Contact';
 
   const avatarUrl = isGroup
     ? (item as GroupConversation).avatarUrl
@@ -49,7 +49,7 @@ export function ConversationItem({
 
   // Latest message preview text
   const latestMessage = item.latestMessage;
-  let previewText = "No messages yet";
+  let previewText = 'No messages yet';
   if (latestMessage?.preview) {
     if (latestMessage.senderId === currentUserId) {
       previewText = `You: ${latestMessage.preview}`;
@@ -79,7 +79,7 @@ export function ConversationItem({
           {avatarUrl ? (
             <Image
               source={{ uri: avatarUrl }}
-              style={{ width: "100%", height: "100%" }}
+              style={{ width: '100%', height: '100%' }}
               contentFit="cover"
             />
           ) : (
@@ -90,12 +90,15 @@ export function ConversationItem({
               {isGroup ? (
                 <Ionicons name="people" size={24} color={colors.primary} />
               ) : (
-                <Text
+                <AppText
                   className="text-[20px]"
-                  style={{ color: colors.primaryDark, fontFamily: "SFPRODISPLAYBOLD" }}
+                  style={{
+                    color: colors.primaryDark,
+                    fontFamily: 'SFPRODISPLAYBOLD',
+                  }}
                 >
                   {name.charAt(0).toUpperCase()}
-                </Text>
+                </AppText>
               )}
             </View>
           )}
@@ -106,7 +109,7 @@ export function ConversationItem({
           <View
             className="w-3.5 h-3.5 rounded-full absolute bottom-0 right-0 border-2"
             style={{
-              backgroundColor: "#10B981",
+              backgroundColor: '#10B981',
               borderColor: colors.background,
             }}
           />
@@ -124,13 +127,13 @@ export function ConversationItem({
               style={{ marginRight: 5 }}
             />
           )}
-          <Text
+          <AppText
             className="text-[16px] flex-1"
-            style={{ color: colors.text, fontFamily: "SFPRODISPLAYBOLD" }}
+            style={{ color: colors.text, fontFamily: 'SFPRODISPLAYBOLD' }}
             numberOfLines={1}
           >
             {name}
-          </Text>
+          </AppText>
 
           {isMuted && (
             <Ionicons
@@ -142,38 +145,40 @@ export function ConversationItem({
           )}
         </View>
 
-        <Text
+        <AppText
           className="text-[14px] leading-5"
           style={{
             color: hasUnread ? colors.text : colors.textSecondary,
-            fontFamily: hasUnread ? "SFPRODISPLAYMEDIUM" : "SFPRODISPLAYREGULAR",
+            fontFamily: hasUnread
+              ? 'SFPRODISPLAYMEDIUM'
+              : 'SFPRODISPLAYREGULAR',
           }}
           numberOfLines={1}
         >
           {previewText}
-        </Text>
+        </AppText>
       </View>
 
       {/* Right: Timestamp & Unread Badge */}
       <View className="items-end justify-between min-h-[44px]">
-        <Text
+        <AppText
           className="text-[12px]"
           style={{
-            color: hasUnread ? "#10B981" : colors.textMuted,
-            fontFamily: "SFPRODISPLAYMEDIUM",
+            color: hasUnread ? '#10B981' : colors.textMuted,
+            fontFamily: 'SFPRODISPLAYMEDIUM',
           }}
         >
           {timeString}
-        </Text>
+        </AppText>
 
         {hasUnread ? (
           <View className="min-w-[20px] h-[20px] rounded-full bg-[#10B981] px-1.5 items-center justify-center mt-1">
-            <Text
+            <AppText
               className="text-white text-[11px]"
-              style={{ fontFamily: "SFPRODISPLAYBOLD" }}
+              style={{ fontFamily: 'SFPRODISPLAYBOLD' }}
             >
-              {unreadCount > 99 ? "99+" : unreadCount}
-            </Text>
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </AppText>
           </View>
         ) : (
           <View className="h-[20px]" />

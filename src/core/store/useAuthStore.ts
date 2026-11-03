@@ -1,12 +1,22 @@
 // src/core/store/useAuthStore.ts
-import { mmkvStorage } from "@/core/storage/mmkv";
-import type { components } from "@/services/api/schema";
-import { unregisterPushDeviceAsync } from "@/services/notifications";
-import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
+import { clearAccountQueries } from '@/core/lib/accountQuery';
+import { queryClient } from '@/core/lib/queryClient';
+import { secureAuthStorage } from '@/core/storage/mmkv';
+import { useNotificationStore } from '@/core/store/useNotificationStore';
+import {
+  invalidateAuthSession,
+  revokeAuthSession,
+} from '@/services/api/authSession';
+import type { components } from '@/services/api/schema';
+import {
+  registerForPushNotificationsAsync,
+  unregisterPushDeviceAsync,
+} from '@/services/notifications';
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
 
 // Extract the user type definition directly from the OpenAPI backend schema
-type User = components["schemas"]["UserResponseDto"];
+type User = components['schemas']['UserResponseDto'];
 
 interface AuthState {
   // --- Persisted State ---
@@ -14,6 +24,7 @@ interface AuthState {
   refreshToken: string | null;
   user: User | null;
   isAuthenticated: boolean;
+  refreshStatus: 'idle' | 'retrying' | 'recoverable-error';
 
   // --- Runtime / Hydration State ---
   /**
@@ -34,6 +45,7 @@ interface AuthState {
 
   /** Updates the hydration status once storage is loaded */
   setHasHydrated: (state: boolean) => void;
+  setRefreshStatus: (status: AuthState['refreshStatus']) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -44,40 +56,69 @@ export const useAuthStore = create<AuthState>()(
       refreshToken: null,
       user: null,
       isAuthenticated: false,
+      refreshStatus: 'idle',
       hasHydrated: false,
 
       // Called when user logs in or completes OTP verification
       setAuth: (accessToken, refreshToken, user) =>
-        set({
-          accessToken,
-          refreshToken,
-          user,
-          isAuthenticated: true,
-        }),
+        (() => {
+          const notifications = useNotificationStore.getState();
+          notifications.setRegistrationStatus(
+            notifications.registeredAccountId === user.id
+              ? notifications.registrationStatus
+              : 'unregistered'
+          );
+          if (notifications.registeredAccountId !== user.id) {
+            notifications.setRegisteredAccountId(null);
+          }
+          const result = set({
+            accessToken,
+            refreshToken,
+            user,
+            isAuthenticated: true,
+            refreshStatus: 'idle',
+          });
+          if (
+            notifications.permissionStatus === 'granted' &&
+            (notifications.expoPushToken ||
+              notifications.registrationStatus !== 'registered')
+          ) {
+            void registerForPushNotificationsAsync(user.id);
+          }
+          return result;
+        })(),
 
       // Called when user updates their profile name or avatar
       setUser: (user) => set({ user }),
 
       // Called when user signs out: resets all auth fields back to null/false
       logout: () => {
+        const refreshToken = useAuthStore.getState().refreshToken;
+        invalidateAuthSession();
+        clearAccountQueries(queryClient);
         unregisterPushDeviceAsync().catch(() => {});
+        revokeAuthSession(refreshToken).catch(() => {});
         set({
           accessToken: null,
           refreshToken: null,
           user: null,
           isAuthenticated: false,
+          refreshStatus: 'idle',
         });
+        useNotificationStore.getState().setRegisteredAccountId(null);
+        useNotificationStore.getState().setRegistrationStatus('unregistered');
       },
 
       // Marks hydration as complete so navigation guards can safely redirect
       setHasHydrated: (state) => set({ hasHydrated: state }),
+      setRefreshStatus: (refreshStatus) => set({ refreshStatus }),
     }),
     {
       // Key name under which auth data is saved in MMKV
-      name: "auth-storage",
+      name: 'auth-storage',
 
       // Synchronous JSI storage adapter (wraps MMKV)
-      storage: createJSONStorage(() => mmkvStorage),
+      storage: createJSONStorage(() => secureAuthStorage),
 
       // Only save tokens and user to storage; exclude runtime flags like `hasHydrated`
       partialize: (state) => ({
@@ -93,6 +134,6 @@ export const useAuthStore = create<AuthState>()(
           state?.setHasHydrated(true);
         }
       },
-    },
-  ),
+    }
+  )
 );

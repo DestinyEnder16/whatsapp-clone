@@ -1,76 +1,54 @@
-import { useAuthStore } from "@/core/store/useAuthStore";
-import { useUpdateProfile } from "@/features/auth/api/useUpdateProfile";
-import { BackButton, Button } from "@/shared/components";
-import { PhotoPickerModal } from "@/shared/components/PhotoPickerModal";
-import Screen from "@/shared/components/Screen";
-import { useAppTheme } from "@/shared/hooks";
-import { toast } from "@/shared/utils/toast";
-import { Image } from "expo-image";
-import { router } from "expo-router";
-import React, { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { useAuthStore } from '@/core/store/useAuthStore';
+import { useNavigationStore } from '@/core/store/useNavigationStore';
+import {
+  assignProfileAvatar,
+  uploadMedia,
+  type SelectedMedia,
+} from '@/services/media/uploadMedia';
+import { AppText, BackButton, Button } from '@/shared/components';
+import { PhotoPickerModal } from '@/shared/components/PhotoPickerModal';
+import Screen from '@/shared/components/Screen';
+import { useAppTheme } from '@/shared/hooks';
+import { toast } from '@/shared/utils/toast';
+import { Image } from 'expo-image';
+import { router } from 'expo-router';
+import { useState } from 'react';
+import { Pressable, View } from 'react-native';
 
-type UploadStatus = "idle" | "uploading" | "done";
+type UploadStatus = 'idle' | 'uploading' | 'done' | 'failed';
 
 export function UploadPhotoScreen() {
   const { colors, isDark } = useAppTheme();
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [uploadStatus, setUploadStatus] = useState<UploadStatus>("idle");
-
-  const user = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
-  const updateProfileMutation = useUpdateProfile();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<SelectedMedia | null>(
+    null
+  );
+  const [uploadStatus, setUploadStatus] = useState<UploadStatus>('idle');
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
-  async function handleSelectPhoto(uri: string) {
-    setSelectedImage(uri);
+  async function handleSelectPhoto(media: SelectedMedia) {
+    setSelectedImage(media);
     setModalVisible(false);
-    setUploadStatus("uploading");
-
-    const startTime = Date.now();
-
-    updateProfileMutation.mutate(
-      { avatarUrl: uri } as any,
-      {
-        onSuccess: async (updatedUser) => {
-          const elapsed = Date.now() - startTime;
-          if (elapsed < 1200) {
-            await new Promise((resolve) => setTimeout(resolve, 1200 - elapsed));
-          }
-          setUser(updatedUser);
-          setUploadStatus("done");
-        },
-        onError: async (err: Error) => {
-          console.warn("Update profile API warning:", err.message);
-          const elapsed = Date.now() - startTime;
-          if (elapsed < 1200) {
-            await new Promise((resolve) => setTimeout(resolve, 1200 - elapsed));
-          }
-          if (user) {
-            setUser({ ...user, avatarUrl: uri as any });
-          }
-          setUploadStatus("done");
-        },
-      },
-    );
-  }
-
-  function handleBack() {
-    if (uploadStatus === "done") {
-      setUploadStatus("idle");
-    } else if (uploadStatus === "uploading") {
-      setUploadStatus("idle");
-    } else if (router.canGoBack()) {
-      router.back();
+    setUploadStatus('uploading');
+    setUploadError(null);
+    try {
+      const completedMedia = await uploadMedia(media, 'profile_avatar');
+      setUser(await assignProfileAvatar(completedMedia.id));
+      setUploadStatus('done');
+    } catch (error: any) {
+      setUploadStatus('failed');
+      setUploadError(error?.message || 'Photo upload failed');
+      toast.error('Photo Upload Failed', error?.message || 'Please try again.');
     }
   }
 
-  function handleNext() {
-    toast.success(
-      "Profile Setup Complete",
-      "Your photo was successfully uploaded!",
-    );
-    router.replace("/(tabs)");
+  function handleBack() {
+    if (uploadStatus !== 'idle') {
+      setUploadStatus('idle');
+      return;
+    }
+    if (router.canGoBack()) router.back();
   }
 
   return (
@@ -78,18 +56,15 @@ export function UploadPhotoScreen() {
       <View className="mb-4">
         <BackButton onPress={handleBack} />
       </View>
-
       <View className="mt-4 items-center">
-        <Text
-          className="text-[24px] font-bold tracking-tight text-center"
+        <AppText
+          className="text-[24px] font-bold text-center"
           style={{ color: colors.text }}
         >
           Upload a photo
-        </Text>
+        </AppText>
       </View>
-
-      {/* Center illustration & feedback */}
-      {uploadStatus === "idle" && (
+      {uploadStatus === 'idle' && (
         <Pressable
           onPress={() => setModalVisible(true)}
           className="flex-1 items-center justify-center"
@@ -97,102 +72,121 @@ export function UploadPhotoScreen() {
           <Image
             source={
               isDark
-                ? require("@/assets/images/upload-photo-dark.svg")
-                : require("@/assets/images/upload-photo-light.svg")
+                ? require('@/assets/images/upload-photo-dark.svg')
+                : require('@/assets/images/upload-photo-light.svg')
             }
             style={{ width: 170, height: 170 }}
             contentFit="contain"
           />
         </Pressable>
       )}
-
-      {uploadStatus === "uploading" && (
+      {uploadStatus === 'uploading' && (
         <View className="flex-1 items-center justify-center">
           <Image
-            source={require("@/assets/images/uploading-photo-light.svg")}
+            source={require('@/assets/images/uploading-photo-light.svg')}
             style={{ width: 170, height: 170 }}
             contentFit="contain"
           />
-          <Text
-            className="mt-8 text-[16px] font-medium text-center leading-6"
+          <AppText
+            className="mt-8 text-[16px]"
             style={{ color: colors.textSecondary }}
           >
-            Wait a second, your photo{"\n"}still uploading
-          </Text>
+            Uploading your photo...
+          </AppText>
         </View>
       )}
-
-      {uploadStatus === "done" && (
+      {(uploadStatus === 'done' || uploadStatus === 'failed') && (
         <View className="flex-1 items-center justify-center">
-          <Pressable
-            onPress={() => setModalVisible(true)}
-            className="relative items-center justify-center"
-          >
+          <Pressable onPress={() => setModalVisible(true)} className="relative">
             <View
               className="w-[150px] h-[150px] rounded-full overflow-hidden"
               style={{ backgroundColor: colors.surface }}
             >
-              {selectedImage ? (
+              {selectedImage && (
                 <Image
-                  source={{ uri: selectedImage }}
-                  style={{ width: "100%", height: "100%" }}
+                  source={{ uri: selectedImage.uri }}
+                  style={{ width: '100%', height: '100%' }}
                   contentFit="cover"
                 />
-              ) : null}
+              )}
             </View>
-
-            {/* Green checkmark badge on top right */}
-            <View
-              className="absolute top-1 right-2 w-9 h-9 rounded-full items-center justify-center border-[2.5px] border-white"
-              style={{ backgroundColor: colors.primary }}
-            >
-              <Image
-                source={require("@/assets/icons/solid/check.svg")}
-                style={{ width: 18, height: 18 }}
-                tintColor="#FFFFFF"
-                contentFit="contain"
-              />
-            </View>
+            {uploadStatus === 'done' && (
+              <View
+                className="absolute top-1 right-2 w-9 h-9 rounded-full items-center justify-center"
+                style={{ backgroundColor: colors.primary }}
+              >
+                <Image
+                  source={require('@/assets/icons/solid/check.svg')}
+                  style={{ width: 18, height: 18 }}
+                  tintColor="#FFFFFF"
+                />
+              </View>
+            )}
           </Pressable>
-
-          <Text
-            className="mt-8 text-[16px] font-medium text-center leading-6"
+          <AppText
+            className="mt-8 text-[16px] text-center"
             style={{ color: colors.textSecondary }}
           >
-            Done! Your photo{"\n"}successfully uploaded
-          </Text>
+            {uploadStatus === 'done'
+              ? 'Done! Your photo was uploaded.'
+              : uploadError || 'Upload failed. Try again.'}
+          </AppText>
         </View>
       )}
-
-      {/* Bottom Action Area */}
       <View className="mt-auto pb-4">
-        {uploadStatus === "idle" && (
-          <View className="gap-y-3">
+        {uploadStatus === 'idle' && (
+          <>
             <Button
               title="Upload Photo"
               onPress={() => setModalVisible(true)}
             />
             <Pressable
-              onPress={() => router.replace("/(tabs)")}
-              className="items-center py-2 active:opacity-70"
+              onPress={() => {
+                const pending =
+                  useNavigationStore.getState().consumePendingDestination();
+                if (pending?.pathname) {
+                  router.replace(pending.pathname as any);
+                } else {
+                  router.replace('/(tabs)');
+                }
+              }}
+              className="items-center py-2"
+              accessibilityRole="button"
+              accessibilityLabel="Skip for now"
+              accessibilityHint="Proceed to your conversations without uploading a photo"
             >
-              <Text
-                className="text-[15px] font-semibold"
-                style={{ color: colors.textSecondary }}
-              >
+              <AppText style={{ color: colors.textSecondary }}>
                 Skip for now
-              </Text>
+              </AppText>
             </Pressable>
-          </View>
+          </>
         )}
-
-        {uploadStatus === "uploading" && <View className="h-[56px]" />}
-
-        {uploadStatus === "done" && (
-          <Button title="Next" onPress={handleNext} />
+        {uploadStatus === 'uploading' && <View className="h-[56px]" />}
+        {uploadStatus === 'failed' && (
+          <Button
+            title="Retry"
+            onPress={() => selectedImage && handleSelectPhoto(selectedImage)}
+            accessibilityLabel="Retry photo upload"
+            accessibilityHint="Retries uploading your selected photo"
+          />
+        )}
+        {uploadStatus === 'done' && (
+          <Button
+            title="Next"
+            onPress={() => {
+              const pending =
+                useNavigationStore.getState().consumePendingDestination();
+              if (pending?.pathname) {
+                router.replace(pending.pathname as any);
+              } else {
+                router.replace('/(tabs)');
+              }
+            }}
+            accessibilityLabel="Next"
+            accessibilityHint="Continues to your conversations"
+          />
         )}
       </View>
-
       <PhotoPickerModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
@@ -201,6 +195,5 @@ export function UploadPhotoScreen() {
     </Screen>
   );
 }
-
 
 export default UploadPhotoScreen;

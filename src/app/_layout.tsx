@@ -1,117 +1,163 @@
-import { configureNotificationHandler } from "@/services/notifications";
-import { useAppTheme } from "@/shared/hooks";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
-import * as SplashScreen from "expo-splash-screen";
-import { StatusBar } from "expo-status-bar";
-import { useColorScheme as useNativeWindColorScheme } from "nativewind";
-import React, { useEffect } from "react";
-import { StyleSheet, Text, TextInput } from "react-native";
-import Toast from "react-native-toast-message";
-import "../../global.css";
+// src/app/_layout.tsx
+import { queryClient } from '@/core/lib/queryClient';
+import { useAuthStore } from '@/core/store/useAuthStore';
+import { useNavigationStore } from '@/core/store/useNavigationStore';
+import {
+  configureNotificationHandler,
+  extractConversationId,
+  isValidUuid,
+  setupNotificationNavigation,
+} from '@/services/notifications';
+import { useAppTheme } from '@/shared/hooks';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { useFonts } from 'expo-font';
+import * as Linking from 'expo-linking';
+import { NavigationBar } from 'expo-navigation-bar';
+import { router, Stack, usePathname, useSegments } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
+import { StatusBar } from 'expo-status-bar';
+import { useColorScheme as useNativeWindColorScheme } from 'nativewind';
+import { useEffect } from 'react';
+import Toast from 'react-native-toast-message';
+import '../../global.css';
 
 // Keep the splash screen visible while fonts and initial state are loading
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
-// Helper to resolve font family and avoid Android ReactFontManager weight fallback to system Roboto
-function resolveSFProStyle(styleProp: any) {
-  if (!styleProp) {
-    return { fontFamily: "SFPRODISPLAYREGULAR", fontWeight: "normal" as const };
-  }
+function RootNavigator() {
+  const { colors, isDark } = useAppTheme();
+  const hasHydrated = useAuthStore((state) => state.hasHydrated);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const user = useAuthStore((state) => state.user);
+  const segments = useSegments();
+  const pathname = usePathname();
 
-  const flat: any = StyleSheet.flatten(styleProp) || {};
-  const family = flat.fontFamily ? String(flat.fontFamily) : "";
+  // 1. Configure foreground notification handler and response listener (cold & warm)
+  useEffect(() => {
+    configureNotificationHandler();
+    const cleanupNotifications = setupNotificationNavigation();
+    return () => cleanupNotifications();
+  }, []);
 
-  // Preserve icon libraries (e.g. Ionicons, MaterialIcons, Feather, etc.)
-  if (
-    family &&
-    (family.toLowerCase().includes("icon") ||
-      family.toLowerCase().includes("vector") ||
-      family.toLowerCase().includes("material") ||
-      family.toLowerCase().includes("feather") ||
-      family.toLowerCase().includes("awesome"))
-  ) {
-    return styleProp;
-  }
+  // 2. Listen to incoming deep links (e.g. whatsappclone://chat/<id>)
+  useEffect(() => {
+    const handleUrl = (url: string | null) => {
+      if (!url) return;
+      const parsed = Linking.parse(url);
+      const conversationId =
+        extractConversationId(parsed.queryParams as any) ||
+        extractConversationId({ path: parsed.path });
 
-  const weight = flat.fontWeight ? String(flat.fontWeight).toLowerCase() : "";
-  const isItalic =
-    flat.fontStyle === "italic" || family.toLowerCase().includes("italic");
+      if (conversationId && isValidUuid(conversationId)) {
+        const { isAuthenticated: authed, user: currentUser, hasHydrated: hydrated } =
+          useAuthStore.getState();
 
-  let targetFont = "SFPRODISPLAYREGULAR";
+        if (hydrated && authed && currentUser?.profileComplete) {
+          router.push({
+            pathname: '/chat/[id]',
+            params: { id: conversationId },
+          } as any);
+        } else {
+          // If signed out, retain the destination until authentication completes
+          useNavigationStore.getState().setPendingConversationId(conversationId);
+        }
+      }
+    };
 
-  if (isItalic) {
-    targetFont = "SFPRODISPLAYSEMIBOLDITALIC";
-  } else if (
-    weight === "bold" ||
-    weight === "700" ||
-    weight === "800" ||
-    weight === "900" ||
-    family.toLowerCase().includes("bold")
-  ) {
-    targetFont = "SFPRODISPLAYBOLD";
-  } else if (
-    weight === "500" ||
-    weight === "600" ||
-    family.toLowerCase().includes("medium") ||
-    family.toLowerCase().includes("semibold")
-  ) {
-    targetFont = "SFPRODISPLAYMEDIUM";
-  } else {
-    targetFont = "SFPRODISPLAYREGULAR";
-  }
+    void Linking.getInitialURL().then(handleUrl);
+    const sub = Linking.addEventListener('url', (event) => handleUrl(event.url));
+    return () => sub.remove();
+  }, []);
 
-  // Normalizing fontWeight to "normal" ensures Android doesn't look for "[Font]_bold.ttf"
-  // and fall back to the system default font (Roboto).
-  return [styleProp, { fontFamily: targetFont, fontWeight: "normal" as const }];
+  // 3. Layout-level session guard: enforces presentation and navigation security
+  useEffect(() => {
+    if (!hasHydrated) return;
+
+    const firstSegment = segments[0];
+    const isProtectedSegment =
+      firstSegment === '(tabs)' ||
+      firstSegment === 'chat' ||
+      firstSegment === 'settings' ||
+      firstSegment === 'pin-setup';
+
+    // Signed-out user trying to access or currently viewing a protected destination
+    if (!isAuthenticated) {
+      if (isProtectedSegment) {
+        // If route has conversation ID, capture it before redirecting
+        if (firstSegment === 'chat' && segments[1] && isValidUuid(segments[1])) {
+          useNavigationStore.getState().setPendingConversationId(segments[1]);
+        }
+        // Immediately kick out of protected presentation
+        router.replace('/onboarding');
+      }
+      return;
+    }
+
+    // Authenticated user but profile setup not completed
+    if (isAuthenticated && !user?.profileComplete) {
+      if (isProtectedSegment) {
+        router.replace('/profile');
+      }
+      return;
+    }
+
+    // Authenticated user with completed profile visiting onboarding or auth pages
+    if (isAuthenticated && user?.profileComplete) {
+      if (firstSegment === 'onboarding' || firstSegment === '(auth)') {
+        const pending =
+          useNavigationStore.getState().consumePendingDestination();
+        if (pending?.pathname) {
+          router.replace(pending.pathname as any);
+        } else {
+          router.replace('/(tabs)');
+        }
+      }
+    }
+  }, [hasHydrated, isAuthenticated, user?.profileComplete, segments, pathname]);
+
+  return (
+    <>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
+
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: colors.background },
+          animation: 'slide_from_right',
+        }}
+      >
+        <Stack.Screen name="index" />
+        <Stack.Screen name="onboarding" />
+        <Stack.Screen name="(auth)" />
+
+        <Stack.Protected guard={isAuthenticated}>
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="chat" />
+          <Stack.Screen name="settings" />
+          <Stack.Screen name="pin-setup" />
+        </Stack.Protected>
+      </Stack>
+
+      <Toast />
+    </>
+  );
 }
-
-// Set default font family for all native Text & TextInput components across the app
-if ((Text as any).defaultProps == null) {
-  (Text as any).defaultProps = {};
-}
-(Text as any).defaultProps.style = { fontFamily: "SFPRODISPLAYREGULAR", fontWeight: "normal" };
-
-if ((TextInput as any).defaultProps == null) {
-  (TextInput as any).defaultProps = {};
-}
-(TextInput as any).defaultProps.style = { fontFamily: "SFPRODISPLAYREGULAR", fontWeight: "normal" };
-
-// React 19 / Modern React Native forwardRef render wrapping to guarantee global font family
-const origTextRender = (Text as any).render;
-if (typeof origTextRender === "function") {
-  (Text as any).render = function (props: any, ref: any) {
-    const style = resolveSFProStyle(props?.style);
-    return origTextRender.call(this, { ...props, style }, ref);
-  };
-}
-
-const origTextInputRender = (TextInput as any).render;
-if (typeof origTextInputRender === "function") {
-  (TextInput as any).render = function (props: any, ref: any) {
-    const style = resolveSFProStyle(props?.style);
-    return origTextInputRender.call(this, { ...props, style }, ref);
-  };
-}
-
-const queryClient = new QueryClient();
 
 export default function RootLayout() {
-  const { mode, colors, isDark } = useAppTheme();
+  const { mode, isDark } = useAppTheme();
   const { setColorScheme } = useNativeWindColorScheme();
 
   const [fontsLoaded, fontError] = useFonts({
-    SFPRODISPLAY: require("../../assets/fonts/sf-pro-display/SFPRODISPLAYREGULAR.otf"),
-    SFPRODISPLAYREGULAR: require("../../assets/fonts/sf-pro-display/SFPRODISPLAYREGULAR.otf"),
-    SFPRODISPLAYMEDIUM: require("../../assets/fonts/sf-pro-display/SFPRODISPLAYMEDIUM.otf"),
-    SFPRODISPLAYBOLD: require("../../assets/fonts/sf-pro-display/SFPRODISPLAYBOLD.otf"),
-    SFPRODISPLAYSEMIBOLDITALIC: require("../../assets/fonts/sf-pro-display/SFPRODISPLAYSEMIBOLDITALIC.otf"),
-    "SFProDisplay-Regular": require("../../assets/fonts/sf-pro-display/SFPRODISPLAYREGULAR.otf"),
-    "SFProDisplay-Medium": require("../../assets/fonts/sf-pro-display/SFPRODISPLAYMEDIUM.otf"),
-    "SFProDisplay-Bold": require("../../assets/fonts/sf-pro-display/SFPRODISPLAYBOLD.otf"),
-    "SFProDisplay-SemiboldItalic": require("../../assets/fonts/sf-pro-display/SFPRODISPLAYSEMIBOLDITALIC.otf"),
-    "SF Pro Display": require("../../assets/fonts/sf-pro-display/SFPRODISPLAYREGULAR.otf"),
+    SFPRODISPLAY: require('../../assets/fonts/sf-pro-display/SFPRODISPLAYREGULAR.otf'),
+    SFPRODISPLAYREGULAR: require('../../assets/fonts/sf-pro-display/SFPRODISPLAYREGULAR.otf'),
+    SFPRODISPLAYMEDIUM: require('../../assets/fonts/sf-pro-display/SFPRODISPLAYMEDIUM.otf'),
+    SFPRODISPLAYBOLD: require('../../assets/fonts/sf-pro-display/SFPRODISPLAYBOLD.otf'),
+    SFPRODISPLAYSEMIBOLDITALIC: require('../../assets/fonts/sf-pro-display/SFPRODISPLAYSEMIBOLDITALIC.otf'),
+    'SFProDisplay-Regular': require('../../assets/fonts/sf-pro-display/SFPRODISPLAYREGULAR.otf'),
+    'SFProDisplay-Medium': require('../../assets/fonts/sf-pro-display/SFPRODISPLAYMEDIUM.otf'),
+    'SFProDisplay-Bold': require('../../assets/fonts/sf-pro-display/SFPRODISPLAYBOLD.otf'),
+    'SFProDisplay-SemiboldItalic': require('../../assets/fonts/sf-pro-display/SFPRODISPLAYSEMIBOLDITALIC.otf'),
+    'SF Pro Display': require('../../assets/fonts/sf-pro-display/SFPRODISPLAYREGULAR.otf'),
   });
 
   // Synchronize NativeWind once at the app root only when theme mode changes
@@ -119,44 +165,27 @@ export default function RootLayout() {
     setColorScheme(mode);
   }, [mode, setColorScheme]);
 
-  // Configure Expo foreground notification handler
   useEffect(() => {
-    configureNotificationHandler();
-  }, []);
+    NavigationBar.setStyle(isDark ? 'light' : 'dark');
+  }, [isDark]);
 
   // Hide splash screen once fonts are loaded or log on error
   useEffect(() => {
     if (fontError) {
-      console.warn("Error loading fonts:", fontError);
+      console.warn('Error loading fonts:', fontError);
     }
     if (fontsLoaded || fontError) {
       SplashScreen.hideAsync().catch(() => {});
     }
   }, [fontsLoaded, fontError]);
 
-  // Prevent app from rendering with system fallback fonts until SF Pro is loaded
   if (!fontsLoaded && !fontError) {
     return null;
   }
 
   return (
     <QueryClientProvider client={queryClient}>
-      <StatusBar style={isDark ? "light" : "dark"} />
-
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: colors.background },
-          animation: "slide_from_right",
-        }}
-      >
-        <Stack.Screen name="index" />
-        <Stack.Screen name="(auth)" />
-        <Stack.Screen name="(tabs)" />
-      </Stack>
-
-      {/* this allows the toasts to be rendered globally over all screens and modals */}
-      <Toast />
+      <RootNavigator />
     </QueryClientProvider>
   );
 }

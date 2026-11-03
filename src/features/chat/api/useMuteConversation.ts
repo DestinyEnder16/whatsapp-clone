@@ -1,8 +1,10 @@
 // src/features/chat/api/useMuteConversation.ts
-import { api } from "@/services/api/client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { accountQueryKeys } from '@/core/lib/accountQuery';
+import { useAuthStore } from '@/core/store/useAuthStore';
+import { api } from '@/services/api/client';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-export type MuteDuration = "8_hours" | "24_hours" | "7_days" | "always";
+export type MuteDuration = '8_hours' | '24_hours' | '7_days' | 'always';
 
 interface MuteConversationParams {
   conversationId: string;
@@ -16,9 +18,12 @@ export function useMuteConversation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ conversationId, duration }: MuteConversationParams) => {
+    mutationFn: async ({
+      conversationId,
+      duration,
+    }: MuteConversationParams) => {
       const { data, error } = await api.PUT(
-        "/v1/conversations/{conversationId}/mute",
+        '/v1/conversations/{conversationId}/mute',
         {
           params: {
             path: { conversationId },
@@ -31,16 +36,22 @@ export function useMuteConversation() {
 
       if (error) {
         throw new Error(
-          (error as any)?.message || "Failed to mute conversation"
+          (error as any)?.message || 'Failed to mute conversation'
         );
       }
 
       return data;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+      const accountId = useAuthStore.getState().user?.id || 'none';
       queryClient.invalidateQueries({
-        queryKey: ["conversation", variables.conversationId],
+        queryKey: accountQueryKeys.conversations(accountId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: accountQueryKeys.conversation(
+          accountId,
+          variables.conversationId
+        ),
       });
     },
   });
@@ -55,7 +66,7 @@ export function useUnmuteConversation() {
   return useMutation({
     mutationFn: async (conversationId: string) => {
       const { data, error } = await api.DELETE(
-        "/v1/conversations/{conversationId}/mute",
+        '/v1/conversations/{conversationId}/mute',
         {
           params: {
             path: { conversationId },
@@ -65,16 +76,19 @@ export function useUnmuteConversation() {
 
       if (error) {
         throw new Error(
-          (error as any)?.message || "Failed to unmute conversation"
+          (error as any)?.message || 'Failed to unmute conversation'
         );
       }
 
       return data;
     },
     onSuccess: (_, conversationId) => {
-      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+      const accountId = useAuthStore.getState().user?.id || 'none';
       queryClient.invalidateQueries({
-        queryKey: ["conversation", conversationId],
+        queryKey: accountQueryKeys.conversations(accountId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: accountQueryKeys.conversation(accountId, conversationId),
       });
     },
   });

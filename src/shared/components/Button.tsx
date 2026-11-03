@@ -1,5 +1,12 @@
-import { useAppTheme } from "@/shared/hooks";
-import { ActivityIndicator, Pressable, StyleSheet, Text, ViewStyle } from "react-native";
+// src/shared/components/Button.tsx
+import { useAppTheme } from '@/shared/hooks';
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  ViewStyle,
+} from 'react-native';
+import { AppText } from './AppText';
 
 interface BtnProps {
   title: string;
@@ -8,6 +15,8 @@ interface BtnProps {
   disabled?: boolean;
   className?: string;
   style?: ViewStyle;
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
 }
 
 export default function Button({
@@ -17,9 +26,15 @@ export default function Button({
   disabled = false,
   className,
   style,
+  accessibilityLabel,
+  accessibilityHint,
 }: BtnProps) {
   const { colors } = useAppTheme();
   const isDisabled = disabled || isLoading;
+
+  // Stable accessibility label that remains informative whether loading or idle
+  const resolvedAccessibilityLabel =
+    accessibilityLabel || (isLoading ? `${title}, in progress` : title);
 
   return (
     <Pressable
@@ -32,13 +47,28 @@ export default function Button({
       className={className}
       onPress={onPress}
       disabled={isDisabled}
+      accessibilityRole="button"
+      accessibilityLabel={resolvedAccessibilityLabel}
+      accessibilityHint={accessibilityHint}
+      accessibilityState={{
+        disabled: isDisabled,
+        busy: isLoading,
+      }}
+      aria-busy={isLoading}
+      aria-disabled={isDisabled}
     >
       {isLoading ? (
-        <ActivityIndicator color={colors.primaryText} />
+        <ActivityIndicator
+          color={colors.primaryText}
+          accessibilityLabel="Loading"
+        />
       ) : (
-        <Text style={[styles.buttonText, { color: colors.primaryText }]}>
+        <AppText
+          variant="bold"
+          style={[styles.buttonText, { color: colors.primaryText }]}
+        >
           {title}
-        </Text>
+        </AppText>
       )}
     </Pressable>
   );
@@ -46,17 +76,17 @@ export default function Button({
 
 const styles = StyleSheet.create({
   button: {
-    width: "100%",
+    width: '100%',
     paddingVertical: 18,
     borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   disabled: {
     opacity: 0.6,
   },
   buttonText: {
     fontSize: 18,
-    fontFamily: "SFPRODISPLAYBOLD",
+    fontFamily: 'SFPRODISPLAYBOLD',
   },
 });

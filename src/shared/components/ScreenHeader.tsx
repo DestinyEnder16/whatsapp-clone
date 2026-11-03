@@ -1,9 +1,10 @@
-import { useAppTheme } from "@/shared/hooks";
-import Ionicons from "@react-native-vector-icons/ionicons";
-import { router } from "expo-router";
-import React, { ReactNode } from "react";
-import { Pressable, Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAppTheme } from '@/shared/hooks';
+import Ionicons from '@react-native-vector-icons/ionicons';
+import { router } from 'expo-router';
+import { ReactNode } from 'react';
+import { Pressable, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { AppText } from './AppText';
 
 export interface ScreenHeaderProps {
   /** Title displayed in the center of the header */
@@ -38,7 +39,7 @@ export function ScreenHeader({
   onRightPress,
   rightIconName,
   rightIconSize = 24,
-  rightActionAccessibilityLabel = "Action",
+  rightActionAccessibilityLabel = 'Action',
   backgroundColor,
   tintColor,
 }: ScreenHeaderProps) {
@@ -46,13 +47,15 @@ export function ScreenHeader({
   const { colors } = useAppTheme();
 
   const effectiveBg = backgroundColor || colors.primary;
-  const effectiveTint = tintColor || colors.primaryText || "#FFFFFF";
+  const effectiveTint = tintColor || colors.primaryText || '#FFFFFF';
 
   const handleBack = () => {
     if (onBack) {
       onBack();
     } else if (router.canGoBack()) {
       router.back();
+    } else {
+      router.replace('/(tabs)');
     }
   };
 
@@ -112,6 +115,7 @@ export function ScreenHeader({
             className="w-10 h-10 items-center justify-center -ml-2 active:opacity-75"
             accessibilityRole="button"
             accessibilityLabel="Back"
+            accessibilityHint="Returns to previous screen or conversation list"
           >
             <Ionicons name="chevron-back" size={26} color={effectiveTint} />
           </Pressable>
@@ -121,13 +125,13 @@ export function ScreenHeader({
 
         {/* Center: Title */}
         {title ? (
-          <Text
+          <AppText
             className="text-[19px] font-bold tracking-wide text-center flex-1 mx-2"
             style={{ color: effectiveTint }}
             numberOfLines={1}
           >
             {title}
-          </Text>
+          </AppText>
         ) : (
           <View className="flex-1" />
         )}

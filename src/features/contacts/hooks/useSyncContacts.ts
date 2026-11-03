@@ -1,11 +1,14 @@
-import { useCallback, useEffect, useState } from "react";
-import * as Contacts from "expo-contacts";
-import { Contact, ContactField } from "expo-contacts";
-import { ContactMatchDto, useMatchContacts } from "../api/useMatchContacts";
+import { useAuthStore } from '@/core/store/useAuthStore';
+import { getAuthSessionGeneration } from '@/services/api/authSession';
+import * as Contacts from 'expo-contacts';
+import { Contact, ContactField } from 'expo-contacts';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { ContactMatchDto, useMatchContacts } from '../api/useMatchContacts';
+import { useContactMatchesStore } from '../store/useContactMatchesStore';
 import {
   normalizePhoneNumber,
   normalizePhoneNumbers,
-} from "../utils/phoneUtils";
+} from '../utils/phoneUtils';
 
 /**
  * MatchedContactItem represents a contact found on WhatsApp, enriched with local device metadata.
@@ -34,20 +37,27 @@ export interface MatchedContactItem extends ContactMatchDto {
  * 7. Exposes unified state (`permissionStatus`, `isSyncing`, `matches`, `hasSynced`, `error`).
  */
 export function useSyncContacts() {
+  const accountId = useAuthStore((state) => state.user?.id);
   // OS permission state: GRANTED, DENIED, UNDETERMINED, or null (before initial check)
   const [permissionStatus, setPermissionStatus] =
     useState<Contacts.PermissionStatus | null>(null);
 
   const [isSyncing, setIsSyncing] = useState(false);
 
-  const [matches, setMatches] = useState<MatchedContactItem[]>([]);
-
-  // Tracks whether at least one sync attempt has completed (used by UI to distinguish initial vs empty state)
-  const [hasSynced, setHasSynced] = useState(false);
+  const storedAccountId = useContactMatchesStore((state) => state.accountId);
+  const matches = useContactMatchesStore((state) => state.matches);
+  const hasSynced = useContactMatchesStore((state) => state.hasSynced);
+  const setStoredMatches = useContactMatchesStore((state) => state.setMatches);
 
   const [error, setError] = useState<string | null>(null);
 
   const matchMutation = useMatchContacts();
+  const syncControllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    syncControllerRef.current?.abort();
+    return () => syncControllerRef.current?.abort();
+  }, [accountId]);
 
   // Phase 0: Non-intrusive check of current permission status on mount
   // (Does NOT trigger a system prompt popup, only reads existing permission state)
@@ -57,7 +67,7 @@ export function useSyncContacts() {
         const { status } = await Contacts.getPermissionsAsync();
         setPermissionStatus(status);
       } catch (err) {
-        console.warn("Failed to check contacts permission:", err);
+        console.warn('Failed to check contacts permission:', err);
       }
     })();
   }, []);
@@ -66,6 +76,11 @@ export function useSyncContacts() {
    * Main sync workflow: executed when the user taps "Find Contacts" or "Sync Contacts".
    */
   const requestAndSync = useCallback(async () => {
+    syncControllerRef.current?.abort();
+    const controller = new AbortController();
+    syncControllerRef.current = controller;
+    const syncAccountId = accountId;
+    const sessionGeneration = getAuthSessionGeneration();
     setIsSyncing(true);
     setError(null);
 
@@ -74,15 +89,15 @@ export function useSyncContacts() {
       // Phase 1: Permission Request & Verification
       // -----------------------------------------------------------------------
       let currentStatus = permissionStatus;
-      console.log("👉 Checking contacts permission status:", currentStatus);
+      console.log('👉 Checking contacts permission status:', currentStatus);
 
       // If not already granted, display the OS system permission dialog
       if (currentStatus !== Contacts.PermissionStatus.GRANTED) {
         console.log(
-          "👉 Requesting contacts permission via Contacts.requestPermissionsAsync()...",
+          '👉 Requesting contacts permission via Contacts.requestPermissionsAsync()...'
         );
         const res = await Contacts.requestPermissionsAsync();
-        console.log("👉 Permission response:", JSON.stringify(res));
+        console.log('👉 Permission response:', JSON.stringify(res));
         currentStatus = res.status;
         setPermissionStatus(currentStatus);
       }
@@ -90,15 +105,15 @@ export function useSyncContacts() {
       // If user declined permission, stop gracefully
       if (currentStatus !== Contacts.PermissionStatus.GRANTED) {
         console.warn(
-          "⚠️ Contacts permission not granted. Status:",
-          currentStatus,
+          '⚠️ Contacts permission not granted. Status:',
+          currentStatus
         );
         setIsSyncing(false);
         return;
       }
 
       console.log(
-        "✅ Contacts permission granted! Fetching device contacts...",
+        '✅ Contacts permission granted! Fetching device contacts...'
       );
 
       // -----------------------------------------------------------------------
@@ -111,8 +126,7 @@ export function useSyncContacts() {
       ]);
 
       if (!deviceContacts || deviceContacts.length === 0) {
-        setMatches([]);
-        setHasSynced(true);
+        if (accountId) setStoredMatches(accountId, []);
         setIsSyncing(false);
         return;
       }
@@ -128,7 +142,7 @@ export function useSyncContacts() {
       const allNumbers: string[] = [];
 
       for (const contact of deviceContacts) {
-        const name = contact.fullName || "Friend";
+        const name = contact.fullName || 'Friend';
         const phones = contact.phones || [];
 
         for (const phoneObj of phones) {
@@ -149,8 +163,7 @@ export function useSyncContacts() {
       const normalizedNumbers = normalizePhoneNumbers(allNumbers);
 
       if (normalizedNumbers.length === 0) {
-        setMatches([]);
-        setHasSynced(true);
+        if (accountId) setStoredMatches(accountId, []);
         setIsSyncing(false);
         return;
       }
@@ -161,6 +174,8 @@ export function useSyncContacts() {
       // -----------------------------------------------------------------------
       const result = await matchMutation.mutateAsync({
         phoneNumbers: normalizedNumbers,
+        signal: controller.signal,
+        sessionGeneration,
       });
 
       // -----------------------------------------------------------------------
@@ -174,27 +189,37 @@ export function useSyncContacts() {
           ...match,
           localName:
             phoneToLocalName.get(match.matchedPhoneNumber) ||
-            (typeof match.user?.displayName === "string"
+            (typeof match.user?.displayName === 'string'
               ? match.user.displayName
               : undefined),
-        }),
+        })
       );
 
-      setMatches(enriched);
-      setHasSynced(true);
+      if (
+        syncAccountId &&
+        !controller.signal.aborted &&
+        syncAccountId === useAuthStore.getState().user?.id &&
+        sessionGeneration === getAuthSessionGeneration()
+      ) {
+        setStoredMatches(syncAccountId, enriched);
+      }
     } catch (err: any) {
-      console.error("Failed to sync contacts:", err);
-      setError(err?.message || "Failed to sync contacts");
+      if (err?.name === 'AbortError') return;
+      console.error('Failed to sync contacts:', err);
+      setError(err?.message || 'Failed to sync contacts');
     } finally {
-      setIsSyncing(false);
+      if (syncControllerRef.current === controller) {
+        syncControllerRef.current = null;
+        setIsSyncing(false);
+      }
     }
-  }, [matchMutation, permissionStatus]);
+  }, [accountId, matchMutation, permissionStatus, setStoredMatches]);
 
   return {
     permissionStatus,
     isSyncing,
-    matches,
-    hasSynced,
+    matches: storedAccountId === accountId ? matches : [],
+    hasSynced: storedAccountId === accountId && hasSynced,
     error,
     requestAndSync,
   };

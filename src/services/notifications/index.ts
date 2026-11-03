@@ -1,4 +1,3 @@
-// src/services/notifications/index.ts
 export {
   configureNotificationHandler,
   registerForPushNotificationsAsync,
@@ -7,3 +6,9 @@ export {
   unregisterPushDeviceAsync,
 } from "./pushNotificationService";
 export { getInstallationId } from "./installationId";
+export {
+  setupNotificationNavigation,
+  handleNotificationResponse,
+  isValidUuid,
+  extractConversationId,
+} from "./notificationNavigation";

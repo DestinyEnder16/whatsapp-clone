@@ -1,9 +1,9 @@
 // src/core/store/useNotificationStore.ts
-import { mmkvStorage } from "@/core/storage/mmkv";
-import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
+import { mmkvStorage } from '@/core/storage/mmkv';
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
 
-export type SoundOption = "Default" | "Note" | "Chord" | "Aurora" | "None";
+export type SoundOption = 'Default' | 'Note' | 'Chord' | 'Aurora' | 'None';
 
 export interface NotificationState {
   /** Master toggle for all notifications */
@@ -28,9 +28,11 @@ export interface NotificationState {
 
   /** Push Notification device registration token */
   expoPushToken: string | null;
+  registrationStatus: 'unregistered' | 'registering' | 'registered' | 'error';
+  registeredAccountId: string | null;
 
   /** System notification permission status */
-  permissionStatus: "granted" | "undetermined" | "denied";
+  permissionStatus: 'granted' | 'undetermined' | 'denied';
 }
 
 export interface NotificationActions {
@@ -45,23 +47,29 @@ export interface NotificationActions {
   setInAppVibrate: (enabled: boolean) => void;
   setInAppSound: (enabled: boolean) => void;
   setExpoPushToken: (token: string | null) => void;
-  setPermissionStatus: (status: "granted" | "undetermined" | "denied") => void;
+  setRegistrationStatus: (
+    status: NotificationState['registrationStatus']
+  ) => void;
+  setRegisteredAccountId: (accountId: string | null) => void;
+  setPermissionStatus: (status: 'granted' | 'undetermined' | 'denied') => void;
   resetToDefaults: () => void;
 }
 
 const DEFAULT_STATE: NotificationState = {
   notificationsEnabled: true,
   messageNotifications: true,
-  messageSound: "Default",
+  messageSound: 'Default',
   messageReaction: true,
   groupNotifications: true,
-  groupSound: "Default",
+  groupSound: 'Default',
   groupReaction: true,
   showPreview: true,
   inAppVibrate: true,
   inAppSound: true,
   expoPushToken: null,
-  permissionStatus: "undetermined",
+  registrationStatus: 'unregistered',
+  registeredAccountId: null,
+  permissionStatus: 'undetermined',
 };
 
 export const useNotificationStore = create<
@@ -85,11 +93,15 @@ export const useNotificationStore = create<
       setInAppVibrate: (inAppVibrate) => set({ inAppVibrate }),
       setInAppSound: (inAppSound) => set({ inAppSound }),
       setExpoPushToken: (expoPushToken) => set({ expoPushToken }),
+      setRegistrationStatus: (registrationStatus) =>
+        set({ registrationStatus }),
+      setRegisteredAccountId: (registeredAccountId) =>
+        set({ registeredAccountId }),
       setPermissionStatus: (permissionStatus) => set({ permissionStatus }),
       resetToDefaults: () => set({ ...DEFAULT_STATE }),
     }),
     {
-      name: "notification-settings-storage",
+      name: 'notification-settings-storage',
       storage: createJSONStorage(() => mmkvStorage),
     }
   )

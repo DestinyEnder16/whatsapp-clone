@@ -1,9 +1,9 @@
 // src/features/settings/components/StorageProgressBar.tsx
-import { StorageCategoryBreakdown } from "../hooks/useDeviceStorage";
-import { useAppTheme } from "@/shared/hooks";
-import Ionicons from "@react-native-vector-icons/ionicons";
-import React, { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { useAppTheme } from '@/shared/hooks';
+import Ionicons from '@react-native-vector-icons/ionicons';
+import { useState } from 'react';
+import { Pressable, Text, View } from 'react-native';
+import { StorageCategoryBreakdown } from '../hooks/useDeviceStorage';
 
 export interface StorageProgressBarProps {
   mediaFilesFormatted?: string;
@@ -15,10 +15,10 @@ export interface StorageProgressBarProps {
 }
 
 export function StorageProgressBar({
-  mediaFilesFormatted = "2,1 GB",
-  freeFormatted = "62,5 GB",
+  mediaFilesFormatted = 'Unavailable',
+  freeFormatted = 'Unavailable',
   totalFormatted,
-  mediaPercentage = 24,
+  mediaPercentage = 0,
   categories,
   onClearCache,
 }: StorageProgressBarProps) {
@@ -29,10 +29,7 @@ export function StorageProgressBar({
     <View className="px-6 pt-5 pb-3">
       {/* Section Title & Optional Total Device Storage Badge */}
       <View className="flex-row items-center justify-between mb-3">
-        <Text
-          className="text-[17px] font-bold"
-          style={{ color: colors.text }}
-        >
+        <Text className="text-[17px] font-bold" style={{ color: colors.text }}>
           Storage
         </Text>
         {totalFormatted ? (
@@ -53,13 +50,16 @@ export function StorageProgressBar({
         {/* Media and Files Portion */}
         <View
           style={{
-            width: `${Math.min(Math.max(mediaPercentage, 5), 100)}%`,
+            width: `${Math.min(Math.max(mediaPercentage, 0), 100)}%`,
             backgroundColor: colors.primary,
           }}
           className="h-full rounded-l-full"
         />
         {/* Free Space Portion */}
-        <View className="flex-1 h-full" style={{ backgroundColor: "#E5E7EB" }} />
+        <View
+          className="flex-1 h-full"
+          style={{ backgroundColor: '#E5E7EB' }}
+        />
       </View>
 
       {/* Storage Legend */}
@@ -74,7 +74,7 @@ export function StorageProgressBar({
             className="text-[13px] font-medium"
             style={{ color: colors.text }}
           >
-            Media and Files <Text style={{ color: colors.textMuted }}>•</Text>{" "}
+            Media and Files <Text style={{ color: colors.textMuted }}>•</Text>{' '}
             {mediaFilesFormatted}
           </Text>
         </View>
@@ -83,13 +83,13 @@ export function StorageProgressBar({
         <View className="flex-row items-center mt-1.5">
           <View
             className="w-2.5 h-2.5 rounded-full mr-2.5"
-            style={{ backgroundColor: "#D1D5DB" }}
+            style={{ backgroundColor: '#D1D5DB' }}
           />
           <Text
             className="text-[13px] font-medium"
             style={{ color: colors.text }}
           >
-            Free <Text style={{ color: colors.textMuted }}>•</Text>{" "}
+            Free <Text style={{ color: colors.textMuted }}>•</Text>{' '}
             {freeFormatted}
           </Text>
         </View>
@@ -98,10 +98,7 @@ export function StorageProgressBar({
       {/* Action Row: Clear Cache & Toggle Breakdown */}
       <View className="mt-4 flex-row items-center justify-between">
         {onClearCache && (
-          <Pressable
-            onPress={onClearCache}
-            className="py-1 active:opacity-75"
-          >
+          <Pressable onPress={onClearCache} className="py-1 active:opacity-75">
             <Text
               className="text-[14px] font-bold"
               style={{ color: colors.primary }}
@@ -120,10 +117,10 @@ export function StorageProgressBar({
               className="text-[12px] font-semibold mr-1"
               style={{ color: colors.textSecondary }}
             >
-              {showDetails ? "Hide breakdown" : "Category breakdown"}
+              {showDetails ? 'Hide breakdown' : 'Category breakdown'}
             </Text>
             <Ionicons
-              name={showDetails ? "chevron-up" : "chevron-down"}
+              name={showDetails ? 'chevron-up' : 'chevron-down'}
               size={14}
               color={colors.textSecondary}
             />

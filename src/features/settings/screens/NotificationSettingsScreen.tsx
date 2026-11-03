@@ -1,20 +1,21 @@
 // src/features/settings/screens/NotificationSettingsScreen.tsx
+import { useAuthStore } from '@/core/store/useAuthStore';
 import {
   SoundOption,
   useNotificationStore,
-} from "@/core/store/useNotificationStore";
+} from '@/core/store/useNotificationStore';
 import {
   getInstallationId,
   registerForPushNotificationsAsync,
   sendLocalTestNotification,
-} from "@/services/notifications";
-import { ScreenHeader } from "@/shared/components";
-import { useAppTheme } from "@/shared/hooks";
-import { toast } from "@/shared/utils/toast";
-import Ionicons from "@react-native-vector-icons/ionicons";
-import * as Clipboard from "expo-clipboard";
-import { StatusBar } from "expo-status-bar";
-import React, { useEffect, useState } from "react";
+} from '@/services/notifications';
+import { ScreenHeader } from '@/shared/components';
+import { useAppTheme } from '@/shared/hooks';
+import { toast } from '@/shared/utils/toast';
+import Ionicons from '@react-native-vector-icons/ionicons';
+import * as Clipboard from 'expo-clipboard';
+import { StatusBar } from 'expo-status-bar';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -23,14 +24,14 @@ import {
   Switch,
   Text,
   View,
-} from "react-native";
+} from 'react-native';
 
 const SOUND_OPTIONS: SoundOption[] = [
-  "Default",
-  "Note",
-  "Chord",
-  "Aurora",
-  "None",
+  'Default',
+  'Note',
+  'Chord',
+  'Aurora',
+  'None',
 ];
 
 export function NotificationSettingsScreen() {
@@ -53,6 +54,8 @@ export function NotificationSettingsScreen() {
   const inAppSound = useNotificationStore((s) => s.inAppSound);
   const expoPushToken = useNotificationStore((s) => s.expoPushToken);
   const permissionStatus = useNotificationStore((s) => s.permissionStatus);
+  const registrationStatus = useNotificationStore((s) => s.registrationStatus);
+  const accountId = useAuthStore((s) => s.user?.id);
 
   // Store actions
   const setNotificationsEnabled = useNotificationStore(
@@ -62,9 +65,7 @@ export function NotificationSettingsScreen() {
     (s) => s.setMessageNotifications
   );
   const setMessageSound = useNotificationStore((s) => s.setMessageSound);
-  const setMessageReaction = useNotificationStore(
-    (s) => s.setMessageReaction
-  );
+  const setMessageReaction = useNotificationStore((s) => s.setMessageReaction);
   const setGroupNotifications = useNotificationStore(
     (s) => s.setGroupNotifications
   );
@@ -79,25 +80,33 @@ export function NotificationSettingsScreen() {
 
   // On initial mount, attempt token retrieval if permissions granted
   useEffect(() => {
-    if (permissionStatus === "granted" && !expoPushToken) {
-      registerForPushNotificationsAsync();
+    if (permissionStatus === 'granted' && !expoPushToken) {
+      if (accountId) registerForPushNotificationsAsync(accountId);
     }
-  }, [permissionStatus, expoPushToken]);
+  }, [accountId, permissionStatus, expoPushToken]);
 
   const handleRequestPermission = async () => {
     setIsRegistering(true);
     try {
-      const token = await registerForPushNotificationsAsync();
-      if (token) {
-        toast.success("Success", "Push notifications registered!");
+      const token = await registerForPushNotificationsAsync(accountId);
+      if (
+        token &&
+        useNotificationStore.getState().registrationStatus === 'registered'
+      ) {
+        toast.success('Success', 'Push notifications registered!');
+      } else if (token) {
+        toast.error(
+          'Registration failed',
+          'Token acquired, but this account is not registered. Try again.'
+        );
       } else {
         toast.info(
-          "Permission Required",
-          "Please enable notifications in system settings."
+          'Permission Required',
+          'Please enable notifications in system settings.'
         );
       }
     } catch {
-      toast.error("Error", "Could not register push notifications.");
+      toast.error('Error', 'Could not register push notifications.');
     } finally {
       setIsRegistering(false);
     }
@@ -106,12 +115,12 @@ export function NotificationSettingsScreen() {
   const handleTestNotification = async () => {
     try {
       await sendLocalTestNotification(
-        "ChatMe Notification",
-        "This is a test notification with sound and preview!"
+        'ChatMe Notification',
+        'This is a test notification with sound and preview!'
       );
-      toast.info("Sent", "Test notification triggered.");
+      toast.info('Sent', 'Test notification triggered.');
     } catch {
-      toast.error("Failed", "Could not send test notification.");
+      toast.error('Failed', 'Could not send test notification.');
     }
   };
 
@@ -121,13 +130,13 @@ export function NotificationSettingsScreen() {
       return;
     }
     await Clipboard.setStringAsync(expoPushToken);
-    toast.success("Copied", "Expo Push Token copied to clipboard.");
+    toast.success('Copied', 'Expo Push Token copied to clipboard.');
   };
 
   const handleCopyInstallationId = async () => {
     const id = getInstallationId();
     await Clipboard.setStringAsync(id);
-    toast.success("Copied", "Installation ID copied to clipboard.");
+    toast.success('Copied', 'Installation ID copied to clipboard.');
   };
 
   const selectSound = (
@@ -148,23 +157,23 @@ export function NotificationSettingsScreen() {
 
   const handleResetSettings = () => {
     Alert.alert(
-      "Reset Notifications",
-      "Reset all notification settings back to default values?",
+      'Reset Notifications',
+      'Reset all notification settings back to default values?',
       [
-        { text: "Cancel", style: "cancel" },
+        { text: 'Cancel', style: 'cancel' },
         {
-          text: "Reset",
-          style: "destructive",
+          text: 'Reset',
+          style: 'destructive',
           onPress: () => {
             resetToDefaults();
-            toast.info("Reset", "Notification settings reset to default.");
+            toast.info('Reset', 'Notification settings reset to default.');
           },
         },
       ]
     );
   };
 
-  const isGranted = permissionStatus === "granted";
+  const isGranted = permissionStatus === 'granted';
 
   return (
     <View className="flex-1" style={{ backgroundColor: colors.background }}>
@@ -197,8 +206,8 @@ export function NotificationSettingsScreen() {
                   <Ionicons
                     name={
                       notificationsEnabled
-                        ? "notifications"
-                        : "notifications-off"
+                        ? 'notifications'
+                        : 'notifications-off'
                     }
                     size={22}
                     color={
@@ -219,7 +228,7 @@ export function NotificationSettingsScreen() {
                     className="text-[12px] font-normal mt-0.5"
                     style={{ color: colors.textSecondary }}
                   >
-                    {notificationsEnabled ? "Active" : "Muted"}
+                    {notificationsEnabled ? 'Active' : 'Muted'}
                   </Text>
                 </View>
               </View>
@@ -228,11 +237,11 @@ export function NotificationSettingsScreen() {
                 value={notificationsEnabled}
                 onValueChange={setNotificationsEnabled}
                 trackColor={{
-                  false: isDark ? "#334155" : "#E2E8F0",
+                  false: isDark ? '#334155' : '#E2E8F0',
                   true: colors.primary,
                 }}
                 thumbColor="#FFFFFF"
-                ios_backgroundColor={isDark ? "#334155" : "#E2E8F0"}
+                ios_backgroundColor={isDark ? '#334155' : '#E2E8F0'}
               />
             </View>
 
@@ -245,14 +254,14 @@ export function NotificationSettingsScreen() {
                 <View
                   className="w-2.5 h-2.5 rounded-full mr-2"
                   style={{
-                    backgroundColor: isGranted ? "#10B981" : "#F59E0B",
+                    backgroundColor: isGranted ? '#10B981' : '#F59E0B',
                   }}
                 />
                 <Text
                   className="text-[12px] font-medium"
                   style={{ color: colors.textSecondary }}
                 >
-                  {isGranted ? "Permission granted" : "Permission required"}
+                  {isGranted ? 'Permission granted' : 'Permission required'}
                 </Text>
               </View>
 
@@ -303,11 +312,11 @@ export function NotificationSettingsScreen() {
               value={messageNotifications && notificationsEnabled}
               onValueChange={setMessageNotifications}
               trackColor={{
-                false: isDark ? "#334155" : "#E2E8F0",
+                false: isDark ? '#334155' : '#E2E8F0',
                 true: colors.primary,
               }}
               thumbColor="#FFFFFF"
-              ios_backgroundColor={isDark ? "#334155" : "#E2E8F0"}
+              ios_backgroundColor={isDark ? '#334155' : '#E2E8F0'}
             />
           </View>
           <View
@@ -319,7 +328,7 @@ export function NotificationSettingsScreen() {
           <Pressable
             disabled={!notificationsEnabled}
             onPress={() =>
-              selectSound(messageSound, setMessageSound, "Message Sound")
+              selectSound(messageSound, setMessageSound, 'Message Sound')
             }
             className="px-6 py-3.5 flex-row items-center justify-between active:opacity-70"
             style={{ backgroundColor: colors.surface }}
@@ -365,11 +374,11 @@ export function NotificationSettingsScreen() {
               value={messageReaction && notificationsEnabled}
               onValueChange={setMessageReaction}
               trackColor={{
-                false: isDark ? "#334155" : "#E2E8F0",
+                false: isDark ? '#334155' : '#E2E8F0',
                 true: colors.primary,
               }}
               thumbColor="#FFFFFF"
-              ios_backgroundColor={isDark ? "#334155" : "#E2E8F0"}
+              ios_backgroundColor={isDark ? '#334155' : '#E2E8F0'}
             />
           </View>
         </View>
@@ -401,11 +410,11 @@ export function NotificationSettingsScreen() {
               value={groupNotifications && notificationsEnabled}
               onValueChange={setGroupNotifications}
               trackColor={{
-                false: isDark ? "#334155" : "#E2E8F0",
+                false: isDark ? '#334155' : '#E2E8F0',
                 true: colors.primary,
               }}
               thumbColor="#FFFFFF"
-              ios_backgroundColor={isDark ? "#334155" : "#E2E8F0"}
+              ios_backgroundColor={isDark ? '#334155' : '#E2E8F0'}
             />
           </View>
           <View
@@ -417,7 +426,7 @@ export function NotificationSettingsScreen() {
           <Pressable
             disabled={!notificationsEnabled}
             onPress={() =>
-              selectSound(groupSound, setGroupSound, "Group Sound")
+              selectSound(groupSound, setGroupSound, 'Group Sound')
             }
             className="px-6 py-3.5 flex-row items-center justify-between active:opacity-70"
             style={{ backgroundColor: colors.surface }}
@@ -463,11 +472,11 @@ export function NotificationSettingsScreen() {
               value={groupReaction && notificationsEnabled}
               onValueChange={setGroupReaction}
               trackColor={{
-                false: isDark ? "#334155" : "#E2E8F0",
+                false: isDark ? '#334155' : '#E2E8F0',
                 true: colors.primary,
               }}
               thumbColor="#FFFFFF"
-              ios_backgroundColor={isDark ? "#334155" : "#E2E8F0"}
+              ios_backgroundColor={isDark ? '#334155' : '#E2E8F0'}
             />
           </View>
         </View>
@@ -499,11 +508,11 @@ export function NotificationSettingsScreen() {
               value={inAppVibrate && notificationsEnabled}
               onValueChange={setInAppVibrate}
               trackColor={{
-                false: isDark ? "#334155" : "#E2E8F0",
+                false: isDark ? '#334155' : '#E2E8F0',
                 true: colors.primary,
               }}
               thumbColor="#FFFFFF"
-              ios_backgroundColor={isDark ? "#334155" : "#E2E8F0"}
+              ios_backgroundColor={isDark ? '#334155' : '#E2E8F0'}
             />
           </View>
           <View
@@ -527,11 +536,11 @@ export function NotificationSettingsScreen() {
               value={inAppSound && notificationsEnabled}
               onValueChange={setInAppSound}
               trackColor={{
-                false: isDark ? "#334155" : "#E2E8F0",
+                false: isDark ? '#334155' : '#E2E8F0',
                 true: colors.primary,
               }}
               thumbColor="#FFFFFF"
-              ios_backgroundColor={isDark ? "#334155" : "#E2E8F0"}
+              ios_backgroundColor={isDark ? '#334155' : '#E2E8F0'}
             />
           </View>
           <View
@@ -555,11 +564,11 @@ export function NotificationSettingsScreen() {
               value={showPreview && notificationsEnabled}
               onValueChange={setShowPreview}
               trackColor={{
-                false: isDark ? "#334155" : "#E2E8F0",
+                false: isDark ? '#334155' : '#E2E8F0',
                 true: colors.primary,
               }}
               thumbColor="#FFFFFF"
-              ios_backgroundColor={isDark ? "#334155" : "#E2E8F0"}
+              ios_backgroundColor={isDark ? '#334155' : '#E2E8F0'}
             />
           </View>
 
@@ -633,14 +642,14 @@ export function NotificationSettingsScreen() {
                 style={{ color: colors.textSecondary }}
                 numberOfLines={1}
               >
-                {expoPushToken ? expoPushToken : "Not registered yet (Tap to register)"}
+                {expoPushToken
+                  ? registrationStatus === 'registered'
+                    ? expoPushToken
+                    : 'Token acquired, registration failed (Tap to retry)'
+                  : 'Not registered yet (Tap to register)'}
               </Text>
             </View>
-            <Ionicons
-              name="copy-outline"
-              size={20}
-              color={colors.primary}
-            />
+            <Ionicons name="copy-outline" size={20} color={colors.primary} />
           </Pressable>
           <View
             className="h-[1px] ml-6"
@@ -668,11 +677,7 @@ export function NotificationSettingsScreen() {
                 {getInstallationId()}
               </Text>
             </View>
-            <Ionicons
-              name="copy-outline"
-              size={20}
-              color={colors.primary}
-            />
+            <Ionicons name="copy-outline" size={20} color={colors.primary} />
           </Pressable>
         </View>
 
@@ -688,7 +693,7 @@ export function NotificationSettingsScreen() {
           >
             <Text
               className="text-[15px] font-medium"
-              style={{ color: "#EF4444" }}
+              style={{ color: '#EF4444' }}
             >
               Reset Notification Settings
             </Text>

@@ -1,21 +1,20 @@
 // src/features/chat/components/StartConversationModal.tsx
-import { useSyncContacts } from "@/features/contacts/hooks/useSyncContacts";
-import { useAppTheme } from "@/shared/hooks";
-import { toast } from "@/shared/utils/toast";
-import Ionicons from "@react-native-vector-icons/ionicons";
-import { Image } from "expo-image";
-import React, { useState } from "react";
+import { useSyncContacts } from '@/features/contacts/hooks/useSyncContacts';
+import { AppText, AppTextInput } from '@/shared/components';
+import { useAppTheme } from '@/shared/hooks';
+import { toast } from '@/shared/utils/toast';
+import Ionicons from '@react-native-vector-icons/ionicons';
+import { Image } from 'expo-image';
+import { useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
   Modal,
   Pressable,
-  Text,
-  TextInput,
   View,
-} from "react-native";
-import { useCreateDirectConversation } from "../api/useCreateDirectConversation";
-import { useSearchUsers } from "../api/useSearchUsers";
+} from 'react-native';
+import { useCreateDirectConversation } from '../api/useCreateDirectConversation';
+import { useSearchUsers } from '../api/useSearchUsers';
 
 interface StartConversationModalProps {
   visible: boolean;
@@ -36,7 +35,7 @@ export function StartConversationModal({
   onConversationCreated,
 }: StartConversationModalProps) {
   const { colors, isDark } = useAppTheme();
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
 
   const { matches } = useSyncContacts();
   const { data: searchResults, isLoading: isSearching } =
@@ -55,11 +54,11 @@ export function StartConversationModal({
         contactsList.push({
           id: item.id,
           displayName:
-            typeof item.displayName === "string" && item.displayName
+            typeof item.displayName === 'string' && item.displayName
               ? item.displayName
-              : "User",
+              : 'User',
           avatarUrl: item.avatarUrl,
-          subtitle: "Found on ChatMe",
+          subtitle: 'Found on ChatMe',
         });
       }
     }
@@ -73,11 +72,11 @@ export function StartConversationModal({
         id: match.user.id,
         displayName:
           match.localName ||
-          (typeof match.user.displayName === "string"
+          (typeof match.user.displayName === 'string'
             ? match.user.displayName
-            : "Contact"),
+            : 'Contact'),
         avatarUrl: match.user.avatarUrl,
-        subtitle: match.matchedPhoneNumber || "Contact",
+        subtitle: match.matchedPhoneNumber || 'Contact',
       });
     }
   }
@@ -90,7 +89,7 @@ export function StartConversationModal({
       {
         onSuccess: (data) => {
           toast.success(
-            "Conversation Created",
+            'Conversation Created',
             `Started conversation with ${contact.displayName}`
           );
           onClose();
@@ -99,10 +98,7 @@ export function StartConversationModal({
           }
         },
         onError: (err: any) => {
-          toast.error(
-            "Failed",
-            err?.message || "Could not start conversation"
-          );
+          toast.error('Failed', err?.message || 'Could not start conversation');
         },
       }
     );
@@ -115,28 +111,28 @@ export function StartConversationModal({
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <View
-        className="flex-1"
-        style={{ backgroundColor: colors.background }}
-      >
+      <View className="flex-1" style={{ backgroundColor: colors.background }}>
         {/* Header */}
         <View
           className="flex-row items-center justify-between px-5 pt-5 pb-3 border-b"
           style={{ borderColor: colors.divider }}
         >
           <View>
-            <Text
+            <AppText
               className="text-[20px]"
-              style={{ color: colors.text, fontFamily: "SFPRODISPLAYBOLD" }}
+              style={{ color: colors.text, fontFamily: 'SFPRODISPLAYBOLD' }}
             >
               Start Conversation
-            </Text>
-            <Text
+            </AppText>
+            <AppText
               className="text-[13px] mt-0.5"
-              style={{ color: colors.textSecondary, fontFamily: "SFPRODISPLAYREGULAR" }}
+              style={{
+                color: colors.textSecondary,
+                fontFamily: 'SFPRODISPLAYREGULAR',
+              }}
             >
               Select a contact to create a direct conversation
-            </Text>
+            </AppText>
           </View>
 
           <Pressable
@@ -163,18 +159,18 @@ export function StartConversationModal({
               color={colors.textMuted}
               style={{ marginRight: 8 }}
             />
-            <TextInput
+            <AppTextInput
               value={searchQuery}
               onChangeText={setSearchQuery}
               placeholder="Search by name (min 3 chars)..."
               placeholderTextColor={colors.textMuted}
               className="flex-1 text-[15px]"
-              style={{ color: colors.text, fontFamily: "SFPRODISPLAYREGULAR" }}
+              style={{ color: colors.text, fontFamily: 'SFPRODISPLAYREGULAR' }}
               autoCapitalize="none"
               returnKeyType="search"
             />
             {searchQuery.length > 0 && (
-              <Pressable onPress={() => setSearchQuery("")}>
+              <Pressable onPress={() => setSearchQuery('')}>
                 <Ionicons
                   name="close-circle"
                   size={18}
@@ -189,14 +185,17 @@ export function StartConversationModal({
         {(isSearching || createDirectMutation.isPending) && (
           <View className="py-2 items-center justify-center flex-row">
             <ActivityIndicator size="small" color={colors.primary} />
-            <Text
+            <AppText
               className="text-[13px] ml-2"
-              style={{ color: colors.primary, fontFamily: "SFPRODISPLAYMEDIUM" }}
+              style={{
+                color: colors.primary,
+                fontFamily: 'SFPRODISPLAYMEDIUM',
+              }}
             >
               {createDirectMutation.isPending
-                ? "Creating conversation..."
-                : "Searching..."}
-            </Text>
+                ? 'Creating conversation...'
+                : 'Searching...'}
+            </AppText>
           </View>
         )}
 
@@ -213,22 +212,25 @@ export function StartConversationModal({
                 color={colors.textMuted}
                 style={{ marginBottom: 12 }}
               />
-              <Text
+              <AppText
                 className="text-[16px] text-center"
-                style={{ color: colors.text, fontFamily: "SFPRODISPLAYBOLD" }}
+                style={{ color: colors.text, fontFamily: 'SFPRODISPLAYBOLD' }}
               >
                 {searchQuery.trim().length >= 3
-                  ? "No contacts found"
-                  : "No contacts available"}
-              </Text>
-              <Text
+                  ? 'No contacts found'
+                  : 'No contacts available'}
+              </AppText>
+              <AppText
                 className="text-[13px] text-center mt-1"
-                style={{ color: colors.textSecondary, fontFamily: "SFPRODISPLAYREGULAR" }}
+                style={{
+                  color: colors.textSecondary,
+                  fontFamily: 'SFPRODISPLAYREGULAR',
+                }}
               >
                 {searchQuery.trim().length >= 3
-                  ? "Try searching for another display name"
-                  : "Type a name above to search the directory"}
-              </Text>
+                  ? 'Try searching for another display name'
+                  : 'Type a name above to search the directory'}
+              </AppText>
             </View>
           )}
           renderItem={({ item }) => (
@@ -247,35 +249,41 @@ export function StartConversationModal({
                 {item.avatarUrl ? (
                   <Image
                     source={{ uri: item.avatarUrl }}
-                    style={{ width: "100%", height: "100%" }}
+                    style={{ width: '100%', height: '100%' }}
                     contentFit="cover"
                   />
                 ) : (
-                  <Text
+                  <AppText
                     className="text-[18px]"
-                    style={{ color: colors.primaryDark, fontFamily: "SFPRODISPLAYBOLD" }}
+                    style={{
+                      color: colors.primaryDark,
+                      fontFamily: 'SFPRODISPLAYBOLD',
+                    }}
                   >
                     {item.displayName.charAt(0).toUpperCase()}
-                  </Text>
+                  </AppText>
                 )}
               </View>
 
               <View className="flex-1 mr-2">
-                <Text
+                <AppText
                   className="text-[16px]"
-                  style={{ color: colors.text, fontFamily: "SFPRODISPLAYBOLD" }}
+                  style={{ color: colors.text, fontFamily: 'SFPRODISPLAYBOLD' }}
                   numberOfLines={1}
                 >
                   {item.displayName}
-                </Text>
+                </AppText>
                 {item.subtitle && (
-                  <Text
+                  <AppText
                     className="text-[13px] mt-0.5"
-                    style={{ color: colors.textSecondary, fontFamily: "SFPRODISPLAYREGULAR" }}
+                    style={{
+                      color: colors.textSecondary,
+                      fontFamily: 'SFPRODISPLAYREGULAR',
+                    }}
                     numberOfLines={1}
                   >
                     {item.subtitle}
-                  </Text>
+                  </AppText>
                 )}
               </View>
 
