@@ -1,6 +1,5 @@
 // src/features/chat/screens/ChatRoomScreen.tsx
 import { useAuthStore } from '@/core/store/useAuthStore';
-import { uploadMedia, type SelectedMedia } from '@/services/media/uploadMedia';
 import { useAppTheme } from '@/shared/hooks';
 import { toast } from '@/shared/utils/toast';
 import Ionicons from '@react-native-vector-icons/ionicons';
@@ -19,14 +18,12 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useMarkAsRead } from '../api/useMarkAsRead';
 import { useMessages, type MessageDto } from '../api/useMessages';
-import { useMarkReceiptAsRead, useReceipts } from '../api/useReceipts';
-import { generateClientMessageId, useSendMessage } from '../api/useSendMessage';
 import { AnimatedMessageBubble } from '../components/AnimatedMessageBubble';
 import { ChatAttachmentMenu } from '../components/ChatAttachmentMenu';
 import { DateSeparator } from '../components/DateSeparator';
 import { TypingIndicator } from '../components/TypingIndicator';
+import { useChatRoomDelivery } from '../hooks/useChatRoomDelivery';
 import { useChatRoomSocket } from '../hooks/useChatRoomSocket';
 import { useChatDraftStore } from '../store/useChatDraftStore';
 import { formatMessageTime } from '../utils/formatChatDate';
@@ -122,8 +119,6 @@ export function ChatRoomScreen() {
     hasNextPage,
     isFetchingNextPage,
   } = useMessages(conversationId);
-  const sendMessageMutation = useSendMessage();
-  const markAsReadMutation = useMarkAsRead();
 
   // 2. Real-time Socket.IO room, typing, and presence hook
   const {
@@ -136,10 +131,6 @@ export function ChatRoomScreen() {
     otherParticipantId: params.otherParticipantId,
     fallbackStatus: initialStatus,
   });
-
-  // 3. Receipts query for delivery & read frontiers
-  const { data: receipts } = useReceipts(conversationId);
-  const markReceiptAsRead = useMarkReceiptAsRead();
 
   const draft = useChatDraftStore((state) =>
     currentUserId && conversationId
@@ -190,18 +181,6 @@ export function ChatRoomScreen() {
     }
   }, [sortedMessages.length]);
 
-  // The other participant's receipt frontier (for blue double ticks)
-  const otherReceipt = useMemo(() => {
-    if (!receipts?.items) return null;
-    if (params.otherParticipantId) {
-      return (
-        receipts.items.find((r) => r.userId === params.otherParticipantId) ||
-        null
-      );
-    }
-    return receipts.items.find((r) => r.userId !== currentUserId) || null;
-  }, [receipts?.items, params.otherParticipantId, currentUserId]);
-
   // Find latest incoming message ID from the other user
   const latestIncomingMessageId = useMemo(() => {
     const incoming = sortedMessages.filter(
@@ -212,19 +191,12 @@ export function ChatRoomScreen() {
   }, [sortedMessages, currentUserId]);
 
   // Mark incoming messages as read when opening room and whenever new incoming messages arrive
-  useEffect(() => {
-    if (!conversationId) return;
-
-    if (latestIncomingMessageId) {
-      markReceiptAsRead.mutate({
-        conversationId,
-        throughMessageId: latestIncomingMessageId,
-      });
-    } else {
-      markAsReadMutation.mutate(conversationId);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [conversationId, latestIncomingMessageId]);
+  const { isSending, sendText, sendPhoto, retryMessage, getDeliveryStatus } =
+    useChatRoomDelivery({
+      conversationId,
+      otherParticipantId: params.otherParticipantId,
+      latestIncomingMessageId,
+    });
 
   // Build the flat list data with date separators interleaved
   const listData: ListItem[] = useMemo(() => {
@@ -278,7 +250,6 @@ export function ChatRoomScreen() {
     }
   };
 
-  // 4. Send message handler with optimistic updates
   const handleSendMessage = () => {
     if (!inputText.trim() || !conversationId) return;
 
@@ -286,51 +257,11 @@ export function ChatRoomScreen() {
     setInputText('');
     if (currentUserId) clearDraft(currentUserId, conversationId);
     handleMessageSent();
-
-    sendMessageMutation.mutate(
-      {
-        conversationId,
-        text: textToSend,
-        clientMessageId: generateClientMessageId(),
-      },
-      {
-        onSuccess: () => {
-          setTimeout(() => {
-            flatListRef.current?.scrollToEnd({ animated: true });
-          }, 150);
-        },
-        onError: (err: any) => {
-          toast.error('Error', err?.message || 'Failed to send message');
-        },
-      }
-    );
-  };
-
-  const handleSendPhoto = async (media: SelectedMedia) => {
-    if (!conversationId) return;
-
-    try {
-      toast.info('Attachment', 'Uploading media...');
-      const completedMedia = await uploadMedia(media, 'message_attachment');
-
-      sendMessageMutation.mutate(
-        {
-          conversationId,
-          attachmentMediaIds: [completedMedia.id],
-          clientMessageId: generateClientMessageId(),
-        },
-        {
-          onError: (error: any) => {
-            toast.error(
-              'Attachment Send Failed',
-              error?.message || 'Please retry the message.'
-            );
-          },
-        }
-      );
-    } catch (error: any) {
-      toast.error('Error', error?.message || 'Failed to send photo');
-    }
+    sendText(textToSend, () => {
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: true });
+      }, 150);
+    });
   };
 
   return (
@@ -496,45 +427,7 @@ export function ChatRoomScreen() {
               const firstAttachment = (msg.attachments as any)?.[0];
               const imageUri = firstAttachment?.url || null;
 
-              // Read / delivery receipt determination for sent messages:
-              let isRead = false;
-              let isDelivered = false;
-
-              if (isMe && !isPending && otherReceipt) {
-                if (otherReceipt.read) {
-                  if (otherReceipt.read.messageId === msg.id) {
-                    isRead = true;
-                  } else {
-                    const msgTime = new Date(msg.createdAt).getTime();
-                    const readTime = new Date(otherReceipt.read.at).getTime();
-                    if (
-                      !isNaN(msgTime) &&
-                      !isNaN(readTime) &&
-                      msgTime <= readTime
-                    ) {
-                      isRead = true;
-                    }
-                  }
-                }
-
-                if (!isRead && otherReceipt.delivered) {
-                  if (otherReceipt.delivered.messageId === msg.id) {
-                    isDelivered = true;
-                  } else {
-                    const msgTime = new Date(msg.createdAt).getTime();
-                    const deliveredTime = new Date(
-                      otherReceipt.delivered.at
-                    ).getTime();
-                    if (
-                      !isNaN(msgTime) &&
-                      !isNaN(deliveredTime) &&
-                      msgTime <= deliveredTime
-                    ) {
-                      isDelivered = true;
-                    }
-                  }
-                }
-              }
+              const { isRead, isDelivered } = getDeliveryStatus(msg);
 
               return (
                 <AnimatedMessageBubble
@@ -550,17 +443,7 @@ export function ChatRoomScreen() {
                   sendStatus={sendStatus}
                   onRetry={
                     sendStatus === 'failed'
-                      ? () =>
-                          sendMessageMutation.mutate({
-                            conversationId: conversationId!,
-                            text: msg.text || undefined,
-                            attachmentMediaIds: (
-                              msg as MessageDto & {
-                                attachmentMediaIds?: string[];
-                              }
-                            ).attachmentMediaIds,
-                            clientMessageId: msg.clientMessageId,
-                          })
+                      ? () => retryMessage(msg)
                       : undefined
                   }
                 />
@@ -618,7 +501,7 @@ export function ChatRoomScreen() {
 
           <Pressable
             onPress={handleSendMessage}
-            disabled={!inputText.trim() || sendMessageMutation.isPending}
+            disabled={!inputText.trim() || isSending}
             className="w-11 h-11 rounded-full items-center justify-center active:opacity-85 shadow"
             style={{
               backgroundColor: colors.primary,
@@ -638,7 +521,7 @@ export function ChatRoomScreen() {
       <ChatAttachmentMenu
         visible={showAttachmentMenu}
         onClose={() => setShowAttachmentMenu(false)}
-        onSelectPhoto={handleSendPhoto}
+        onSelectPhoto={sendPhoto}
       />
     </View>
   );
