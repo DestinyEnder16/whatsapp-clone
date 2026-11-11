@@ -154,7 +154,7 @@ export function ChatRoomScreen() {
 
   useEffect(() => {
     setInputText(draft);
-  }, [conversationId]);
+  }, [conversationId, currentUserId, draft]);
 
   // Track the count of messages at first load so we can tell new from old
   const initialCountRef = useRef<number | null>(null);
