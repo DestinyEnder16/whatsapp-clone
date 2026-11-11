@@ -4,6 +4,7 @@ import { useAuthStore } from '@/core/store/useAuthStore';
 import { api } from '@/services/api/client';
 import type { components } from '@/services/api/schema';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMessageOutboxStore } from '../store/useMessageOutboxStore';
 
 export type MessageDto = components['schemas']['MessageResponseDto'];
 export type LocalMessageDto = MessageDto & {
@@ -87,6 +88,17 @@ export function useSendMessage() {
       const currentUserId = useAuthStore.getState().user?.id || 'me';
       const stableClientMessageId =
         clientMessageId || generateClientMessageId();
+      const outboxAccountId = useAuthStore.getState().user?.id || 'none';
+      const createdAt = new Date().toISOString();
+      useMessageOutboxStore.getState().save({
+        accountId: outboxAccountId,
+        conversationId,
+        clientMessageId: stableClientMessageId,
+        text,
+        attachmentMediaIds,
+        createdAt,
+        status: 'pending',
+      });
 
       const optimisticMessage: LocalMessageDto = {
         id: `optimistic-${stableClientMessageId}`,
@@ -97,7 +109,7 @@ export function useSendMessage() {
         text: text || '',
         attachments: [],
         attachmentMediaIds,
-        createdAt: new Date().toISOString(),
+        createdAt,
         sendStatus: 'pending',
       };
 
@@ -139,13 +151,27 @@ export function useSendMessage() {
         };
       });
 
-      return { previousMessages, optimisticMessage, stableClientMessageId };
+      return {
+        previousMessages,
+        optimisticMessage,
+        stableClientMessageId,
+        outboxAccountId,
+      };
     },
 
     onError: (_err, variables, context) => {
+      if (context?.outboxAccountId && context.stableClientMessageId) {
+        useMessageOutboxStore
+          .getState()
+          .markFailed(
+            context.outboxAccountId,
+            variables.conversationId,
+            context.stableClientMessageId
+          );
+      }
       queryClient.setQueryData(
         accountQueryKeys.messages(
-          useAuthStore.getState().user?.id || 'none',
+          context?.outboxAccountId || 'none',
           variables.conversationId
         ),
         (old: MessageCache | undefined) => {
@@ -166,9 +192,18 @@ export function useSendMessage() {
     },
 
     onSuccess: (serverMessage, variables, context) => {
+      if (context?.outboxAccountId && context.stableClientMessageId) {
+        useMessageOutboxStore
+          .getState()
+          .remove(
+            context.outboxAccountId,
+            variables.conversationId,
+            context.stableClientMessageId
+          );
+      }
       queryClient.setQueryData(
         accountQueryKeys.messages(
-          useAuthStore.getState().user?.id || 'none',
+          context?.outboxAccountId || 'none',
           variables.conversationId
         ),
         (old: MessageCache | undefined) => {
@@ -194,7 +229,7 @@ export function useSendMessage() {
       // Invalidate conversations list so latest preview updates
       queryClient.invalidateQueries({
         queryKey: accountQueryKeys.conversations(
-          useAuthStore.getState().user?.id || 'none'
+          context?.outboxAccountId || 'none'
         ),
       });
     },
