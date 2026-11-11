@@ -79,8 +79,16 @@ export async function getValidAccessToken(
       );
 
       if (!res.ok) {
-        if (res.status === 401 || res.status === 403) logout();
-        else setRefreshStatus('recoverable-error');
+        const isCurrentRequest =
+          requestGeneration === getAuthSessionGeneration() &&
+          useAuthStore.getState().refreshToken === refreshToken;
+        if (isCurrentRequest) {
+          if (res.status === 401 || res.status === 403) {
+            logout();
+          } else {
+            setRefreshStatus('recoverable-error');
+          }
+        }
         return null;
       }
 
