@@ -44,3 +44,6 @@ example
 
 # local env files
 .env
+
+# local demonstration walkthrough
+/docs/local-module-walkthrough.md
