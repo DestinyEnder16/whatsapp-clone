@@ -287,6 +287,8 @@ export function ChatRoomScreen() {
             onPress={() => router.back()}
             hitSlop={12}
             className="w-9 h-9 items-center justify-center mr-1 active:opacity-75"
+            accessibilityRole="button"
+            accessibilityLabel="Back to chats"
           >
             <Ionicons name="chevron-back" size={26} color="#FFFFFF" />
           </Pressable>
@@ -496,6 +498,8 @@ export function ChatRoomScreen() {
                 fontFamily: 'SFPRODISPLAYREGULAR',
               }}
               multiline
+              accessibilityLabel="Message"
+              accessibilityHint="Enter a message to send"
             />
           </View>
 
@@ -503,6 +507,12 @@ export function ChatRoomScreen() {
             onPress={handleSendMessage}
             disabled={!inputText.trim() || isSending}
             className="w-11 h-11 rounded-full items-center justify-center active:opacity-85 shadow"
+            accessibilityRole="button"
+            accessibilityLabel="Send message"
+            accessibilityHint="Sends the message in the composer"
+            accessibilityState={{
+              disabled: !inputText.trim() || isSending,
+            }}
             style={{
               backgroundColor: colors.primary,
               opacity: inputText.trim() ? 1 : 0.6,

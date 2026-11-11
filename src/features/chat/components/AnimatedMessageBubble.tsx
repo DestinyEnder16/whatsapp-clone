@@ -94,7 +94,13 @@ export function AnimatedMessageBubble({
         {isMe && (
           <View className="ml-1 flex-row items-center">
             {sendStatus === 'failed' ? (
-              <Pressable onPress={onRetry} hitSlop={8}>
+              <Pressable
+                onPress={onRetry}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel="Retry sending message"
+                accessibilityHint="Sends this message again"
+              >
                 <Ionicons name="alert-circle" size={14} color="#FFB4AB" />
               </Pressable>
             ) : isPending ? (
