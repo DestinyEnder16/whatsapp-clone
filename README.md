@@ -41,16 +41,12 @@ This command will move the starter code to the **app-example** directory and cre
 - If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
 - Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
 
-## Learn more
+### Recording the package versions
 
-To learn more about developing your project with Expo, look at the following resources:
+React = 19.2.3
+React-native = 0.86.3
+Expo = 57.0.1
+package_manager = npm
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- To set up testing for this project:
+  npm install --save-dev jest@29.7.0 jest-expo@57.0.5 @types/jest @testing-library/react-native@13.3.3 react-test-renderer@19.2.3
