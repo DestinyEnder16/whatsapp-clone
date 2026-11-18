@@ -1,3 +1,5 @@
+# this runs verify on github for every push and PR.
+
 name: Chat project testing
 on: [push, pull_request]
 permissions:
