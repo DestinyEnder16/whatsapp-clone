@@ -112,13 +112,17 @@ export function ChatAttachmentMenu({
       animationType="fade"
       transparent
       onRequestClose={onClose}
+      accessibilityViewIsModal={true}
     >
       <Pressable
         onPress={onClose}
         className="flex-1 justify-end px-4 pb-20"
         style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
+        accessibilityRole="button"
+        accessibilityLabel="Close attachment menu"
+        accessibilityHint="Dismisses the attachment dialog"
       >
-        {/* Attachment Card matching Mockup 4 */}
+        {/* Attachment Card */}
         <Pressable
           onPress={(e) => e.stopPropagation()}
           className="w-full rounded-[24px] p-4 shadow-xl"
@@ -132,21 +136,24 @@ export function ChatAttachmentMenu({
             shadowRadius: 10,
             elevation: 10,
           }}
+          accessible={false}
         >
-          {/* Top Row: Camera Card + Recent Photos Scroll */}
+          {/* Top Row: Camera Action Card */}
           <View className="mb-4">
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ paddingRight: 8 }}
             >
-              {/* Camera Action Card */}
               <Pressable
                 onPress={handleTakePhoto}
                 className="w-16 h-16 rounded-2xl items-center justify-center mr-2.5 active:opacity-75"
                 style={{
                   backgroundColor: isDark ? colors.surface : '#E5E7EB',
                 }}
+                accessibilityRole="button"
+                accessibilityLabel="Take photo with camera"
+                accessibilityHint="Opens the camera to take a photo attachment"
               >
                 <Ionicons
                   name="camera"
@@ -157,12 +164,15 @@ export function ChatAttachmentMenu({
             </ScrollView>
           </View>
 
-          {/* Options List matching Mockup 4 */}
+          {/* Options List */}
           <View className="space-y-1">
             {/* Photo or Gallery */}
             <Pressable
               onPress={() => handleOptionPress('Photo or Gallery')}
               className="flex-row items-center py-2.5 px-2 rounded-xl active:opacity-70"
+              accessibilityRole="button"
+              accessibilityLabel="Choose photo from gallery"
+              accessibilityHint="Opens photo library to pick an image"
             >
               <View className="w-8 h-8 items-center justify-center mr-3">
                 <Ionicons name="images" size={22} color={colors.primary} />
@@ -177,8 +187,12 @@ export function ChatAttachmentMenu({
 
             {/* Document */}
             <Pressable
+              disabled
               onPress={() => handleOptionPress('Document')}
-              className="flex-row items-center py-2.5 px-2 rounded-xl active:opacity-70"
+              className="flex-row items-center py-2.5 px-2 rounded-xl opacity-60"
+              accessibilityRole="button"
+              accessibilityLabel="Document, currently unavailable"
+              accessibilityState={{ disabled: true }}
             >
               <View className="w-8 h-8 items-center justify-center mr-3">
                 <Ionicons
@@ -199,7 +213,10 @@ export function ChatAttachmentMenu({
             <Pressable
               disabled
               onPress={() => handleOptionPress('Location')}
-              className="flex-row items-center py-2.5 px-2 rounded-xl active:opacity-70"
+              className="flex-row items-center py-2.5 px-2 rounded-xl opacity-60"
+              accessibilityRole="button"
+              accessibilityLabel="Location, currently unavailable"
+              accessibilityState={{ disabled: true }}
             >
               <View className="w-8 h-8 items-center justify-center mr-3">
                 <Ionicons name="location" size={22} color={colors.primary} />
@@ -216,7 +233,10 @@ export function ChatAttachmentMenu({
             <Pressable
               disabled
               onPress={() => handleOptionPress('Contact')}
-              className="flex-row items-center py-2.5 px-2 rounded-xl active:opacity-70"
+              className="flex-row items-center py-2.5 px-2 rounded-xl opacity-60"
+              accessibilityRole="button"
+              accessibilityLabel="Contact, currently unavailable"
+              accessibilityState={{ disabled: true }}
             >
               <View className="w-8 h-8 items-center justify-center mr-3">
                 <Ionicons name="person" size={22} color={colors.primary} />
@@ -229,6 +249,23 @@ export function ChatAttachmentMenu({
               </Text>
             </Pressable>
           </View>
+
+          {/* Explicit Accessible Dismiss Button */}
+          <Pressable
+            onPress={onClose}
+            className="mt-3 py-2.5 items-center justify-center rounded-xl border border-transparent active:opacity-75"
+            style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : '#F3F4F6' }}
+            accessibilityRole="button"
+            accessibilityLabel="Cancel and close attachment menu"
+            accessibilityHint="Dismisses this dialog without selecting an attachment"
+          >
+            <Text
+              className="text-[15px] font-semibold"
+              style={{ color: colors.textSecondary }}
+            >
+              Cancel
+            </Text>
+          </Pressable>
         </Pressable>
       </Pressable>
     </Modal>

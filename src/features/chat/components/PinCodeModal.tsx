@@ -62,6 +62,7 @@ export function PinCodeModal({
           <Text
             className="text-[20px] font-bold text-center tracking-tight mt-1"
             style={{ color: colors.text }}
+            accessibilityRole="header"
           >
             Do you want to add a pin code?
           </Text>
@@ -81,6 +82,9 @@ export function PinCodeModal({
               onPress={onConfirm}
               className="w-full h-[52px] rounded-2xl items-center justify-center active:opacity-90"
               style={{ backgroundColor: colors.primary }}
+              accessibilityRole="button"
+              accessibilityLabel="Yes, set up a PIN code"
+              accessibilityHint="Navigates to the PIN setup screen"
             >
               <Text
                 className="text-[16px] font-bold"
@@ -95,6 +99,9 @@ export function PinCodeModal({
               onPress={onCancel}
               className="w-full h-[52px] rounded-2xl items-center justify-center active:opacity-80"
               style={{ backgroundColor: colors.surface }}
+              accessibilityRole="button"
+              accessibilityLabel="No, thanks"
+              accessibilityHint="Dismisses the PIN setup prompt"
             >
               <Text
                 className="text-[16px] font-bold"

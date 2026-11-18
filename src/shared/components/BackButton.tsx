@@ -1,3 +1,4 @@
+// src/shared/components/BackButton.tsx
 import { useAppTheme } from "@/shared/hooks";
 import { Image } from "expo-image";
 import { router } from "expo-router";
@@ -6,11 +7,13 @@ import { Pressable, PressableProps } from "react-native";
 interface BackButtonProps extends Omit<PressableProps, "onPress"> {
   onPress?: () => void;
   className?: string;
+  fallbackRoute?: string;
 }
 
 export default function BackButton({
   onPress,
   className = "",
+  fallbackRoute = "/(tabs)",
   style,
   ...props
 }: BackButtonProps) {
@@ -21,6 +24,8 @@ export default function BackButton({
       onPress();
     } else if (router.canGoBack()) {
       router.back();
+    } else {
+      router.replace(fallbackRoute as any);
     }
   };
 
@@ -29,6 +34,7 @@ export default function BackButton({
       onPress={handlePress}
       accessibilityRole="button"
       accessibilityLabel="Go back"
+      accessibilityHint="Returns to the previous screen or conversation list"
       style={[
         {
           backgroundColor: colors.card,
@@ -49,4 +55,3 @@ export default function BackButton({
     </Pressable>
   );
 }
-

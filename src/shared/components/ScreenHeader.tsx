@@ -54,6 +54,8 @@ export function ScreenHeader({
       onBack();
     } else if (router.canGoBack()) {
       router.back();
+    } else {
+      router.replace('/(tabs)');
     }
   };
 
@@ -113,6 +115,7 @@ export function ScreenHeader({
             className="w-10 h-10 items-center justify-center -ml-2 active:opacity-75"
             accessibilityRole="button"
             accessibilityLabel="Back"
+            accessibilityHint="Returns to previous screen or conversation list"
           >
             <Ionicons name="chevron-back" size={26} color={effectiveTint} />
           </Pressable>

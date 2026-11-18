@@ -1,5 +1,7 @@
 // src/features/chat/screens/ChatRoomScreen.tsx
 import { useAuthStore } from '@/core/store/useAuthStore';
+import { isValidUuid } from '@/services/notifications';
+import { Button } from '@/shared/components';
 import { useAppTheme } from '@/shared/hooks';
 import { toast } from '@/shared/utils/toast';
 import Ionicons from '@react-native-vector-icons/ionicons';
@@ -18,7 +20,9 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useConversation } from '../api/useConversation';
 import { useMessages, type MessageDto } from '../api/useMessages';
+import type { LocalMessageDto } from '../api/useSendMessage';
 import { AnimatedMessageBubble } from '../components/AnimatedMessageBubble';
 import { ChatAttachmentMenu } from '../components/ChatAttachmentMenu';
 import { DateSeparator } from '../components/DateSeparator';
@@ -30,7 +34,6 @@ import { formatMessageTime } from '../utils/formatChatDate';
 
 // --- Helpers ---
 
-/** Format a date into a WhatsApp-style label: "Today", "Yesterday", or "19th September 2026" */
 function getDateLabel(dateStr: string): string {
   const date = new Date(dateStr);
   if (isNaN(date.getTime())) return '';
@@ -79,19 +82,15 @@ function getDateLabel(dateStr: string): string {
   return `${day}${suffix} ${monthNames[date.getMonth()]} ${date.getFullYear()}`;
 }
 
-/** Get a plain date key like "2026-09-22" for grouping */
 function getDateKey(dateStr: string): string {
   const date = new Date(dateStr);
   if (isNaN(date.getTime())) return '';
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
-// Each item in the FlatList is either a date separator or a message
 type ListItem =
   | { type: 'date'; key: string; label: string }
   | { type: 'message'; key: string; message: MessageDto; isNew: boolean };
-
-// --- Component ---
 
 export function ChatRoomScreen() {
   const { colors, isDark } = useAppTheme();
@@ -100,35 +99,78 @@ export function ChatRoomScreen() {
 
   const params = useLocalSearchParams<{
     id?: string;
-    name?: string;
-    avatarUrl?: string;
-    status?: string;
-    otherParticipantId?: string;
   }>();
 
   const conversationId = params.id;
-  const contactName = params.name || 'Chat';
-  const contactAvatar = params.avatarUrl || '';
-  const initialStatus = params.status || 'Status unavailable';
+  const isIdValid = isValidUuid(conversationId);
 
-  // 1. Load real messages via REST + TanStack Query cache
+  // Safe back navigation fallback: if opened via cold deep link/notification with no history, go to (tabs)
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/(tabs)');
+    }
+  };
+
+  // 1. Authoritative conversation query (validates ID and resolves identity from backend)
+  const {
+    data: conversationData,
+    isLoading: isLoadingConversation,
+    error: conversationError,
+    refetch: refetchConversation,
+  } = useConversation(conversationId);
+
+  // Derive authoritative contact information
+  const otherParticipantId =
+    conversationData?.type === 'direct'
+      ? conversationData.otherParticipant?.id
+      : undefined;
+
+  const rawDisplayName =
+    conversationData?.type === 'direct'
+      ? (conversationData as any).otherParticipant?.displayName
+      : undefined;
+
+  const contactName: string =
+    conversationData?.type === 'group'
+      ? typeof (conversationData as any).name === 'string' &&
+        (conversationData as any).name
+        ? (conversationData as any).name
+        : 'Group conversation'
+      : typeof rawDisplayName === 'string' && rawDisplayName
+        ? rawDisplayName
+        : 'Conversation';
+
+  const rawAvatar =
+    conversationData?.type === 'group'
+      ? (conversationData as any).avatarUrl
+      : (conversationData as any)?.otherParticipant?.avatarUrl;
+
+  const contactAvatar: string = typeof rawAvatar === 'string' ? rawAvatar : '';
+
+  const initialStatus = 'Status unavailable';
+
+  // 2. Load messages
   const {
     data: messagePages,
     isLoading: isLoadingMessages,
+    error: messagesError,
+    refetch: refetchMessages,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useMessages(conversationId);
+  } = useMessages(isIdValid ? conversationId : undefined);
 
-  // 2. Real-time Socket.IO room, typing, and presence hook
+  // 3. Real-time Socket.IO presence & typing
   const {
     statusText,
     isRemoteTyping,
     handleInputKeystroke,
     handleMessageSent,
   } = useChatRoomSocket({
-    conversationId,
-    otherParticipantId: params.otherParticipantId,
+    conversationId: isIdValid ? conversationId : undefined,
+    otherParticipantId,
     fallbackStatus: initialStatus,
   });
 
@@ -152,20 +194,19 @@ export function ChatRoomScreen() {
     };
   }, [messagePages]);
 
-  // Re-sync the input when the stored draft or the active room/user changes.
-  const draftKey = `${currentUserId}:${conversationId}:${draft}`;
-  const [prevDraftKey, setPrevDraftKey] = useState(draftKey);
-  if (draftKey !== prevDraftKey) {
-    setPrevDraftKey(draftKey);
+  // Re-sync the input when the active room/user changes. Typing writes the
+  // draft store too, so only a room or account change should reset the input.
+  const roomKey = `${currentUserId}:${conversationId}`;
+  const [prevRoomKey, setPrevRoomKey] = useState(roomKey);
+  if (roomKey !== prevRoomKey) {
+    setPrevRoomKey(roomKey);
     setInputText(draft);
   }
 
-  // Track the count of messages at first load so we can tell new from old
+  // Track the message count at first load so live arrivals can animate in.
   const [initialCount, setInitialCount] = useState<number | null>(null);
-  const [initialCountConversationId, setInitialCountConversationId] =
-    useState(conversationId);
+  const [initialCountRoom, setInitialCountRoom] = useState(conversationId);
 
-  // Sort messages chronologically (oldest first for display top-to-bottom)
   const historyItems = messageHistory?.items;
   const sortedMessages = useMemo(() => {
     if (!historyItems) return [];
@@ -177,15 +218,13 @@ export function ChatRoomScreen() {
     return items;
   }, [historyItems]);
 
-  // Record the initial message count on first load
-  if (initialCountConversationId !== conversationId) {
-    setInitialCountConversationId(conversationId);
+  if (initialCountRoom !== conversationId) {
+    setInitialCountRoom(conversationId);
     setInitialCount(null);
   } else if (initialCount === null && sortedMessages.length > 0) {
     setInitialCount(sortedMessages.length);
   }
 
-  // Find latest incoming message ID from the other user
   const latestIncomingMessageId = useMemo(() => {
     const incoming = sortedMessages.filter(
       (m) => m.senderId && m.senderId !== currentUserId
@@ -194,22 +233,21 @@ export function ChatRoomScreen() {
     return last && !last.id.startsWith('optimistic-') ? last.id : null;
   }, [sortedMessages, currentUserId]);
 
-  // Mark incoming messages as read when opening room and whenever new incoming messages arrive
+  // Delivery orchestration (send, retry, receipts, read marking) lives in a hook
+  // so this screen only renders. Nothing is read or sent for an invalid ID.
   const { isSending, sendText, sendPhoto, retryMessage, getDeliveryStatus } =
     useChatRoomDelivery({
-      conversationId,
-      otherParticipantId: params.otherParticipantId,
+      conversationId: isIdValid ? conversationId : undefined,
+      otherParticipantId,
       latestIncomingMessageId,
     });
 
-  // Build the flat list data with date separators interleaved
   const listData: ListItem[] = useMemo(() => {
     const result: ListItem[] = [];
     let lastDateKey = '';
     const firstLoadCount = initialCount ?? sortedMessages.length;
 
     sortedMessages.forEach((msg, index) => {
-      // Insert date separator if the day changed
       const dateKey = getDateKey(msg.createdAt);
       if (dateKey && dateKey !== lastDateKey) {
         lastDateKey = dateKey;
@@ -220,7 +258,6 @@ export function ChatRoomScreen() {
         });
       }
 
-      // Messages beyond the initial load count are "new" (arrived live)
       const isNew = index >= firstLoadCount;
 
       result.push({
@@ -234,7 +271,6 @@ export function ChatRoomScreen() {
     return result;
   }, [sortedMessages, initialCount]);
 
-  // Keep live content visible without pulling users away from older messages.
   useEffect(() => {
     if (listData.length === 0 || !isNearBottomRef.current) return;
     const timer = setTimeout(() => {
@@ -255,18 +291,239 @@ export function ChatRoomScreen() {
   };
 
   const handleSendMessage = () => {
-    if (!inputText.trim() || !conversationId) return;
+    // Never send until the conversation has been resolved from the backend.
+    if (!inputText.trim() || !conversationId || !isIdValid || !conversationData)
+      return;
 
     const textToSend = inputText.trim();
     setInputText('');
     if (currentUserId) clearDraft(currentUserId, conversationId);
     handleMessageSent();
+
     sendText(textToSend, () => {
       setTimeout(() => {
         flatListRef.current?.scrollToEnd({ animated: true });
       }, 150);
     });
   };
+
+  // --- Recovery Screens for Invalid, Inaccessible, or Missing Conversations ---
+
+  // Do not render a placeholder identity while the route ID is being resolved.
+  // A valid ID with neither data nor an error is still being resolved.
+  if (isIdValid && !conversationData && !conversationError) {
+    return (
+      <View
+        className="flex-1 items-center justify-center px-6"
+        style={{
+          backgroundColor: isDark ? colors.background : '#F4F7F9',
+          paddingTop: insets.top,
+          paddingBottom: insets.bottom,
+        }}
+        accessibilityRole="progressbar"
+        accessibilityLabel="Loading conversation details"
+      >
+        <StatusBar style={isDark ? 'light' : 'dark'} />
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text
+          className="text-[15px] mt-4"
+          style={{ color: colors.textSecondary }}
+        >
+          Loading conversation...
+        </Text>
+      </View>
+    );
+  }
+
+  // 1. Invalid ID recovery screen
+  if (!conversationId || !isIdValid) {
+    return (
+      <View
+        className="flex-1 items-center justify-center px-6"
+        style={{
+          backgroundColor: isDark ? colors.background : '#F4F7F9',
+          paddingTop: insets.top,
+          paddingBottom: insets.bottom,
+        }}
+      >
+        <StatusBar style={isDark ? 'light' : 'dark'} />
+        <View
+          className="w-16 h-16 rounded-full items-center justify-center mb-4"
+          style={{ backgroundColor: 'rgba(239, 68, 68, 0.12)' }}
+        >
+          <Ionicons name="alert-circle" size={36} color="#EF4444" />
+        </View>
+        <Text
+          className="text-[20px] font-bold text-center mb-2"
+          style={{ color: colors.text }}
+          accessibilityRole="header"
+        >
+          Invalid Conversation Link
+        </Text>
+        <Text
+          className="text-[14px] text-center mb-6 leading-5"
+          style={{ color: colors.textSecondary }}
+        >
+          The conversation link is invalid or malformed. Please verify the URL
+          or select an existing chat from your conversations list.
+        </Text>
+        <Button
+          title="Back to Chats"
+          onPress={handleBack}
+          accessibilityLabel="Back to chats"
+          accessibilityHint="Returns to your conversation list"
+          style={{ width: '80%' }}
+        />
+      </View>
+    );
+  }
+
+  // 2. Inaccessible / Access Denied (403) recovery screen
+  if (conversationError?.isAccessDenied) {
+    return (
+      <View
+        className="flex-1 items-center justify-center px-6"
+        style={{
+          backgroundColor: isDark ? colors.background : '#F4F7F9',
+          paddingTop: insets.top,
+          paddingBottom: insets.bottom,
+        }}
+      >
+        <StatusBar style={isDark ? 'light' : 'dark'} />
+        <View
+          className="w-16 h-16 rounded-full items-center justify-center mb-4"
+          style={{ backgroundColor: 'rgba(245, 158, 11, 0.12)' }}
+        >
+          <Ionicons name="lock-closed" size={34} color="#F59E0B" />
+        </View>
+        <Text
+          className="text-[20px] font-bold text-center mb-2"
+          style={{ color: colors.text }}
+          accessibilityRole="header"
+        >
+          Access Denied
+        </Text>
+        <Text
+          className="text-[14px] text-center mb-6 leading-5"
+          style={{ color: colors.textSecondary }}
+        >
+          You do not have permission to view or participate in this
+          conversation.
+        </Text>
+        <Button
+          title="Back to Chats"
+          onPress={handleBack}
+          accessibilityLabel="Back to chats"
+          accessibilityHint="Returns to your conversation list"
+          style={{ width: '80%' }}
+        />
+      </View>
+    );
+  }
+
+  // 3. Not Found (404) recovery screen
+  if (conversationError?.isNotFound) {
+    return (
+      <View
+        className="flex-1 items-center justify-center px-6"
+        style={{
+          backgroundColor: isDark ? colors.background : '#F4F7F9',
+          paddingTop: insets.top,
+          paddingBottom: insets.bottom,
+        }}
+      >
+        <StatusBar style={isDark ? 'light' : 'dark'} />
+        <View
+          className="w-16 h-16 rounded-full items-center justify-center mb-4"
+          style={{ backgroundColor: 'rgba(107, 114, 128, 0.12)' }}
+        >
+          <Ionicons
+            name="chatbubble-ellipses-outline"
+            size={34}
+            color={colors.textMuted}
+          />
+        </View>
+        <Text
+          className="text-[20px] font-bold text-center mb-2"
+          style={{ color: colors.text }}
+          accessibilityRole="header"
+        >
+          Conversation Not Found
+        </Text>
+        <Text
+          className="text-[14px] text-center mb-6 leading-5"
+          style={{ color: colors.textSecondary }}
+        >
+          This conversation could not be found or has been removed.
+        </Text>
+        <View className="w-[80%] space-y-3">
+          <Button
+            title="Back to Chats"
+            onPress={handleBack}
+            accessibilityLabel="Back to chats"
+            accessibilityHint="Returns to your conversation list"
+          />
+        </View>
+      </View>
+    );
+  }
+
+  // 4. General fetch error recovery screen
+  if (conversationError && !conversationData) {
+    return (
+      <View
+        className="flex-1 items-center justify-center px-6"
+        style={{
+          backgroundColor: isDark ? colors.background : '#F4F7F9',
+          paddingTop: insets.top,
+          paddingBottom: insets.bottom,
+        }}
+      >
+        <StatusBar style={isDark ? 'light' : 'dark'} />
+        <View
+          className="w-16 h-16 rounded-full items-center justify-center mb-4"
+          style={{ backgroundColor: 'rgba(239, 68, 68, 0.12)' }}
+        >
+          <Ionicons name="cloud-offline" size={34} color="#EF4444" />
+        </View>
+        <Text
+          className="text-[20px] font-bold text-center mb-2"
+          style={{ color: colors.text }}
+          accessibilityRole="header"
+        >
+          Could Not Load Conversation
+        </Text>
+        <Text
+          className="text-[14px] text-center mb-6 leading-5"
+          style={{ color: colors.textSecondary }}
+        >
+          {conversationError.message ||
+            'Unable to connect to the server. Please check your internet connection and try again.'}
+        </Text>
+        <View className="w-[80%] space-y-3">
+          <Button
+            title="Retry"
+            onPress={() => refetchConversation()}
+            accessibilityLabel="Retry loading conversation"
+            accessibilityHint="Attempts to reload this conversation from the server"
+          />
+          <Pressable
+            onPress={handleBack}
+            className="py-3 items-center"
+            accessibilityRole="button"
+            accessibilityLabel="Back to chats"
+          >
+            <Text
+              className="text-[15px] font-semibold"
+              style={{ color: colors.primary }}
+            >
+              Back to Chats
+            </Text>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View
@@ -288,16 +545,22 @@ export function ChatRoomScreen() {
         {/* Left: Back Button + Contact Info */}
         <View className="flex-row items-center flex-1 mr-2">
           <Pressable
-            onPress={() => router.back()}
+            onPress={handleBack}
             hitSlop={12}
             className="w-9 h-9 items-center justify-center mr-1 active:opacity-75"
             accessibilityRole="button"
             accessibilityLabel="Back to chats"
+            accessibilityHint="Returns to the conversation list"
           >
             <Ionicons name="chevron-back" size={26} color="#FFFFFF" />
           </Pressable>
 
-          <View className="w-10 h-10 rounded-full overflow-hidden items-center justify-center mr-3 border border-white/30 bg-white/20">
+          <View
+            className="w-10 h-10 rounded-full overflow-hidden items-center justify-center mr-3 border border-white/30 bg-white/20"
+            accessible={true}
+            accessibilityRole="image"
+            accessibilityLabel={`Avatar of ${contactName}`}
+          >
             {contactAvatar ? (
               <Image
                 source={{ uri: contactAvatar }}
@@ -315,7 +578,12 @@ export function ChatRoomScreen() {
           </View>
 
           {/* Name & Dynamic Status */}
-          <View className="flex-1">
+          <View
+            className="flex-1"
+            accessible={true}
+            accessibilityRole="header"
+            accessibilityLabel={`${contactName}, status: ${isLoadingConversation ? 'Loading conversation details' : statusText}`}
+          >
             <Text
               className="text-white text-[17px]"
               style={{ fontFamily: 'SFPRODISPLAYBOLD' }}
@@ -332,12 +600,12 @@ export function ChatRoomScreen() {
               style={{ fontFamily: 'SFPRODISPLAYREGULAR' }}
               numberOfLines={1}
             >
-              {statusText}
+              {isLoadingConversation ? 'Connecting...' : statusText}
             </Text>
           </View>
         </View>
 
-        {/* Right: Video & Call Icons */}
+        {/* Right: Video & Voice Call Icons */}
         <View className="flex-row items-center space-x-3">
           <Pressable
             onPress={() =>
@@ -348,6 +616,9 @@ export function ChatRoomScreen() {
             }
             hitSlop={8}
             className="w-9 h-9 items-center justify-center active:opacity-75"
+            accessibilityRole="button"
+            accessibilityLabel={`Start video call with ${contactName}`}
+            accessibilityHint="Initiates a video call"
           >
             <Ionicons name="videocam" size={22} color="#FFFFFF" />
           </Pressable>
@@ -357,6 +628,9 @@ export function ChatRoomScreen() {
             }
             hitSlop={8}
             className="w-9 h-9 items-center justify-center active:opacity-75 ml-1"
+            accessibilityRole="button"
+            accessibilityLabel={`Start voice call with ${contactName}`}
+            accessibilityHint="Initiates a voice call"
           >
             <Ionicons name="call" size={20} color="#FFFFFF" />
           </Pressable>
@@ -369,7 +643,11 @@ export function ChatRoomScreen() {
         className="flex-1"
       >
         {isLoadingMessages && sortedMessages.length === 0 ? (
-          <View className="flex-1 items-center justify-center">
+          <View
+            className="flex-1 items-center justify-center"
+            accessibilityRole="progressbar"
+            accessibilityLabel="Loading messages"
+          >
             <ActivityIndicator size="small" color={colors.primary} />
             <Text
               className="text-[13px] mt-2"
@@ -377,6 +655,42 @@ export function ChatRoomScreen() {
             >
               Loading messages...
             </Text>
+          </View>
+        ) : messagesError && sortedMessages.length === 0 ? (
+          // History failed and nothing is cached: this is NOT an empty chat.
+          <View
+            className="flex-1 items-center justify-center px-6"
+            accessibilityRole="alert"
+          >
+            <Ionicons name="cloud-offline" size={30} color={colors.textMuted} />
+            <Text
+              className="text-[15px] mt-3 text-center"
+              style={{ color: colors.text }}
+            >
+              Could not load messages
+            </Text>
+            <Text
+              className="text-[13px] mt-1 mb-4 text-center"
+              style={{ color: colors.textMuted }}
+            >
+              {(messagesError as Error).message ||
+                'Check your connection and try again.'}
+            </Text>
+            <Pressable
+              onPress={() => void refetchMessages()}
+              className="px-5 py-2.5 rounded-full"
+              style={{ backgroundColor: colors.primary }}
+              accessibilityRole="button"
+              accessibilityLabel="Retry loading messages"
+              accessibilityHint="Attempts to reload this conversation's messages"
+            >
+              <Text
+                className="text-[14px]"
+                style={{ color: colors.primaryText }}
+              >
+                Retry
+              </Text>
+            </Pressable>
           </View>
         ) : (
           <FlatList
@@ -391,9 +705,15 @@ export function ChatRoomScreen() {
             showsVerticalScrollIndicator={false}
             onScroll={handleListScroll}
             scrollEventThrottle={100}
+            accessibilityRole="list"
+            accessibilityLabel={`Messages with ${contactName}`}
             ListHeaderComponent={
               isFetchingNextPage ? (
-                <ActivityIndicator size="small" color={colors.primary} />
+                <ActivityIndicator
+                  size="small"
+                  color={colors.primary}
+                  accessibilityLabel="Loading earlier messages"
+                />
               ) : null
             }
             ListEmptyComponent={() => (
@@ -449,7 +769,7 @@ export function ChatRoomScreen() {
                   sendStatus={sendStatus}
                   onRetry={
                     sendStatus === 'failed'
-                      ? () => retryMessage(msg)
+                      ? () => retryMessage(msg as LocalMessageDto)
                       : undefined
                   }
                 />
@@ -474,6 +794,9 @@ export function ChatRoomScreen() {
             onPress={() => setShowAttachmentMenu(true)}
             hitSlop={8}
             className="w-10 h-10 items-center justify-center mr-1 active:opacity-75"
+            accessibilityRole="button"
+            accessibilityLabel="Attach media or document"
+            accessibilityHint="Opens attachment options like photo library and camera"
           >
             <Ionicons name="attach" size={24} color={colors.textMuted} />
           </Pressable>
@@ -502,8 +825,8 @@ export function ChatRoomScreen() {
                 fontFamily: 'SFPRODISPLAYREGULAR',
               }}
               multiline
-              accessibilityLabel="Message"
-              accessibilityHint="Enter a message to send"
+              accessibilityLabel="Message text input"
+              accessibilityHint="Type your message here"
             />
           </View>
 
@@ -511,16 +834,23 @@ export function ChatRoomScreen() {
             onPress={handleSendMessage}
             disabled={!inputText.trim() || isSending}
             className="w-11 h-11 rounded-full items-center justify-center active:opacity-85 shadow"
-            accessibilityRole="button"
-            accessibilityLabel="Send message"
-            accessibilityHint="Sends the message in the composer"
-            accessibilityState={{
-              disabled: !inputText.trim() || isSending,
-            }}
             style={{
               backgroundColor: colors.primary,
               opacity: inputText.trim() ? 1 : 0.6,
             }}
+            accessibilityRole="button"
+            accessibilityLabel={
+              isSending ? 'Sending message' : 'Send message'
+            }
+            accessibilityState={{
+              disabled: !inputText.trim() || isSending,
+              busy: isSending,
+            }}
+            accessibilityHint={
+              !inputText.trim()
+                ? 'Disabled. Type a message before sending'
+                : 'Sends the composed message'
+            }
           >
             <Ionicons
               name="send"

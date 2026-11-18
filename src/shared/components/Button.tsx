@@ -1,3 +1,4 @@
+// src/shared/components/Button.tsx
 import { useAppTheme } from '@/shared/hooks';
 import {
   ActivityIndicator,
@@ -14,6 +15,8 @@ interface BtnProps {
   disabled?: boolean;
   className?: string;
   style?: ViewStyle;
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
 }
 
 export default function Button({
@@ -23,9 +26,15 @@ export default function Button({
   disabled = false,
   className,
   style,
+  accessibilityLabel,
+  accessibilityHint,
 }: BtnProps) {
   const { colors } = useAppTheme();
   const isDisabled = disabled || isLoading;
+
+  // Stable accessibility label that remains informative whether loading or idle
+  const resolvedAccessibilityLabel =
+    accessibilityLabel || (isLoading ? `${title}, in progress` : title);
 
   return (
     <Pressable
@@ -38,9 +47,21 @@ export default function Button({
       className={className}
       onPress={onPress}
       disabled={isDisabled}
+      accessibilityRole="button"
+      accessibilityLabel={resolvedAccessibilityLabel}
+      accessibilityHint={accessibilityHint}
+      accessibilityState={{
+        disabled: isDisabled,
+        busy: isLoading,
+      }}
+      aria-busy={isLoading}
+      aria-disabled={isDisabled}
     >
       {isLoading ? (
-        <ActivityIndicator color={colors.primaryText} />
+        <ActivityIndicator
+          color={colors.primaryText}
+          accessibilityLabel="Loading"
+        />
       ) : (
         <AppText
           variant="bold"

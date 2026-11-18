@@ -44,6 +44,7 @@ export function ConversationInfoModal({
       animationType="fade"
       transparent
       onRequestClose={onClose}
+      accessibilityViewIsModal={true}
     >
       <View className="flex-1 bg-black/60 items-center justify-center px-5">
         <View
@@ -58,6 +59,7 @@ export function ConversationInfoModal({
             <Text
               className="text-[18px]"
               style={{ color: colors.text, fontFamily: "SFPRODISPLAYBOLD" }}
+              accessibilityRole="header"
             >
               Conversation Info
             </Text>
@@ -65,6 +67,9 @@ export function ConversationInfoModal({
               onPress={onClose}
               className="w-8 h-8 rounded-full items-center justify-center active:opacity-70"
               style={{ backgroundColor: colors.background }}
+              accessibilityRole="button"
+              accessibilityLabel="Close conversation info"
+              accessibilityHint="Dismisses this dialog"
             >
               <Ionicons name="close" size={18} color={colors.text} />
             </Pressable>
