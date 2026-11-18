@@ -2,7 +2,7 @@ import Button from '@/shared/components/Button';
 import { useAppTheme } from '@/shared/hooks';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
     FlatList,
     Image,
@@ -14,6 +14,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ONBOARDING_SLIDES } from '../data';
 
+const VIEW_CONFIG = { viewAreaCoveragePercentThreshold: 50 };
+
 export function OnboardingScreen() {
     const { width } = useWindowDimensions();
     const router = useRouter();
@@ -21,13 +23,11 @@ export function OnboardingScreen() {
     const [currentIndex, setCurrentIndex] = useState(0);
     const slidesRef = useRef(null);
 
-    const viewableItemsChanged = useRef(({ viewableItems }: any) => {
+    const viewableItemsChanged = useCallback(({ viewableItems }: any) => {
         if (viewableItems[0]) {
             setCurrentIndex(viewableItems[0].index);
         }
-    }).current;
-
-    const viewConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
+    }, []);
 
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -66,7 +66,7 @@ export function OnboardingScreen() {
                     bounces={false}
                     keyExtractor={(item) => item.id}
                     onViewableItemsChanged={viewableItemsChanged}
-                    viewabilityConfig={viewConfig}
+                    viewabilityConfig={VIEW_CONFIG}
                     ref={slidesRef}
                 />
             </View>

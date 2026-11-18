@@ -394,7 +394,7 @@ export function ChatScreen() {
                     className="text-[13px]"
                     style={{ color: colors.textMuted }}
                   >
-                    No more users found with "{searchQuery}"
+                    No more users found with &quot;{searchQuery}&quot;
                   </Text>
                 </View>
               ) : (

@@ -29,7 +29,7 @@ export function useChatRoomSocket({
 
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isCurrentlyTypingRef = useRef(false);
-  const [typingExpiryTick, setTypingExpiryTick] = useState(0);
+  const [now, setNow] = useState(() => Date.now());
 
   // Join exactly once for each connected conversation and leave on room changes.
   useEffect(() => {
@@ -105,14 +105,13 @@ export function useChatRoomSocket({
     if (!typingInfo?.isTyping) return;
     const remaining = Math.max(0, typingInfo.timestamp + 4000 - Date.now());
     const timer = setTimeout(
-      () => setTypingExpiryTick((tick) => tick + 1),
+      () => setNow(Date.now()),
       remaining
     );
     return () => clearTimeout(timer);
   }, [typingInfo?.isTyping, typingInfo?.timestamp]);
 
   const isRemoteTyping = useMemo(() => {
-    void typingExpiryTick;
     if (!typingInfo) return false;
     if (!typingInfo.isTyping || typingInfo.userId === currentUserId)
       return false;
@@ -123,9 +122,9 @@ export function useChatRoomSocket({
     ) {
       return false;
     }
-    const isRecent = Date.now() - typingInfo.timestamp < 4000;
+    const isRecent = now - typingInfo.timestamp < 4000;
     return isRecent;
-  }, [currentUserId, otherParticipantId, typingExpiryTick, typingInfo]);
+  }, [currentUserId, otherParticipantId, now, typingInfo]);
 
   const participantPresence = otherParticipantId
     ? onlineUsers[otherParticipantId]

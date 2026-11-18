@@ -57,7 +57,7 @@ export function BlockedContactsScreen() {
               className="text-[13px] leading-5 font-normal"
               style={{ color: colors.textSecondary }}
             >
-              Blocked contacts can't send messages and call you.
+              Blocked contacts can&apos;t send messages and call you.
             </Text>
           </View>
         </View>

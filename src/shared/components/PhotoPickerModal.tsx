@@ -33,6 +33,41 @@ interface RecentPhotoItem {
   uri: string;
 }
 
+// Resolves the newest photos, or null when library permission is not granted.
+async function fetchRecentPhotos(): Promise<RecentPhotoItem[] | null> {
+  const permission = await requestPermissionsAsync();
+
+  const hasPermission =
+    permission.granted ||
+    permission.accessPrivileges === 'limited' ||
+    permission.status === 'granted';
+
+  if (!hasPermission) {
+    console.warn('Photo library permission not granted:', permission.status);
+    return null;
+  }
+
+  // SDK 57: Sort by newest first (ascending: false)
+  const assets = await new Query()
+    .eq(AssetField.MEDIA_TYPE, MediaType.IMAGE)
+    .orderBy({ key: AssetField.CREATION_TIME, ascending: false })
+    .limit(10)
+    .exe();
+
+  // Resolve usable URIs for expo-image
+  return Promise.all(
+    assets.map(async (asset) => {
+      let resolvedUri: string;
+      try {
+        resolvedUri = await asset.getUri();
+      } catch {
+        resolvedUri = asset.id;
+      }
+      return { id: asset.id, uri: resolvedUri };
+    })
+  );
+}
+
 export function PhotoPickerModal({
   visible,
   onClose,
@@ -41,58 +76,31 @@ export function PhotoPickerModal({
   const [recentPhotos, setRecentPhotos] = useState<RecentPhotoItem[]>([]);
   const [isLoadingPhotos, setIsLoadingPhotos] = useState(false);
 
-  useEffect(() => {
-    if (visible) {
-      loadRecentPhotos();
-    }
-  }, [visible]);
-
-  async function loadRecentPhotos() {
-    try {
-      setIsLoadingPhotos(true);
-      const permission = await requestPermissionsAsync();
-
-      const hasPermission =
-        permission.granted ||
-        permission.accessPrivileges === 'limited' ||
-        permission.status === 'granted';
-
-      if (!hasPermission) {
-        console.warn(
-          'Photo library permission not granted:',
-          permission.status
-        );
-        setIsLoadingPhotos(false);
-        return;
-      }
-
-      // SDK 57: Sort by newest first (ascending: false)
-      const assets = await new Query()
-        .eq(AssetField.MEDIA_TYPE, MediaType.IMAGE)
-        .orderBy({ key: AssetField.CREATION_TIME, ascending: false })
-        .limit(10)
-        .exe();
-
-      // Resolve usable URIs for expo-image
-      const items: RecentPhotoItem[] = await Promise.all(
-        assets.map(async (asset) => {
-          let resolvedUri: string;
-          try {
-            resolvedUri = await asset.getUri();
-          } catch {
-            resolvedUri = asset.id;
-          }
-          return { id: asset.id, uri: resolvedUri };
-        })
-      );
-
-      setRecentPhotos(items);
-    } catch (e) {
-      console.warn('Could not load recent photos:', e);
-    } finally {
-      setIsLoadingPhotos(false);
-    }
+  // Show the loading state as soon as the modal opens; the effect below
+  // clears it when the photos have loaded.
+  const [prevVisible, setPrevVisible] = useState(visible);
+  if (visible !== prevVisible) {
+    setPrevVisible(visible);
+    if (visible) setIsLoadingPhotos(true);
   }
+
+  useEffect(() => {
+    if (!visible) return;
+    let cancelled = false;
+    fetchRecentPhotos()
+      .then((items) => {
+        if (!cancelled && items) setRecentPhotos(items);
+      })
+      .catch((e) => {
+        console.warn('Could not load recent photos:', e);
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoadingPhotos(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [visible]);
 
   // 1. Take Photo via Camera
   async function handleTakePhoto() {
