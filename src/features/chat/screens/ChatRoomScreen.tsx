@@ -152,34 +152,38 @@ export function ChatRoomScreen() {
     };
   }, [messagePages]);
 
-  useEffect(() => {
+  // Re-sync the input when the stored draft or the active room/user changes.
+  const draftKey = `${currentUserId}:${conversationId}:${draft}`;
+  const [prevDraftKey, setPrevDraftKey] = useState(draftKey);
+  if (draftKey !== prevDraftKey) {
+    setPrevDraftKey(draftKey);
     setInputText(draft);
-  }, [conversationId, currentUserId, draft]);
+  }
 
   // Track the count of messages at first load so we can tell new from old
-  const initialCountRef = useRef<number | null>(null);
+  const [initialCount, setInitialCount] = useState<number | null>(null);
+  const [initialCountConversationId, setInitialCountConversationId] =
+    useState(conversationId);
 
   // Sort messages chronologically (oldest first for display top-to-bottom)
+  const historyItems = messageHistory?.items;
   const sortedMessages = useMemo(() => {
-    if (!messageHistory?.items) return [];
-    const items = [...messageHistory.items];
+    if (!historyItems) return [];
+    const items = [...historyItems];
     items.sort(
       (a, b) =>
         new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
     );
     return items;
-  }, [messageHistory?.items]);
+  }, [historyItems]);
 
   // Record the initial message count on first load
-  useEffect(() => {
-    initialCountRef.current = null;
-  }, [conversationId]);
-
-  useEffect(() => {
-    if (initialCountRef.current === null && sortedMessages.length > 0) {
-      initialCountRef.current = sortedMessages.length;
-    }
-  }, [sortedMessages.length]);
+  if (initialCountConversationId !== conversationId) {
+    setInitialCountConversationId(conversationId);
+    setInitialCount(null);
+  } else if (initialCount === null && sortedMessages.length > 0) {
+    setInitialCount(sortedMessages.length);
+  }
 
   // Find latest incoming message ID from the other user
   const latestIncomingMessageId = useMemo(() => {
@@ -202,7 +206,7 @@ export function ChatRoomScreen() {
   const listData: ListItem[] = useMemo(() => {
     const result: ListItem[] = [];
     let lastDateKey = '';
-    const initialCount = initialCountRef.current ?? sortedMessages.length;
+    const firstLoadCount = initialCount ?? sortedMessages.length;
 
     sortedMessages.forEach((msg, index) => {
       // Insert date separator if the day changed
@@ -217,7 +221,7 @@ export function ChatRoomScreen() {
       }
 
       // Messages beyond the initial load count are "new" (arrived live)
-      const isNew = index >= initialCount;
+      const isNew = index >= firstLoadCount;
 
       result.push({
         type: 'message',
@@ -228,7 +232,7 @@ export function ChatRoomScreen() {
     });
 
     return result;
-  }, [sortedMessages]);
+  }, [sortedMessages, initialCount]);
 
   // Keep live content visible without pulling users away from older messages.
   useEffect(() => {

@@ -54,9 +54,28 @@ function formatBytes(bytes: number): string {
   return `${bytes} B`;
 }
 
+// Real total and free disk space via the modern Expo SDK 57 Paths API
+function readDiskSpace(): { total: number; free: number } {
+  let total = 0;
+  let free = 0;
+  try {
+    const value = Paths.totalDiskSpace;
+    if (typeof value === 'number' && value > 0) total = value;
+  } catch (err) {
+    console.warn('Could not read total disk space:', err);
+  }
+  try {
+    const value = Paths.availableDiskSpace;
+    if (typeof value === 'number' && value > 0) free = value;
+  } catch (err) {
+    console.warn('Could not read available disk space:', err);
+  }
+  return { total, free };
+}
+
 export function useDeviceStorage(): DeviceStorageInfo {
-  const [totalBytes, setTotalBytes] = useState<number>(0);
-  const [freeBytes, setFreeBytes] = useState<number>(0);
+  const [totalBytes, setTotalBytes] = useState<number>(() => readDiskSpace().total);
+  const [freeBytes, setFreeBytes] = useState<number>(() => readDiskSpace().free);
   const [cacheBytes, setCacheBytes] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -100,26 +119,11 @@ export function useDeviceStorage(): DeviceStorageInfo {
   const loadStorage = useCallback(async () => {
     setIsLoading(true);
     try {
-      // 1. Get real total and free disk space via modern Expo SDK 57 Paths API
-      try {
-        const total = Paths.totalDiskSpace;
-        if (typeof total === 'number' && total > 0) {
-          setTotalBytes(total);
-        }
-      } catch (err) {
-        console.warn('Could not read total disk space:', err);
-      }
+      const { total, free } = readDiskSpace();
+      if (total > 0) setTotalBytes(total);
+      if (free > 0) setFreeBytes(free);
 
-      try {
-        const free = Paths.availableDiskSpace;
-        if (typeof free === 'number' && free > 0) {
-          setFreeBytes(free);
-        }
-      } catch (err) {
-        console.warn('Could not read available disk space:', err);
-      }
-
-      // 2. Measure real app cache size
+      // Measure real app cache size
       const cache = await measureCacheSize();
       setCacheBytes(cache);
     } finally {
@@ -127,9 +131,21 @@ export function useDeviceStorage(): DeviceStorageInfo {
     }
   }, [measureCacheSize]);
 
+  // Initial load: disk space is read by the state initialisers above and
+  // isLoading starts true, so only the async cache measurement runs here.
   useEffect(() => {
-    loadStorage();
-  }, [loadStorage]);
+    let cancelled = false;
+    measureCacheSize()
+      .then((cache) => {
+        if (!cancelled) setCacheBytes(cache);
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [measureCacheSize]);
 
   // Clear actual files from Paths.cache
   const clearAppCache = useCallback(async () => {

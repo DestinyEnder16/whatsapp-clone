@@ -122,7 +122,7 @@ export function OtpScreen() {
           className="text-[14px] mt-8 text-center"
           style={{ color: colors.textSecondary }}
         >
-          If you didn't get the code, resend it in{' '}
+          If you didn&apos;t get the code, resend it in{' '}
           <Text className="font-bold" style={{ color: colors.primary }}>
             {timer}
           </Text>{' '}

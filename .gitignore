@@ -47,3 +47,7 @@ example
 
 # local demonstration walkthrough
 /docs/local-module-walkthrough.md
+
+config
+# test output
+coverage/

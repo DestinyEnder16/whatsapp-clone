@@ -67,13 +67,15 @@ export function ContactPickerSheet({
   }, []);
 
   // Reset keyboard state & query when sheet closes
-  useEffect(() => {
+  const [prevVisible, setPrevVisible] = useState(visible);
+  if (visible !== prevVisible) {
+    setPrevVisible(visible);
     if (!visible) {
       setKeyboardHeight(0);
       setSearchQuery('');
       setIsInputFocused(false);
     }
-  }, [visible]);
+  }
 
   // Maintain consistent height matching Mockups 1 & 2 (~88% of screen)
   const screenHeight = Math.max(

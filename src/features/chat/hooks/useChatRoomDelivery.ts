@@ -48,19 +48,20 @@ export function useChatRoomDelivery({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationId, latestIncomingMessageId]);
 
+  const receiptItems = receipts?.items;
   const otherReceipt = useMemo(() => {
-    if (!receipts?.items) return null;
+    if (!receiptItems) return null;
     if (otherParticipantId) {
       return (
-        receipts.items.find(
+        receiptItems.find(
           (receipt) => receipt.userId === otherParticipantId
         ) || null
       );
     }
     return (
-      receipts.items.find((receipt) => receipt.userId !== currentUserId) || null
+      receiptItems.find((receipt) => receipt.userId !== currentUserId) || null
     );
-  }, [receipts?.items, otherParticipantId, currentUserId]);
+  }, [receiptItems, otherParticipantId, currentUserId]);
 
   const sendText = useCallback(
     (text: string, onSuccess?: () => void) => {
