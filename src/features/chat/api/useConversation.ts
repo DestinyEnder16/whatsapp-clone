@@ -3,7 +3,7 @@ import { accountQueryKeys } from '@/core/lib/accountQuery';
 import { useAuthStore } from '@/core/store/useAuthStore';
 import { api } from '@/services/api/client';
 import type { components, operations } from '@/services/api/schema';
-import { isValidUuid } from '@/services/notifications';
+import { isValidUuid } from '@/services/navigation/uuid';
 import { useQuery } from '@tanstack/react-query';
 
 export type ConversationDetailDto =

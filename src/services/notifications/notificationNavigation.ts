@@ -4,13 +4,9 @@ import { useNavigationStore } from '@/core/store/useNavigationStore';
 import * as Notifications from 'expo-notifications';
 import { router } from 'expo-router';
 
-export const UUID_REGEX =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+import { isValidUuid, UUID_REGEX } from '@/services/navigation/uuid';
 
-export function isValidUuid(id?: string | null): boolean {
-  if (!id || typeof id !== 'string') return false;
-  return UUID_REGEX.test(id.trim());
-}
+export { isValidUuid, UUID_REGEX };
 
 /**
  * Extract conversationId from a push notification payload or deep link URL.

@@ -3,6 +3,10 @@ import { queryClient } from '@/core/lib/queryClient';
 import { useAuthStore } from '@/core/store/useAuthStore';
 import { useNavigationStore } from '@/core/store/useNavigationStore';
 import {
+  conversationIdFromPath,
+  decideRouteGuard,
+} from '@/services/navigation/routeGuard';
+import {
   configureNotificationHandler,
   extractConversationId,
   isValidUuid,
@@ -46,19 +50,17 @@ function RootNavigator() {
       const parsed = Linking.parse(url);
       const conversationId =
         extractConversationId(parsed.queryParams as any) ||
-        extractConversationId({ path: parsed.path });
+        conversationIdFromPath(parsed.path);
 
       if (conversationId && isValidUuid(conversationId)) {
-        const { isAuthenticated: authed, user: currentUser, hasHydrated: hydrated } =
+        const { isAuthenticated: authed, user: currentUser } =
           useAuthStore.getState();
 
-        if (hydrated && authed && currentUser?.profileComplete) {
-          router.push({
-            pathname: '/chat/[id]',
-            params: { id: conversationId },
-          } as any);
-        } else {
-          // If signed out, retain the destination until authentication completes
+        // A signed-in user with a finished profile is routed by Expo Router
+        // itself (it opens the link); pushing here as well would stack the
+        // chat twice. Only retain the destination when the user cannot be
+        // taken there yet, so login/profile completion can resume it.
+        if (!(authed && currentUser?.profileComplete)) {
           useNavigationStore.getState().setPendingConversationId(conversationId);
         }
       }
@@ -69,49 +71,27 @@ function RootNavigator() {
     return () => sub.remove();
   }, []);
 
-  // 3. Layout-level session guard: enforces presentation and navigation security
+  // 3. Layout-level session guard: enforces presentation and navigation security.
+  //    The decision itself lives in decideRouteGuard (pure, unit tested).
   useEffect(() => {
-    if (!hasHydrated) return;
+    const decision = decideRouteGuard({
+      hasHydrated,
+      isAuthenticated,
+      profileComplete: !!user?.profileComplete,
+      segments,
+    });
 
-    const firstSegment = segments[0];
-    const isProtectedSegment =
-      firstSegment === '(tabs)' ||
-      firstSegment === 'chat' ||
-      firstSegment === 'settings' ||
-      firstSegment === 'pin-setup';
-
-    // Signed-out user trying to access or currently viewing a protected destination
-    if (!isAuthenticated) {
-      if (isProtectedSegment) {
-        // If route has conversation ID, capture it before redirecting
-        if (firstSegment === 'chat' && segments[1] && isValidUuid(segments[1])) {
-          useNavigationStore.getState().setPendingConversationId(segments[1]);
-        }
-        // Immediately kick out of protected presentation
-        router.replace('/onboarding');
+    if (decision.action === 'redirect') {
+      // Keep the chat the user was trying to open for after login/profile.
+      if (decision.captureConversationId) {
+        useNavigationStore
+          .getState()
+          .setPendingConversationId(decision.captureConversationId);
       }
-      return;
-    }
-
-    // Authenticated user but profile setup not completed
-    if (isAuthenticated && !user?.profileComplete) {
-      if (isProtectedSegment) {
-        router.replace('/profile');
-      }
-      return;
-    }
-
-    // Authenticated user with completed profile visiting onboarding or auth pages
-    if (isAuthenticated && user?.profileComplete) {
-      if (firstSegment === 'onboarding' || firstSegment === '(auth)') {
-        const pending =
-          useNavigationStore.getState().consumePendingDestination();
-        if (pending?.pathname) {
-          router.replace(pending.pathname as any);
-        } else {
-          router.replace('/(tabs)');
-        }
-      }
+      router.replace(decision.to);
+    } else if (decision.action === 'resume-pending') {
+      const pending = useNavigationStore.getState().consumePendingDestination();
+      router.replace((pending?.pathname ?? '/(tabs)') as any);
     }
   }, [hasHydrated, isAuthenticated, user?.profileComplete, segments, pathname]);
 
@@ -147,6 +127,8 @@ export default function RootLayout() {
   const { mode, isDark } = useAppTheme();
   const { setColorScheme } = useNativeWindColorScheme();
 
+  const hasHydrated = useAuthStore((state) => state.hasHydrated);
+
   const [fontsLoaded, fontError] = useFonts({
     SFPRODISPLAY: require('../../assets/fonts/sf-pro-display/SFPRODISPLAYREGULAR.otf'),
     SFPRODISPLAYREGULAR: require('../../assets/fonts/sf-pro-display/SFPRODISPLAYREGULAR.otf'),
@@ -169,17 +151,22 @@ export default function RootLayout() {
     NavigationBar.setStyle(isDark ? 'light' : 'dark');
   }, [isDark]);
 
-  // Hide splash screen once fonts are loaded or log on error
+  // The app is ready once fonts are loaded (or failed) AND persisted auth has
+  // been restored. Rendering earlier would mount private screens, or redirect a
+  // signed-in user to onboarding, from the empty pre-hydration auth state.
+  const isReady = (fontsLoaded || !!fontError) && hasHydrated;
+
+  // Hide splash screen only when the app is ready
   useEffect(() => {
     if (fontError) {
       console.warn('Error loading fonts:', fontError);
     }
-    if (fontsLoaded || fontError) {
+    if (isReady) {
       SplashScreen.hideAsync().catch(() => {});
     }
-  }, [fontsLoaded, fontError]);
+  }, [fontError, isReady]);
 
-  if (!fontsLoaded && !fontError) {
+  if (!isReady) {
     return null;
   }
 

@@ -8,6 +8,7 @@ import type {
   UserPresenceData,
 } from '@/core/socket/socketEvents';
 import { useAuthStore } from '@/core/store/useAuthStore';
+import { confirmOutboxMessage } from '@/features/chat/utils/outboxReconciliation';
 import { io, Socket } from 'socket.io-client';
 import { create } from 'zustand';
 
@@ -205,6 +206,15 @@ export const useSocketStore = create<SocketState>((set, get) => ({
             };
           }
         );
+        // The server has acknowledged this send: finish its durable outbox
+        // entry now, whether or not the HTTP response ever arrives.
+        if (currentUserId && msg.clientMessageId) {
+          confirmOutboxMessage(
+            currentUserId,
+            conversationId,
+            msg.clientMessageId
+          );
+        }
         return;
       }
 

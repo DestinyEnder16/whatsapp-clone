@@ -41,6 +41,48 @@ This command will move the starter code to the **app-example** directory and cre
 - If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
 - Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
 
+## Testing and verification
+
+### Supported versions
+
+| Tool | Version |
+| --- | --- |
+| Node.js | 24 or newer (see `.nvmrc`; CI runs Node 24) |
+| npm | 11 or newer (the lockfile is `package-lock.json`; use npm only) |
+| Expo SDK | 57 |
+| React / React Native | 19.2.3 / 0.86.3 |
+| Jest / jest-expo | 29.7 / 57.0.5 |
+| React Native Testing Library | 13.3.3 (with `react-test-renderer` 19.2.3) |
+
+### Commands
+
+```bash
+npm ci                 # clean install from the lockfile
+npm test               # run the unit/component tests
+npm run test:watch     # re-run tests while editing
+npm run test:coverage  # tests + coverage report (coverage/ is git-ignored)
+npm run typecheck      # tsc --noEmit
+npm run lint           # expo lint (ESLint)
+npm run export:android # Metro + Hermes bundle for Android
+npm run export:ios     # Metro + Hermes bundle for iOS
+npm run verify         # typecheck + lint + tests + both exports
+```
+
+`npm run verify` is the one command used by CI (`.github/workflows/testing.yml`)
+and by the pre-push hook. To turn the hook on in your clone (Git does not copy
+local config when cloning):
+
+```bash
+git config --local core.hooksPath .githooks
+```
+
+Tests live in `__tests__/`, shared test helpers in `test-utils/`. Tests replace
+only the outside edges (network, native storage, push, sockets, the router) and
+keep the application logic real. They do **not** replace trying the app on a
+device: native builds, real backend delivery, push taps, permissions, the
+SecureStore upgrade path and screen readers (VoiceOver / TalkBack) still need a
+manual check.
+
 ### Recording the package versions
 
 React = 19.2.3
@@ -48,5 +90,4 @@ React-native = 0.86.3
 Expo = 57.0.1
 package_manager = npm
 
-- To set up testing for this project:
-  npm install --save-dev jest@29.7.0 jest-expo@57.0.5 @types/jest @testing-library/react-native@13.3.3 react-test-renderer@19.2.3
+- Testing dependencies are already installed; see **Testing and verification** above.

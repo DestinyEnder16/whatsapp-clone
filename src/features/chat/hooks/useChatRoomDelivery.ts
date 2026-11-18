@@ -1,5 +1,9 @@
+import { isSessionEndedError } from '@/core/session/sessionOwner';
 import { useAuthStore } from '@/core/store/useAuthStore';
-import { uploadMedia, type SelectedMedia } from '@/services/media/uploadMedia';
+import {
+  createClientUploadId,
+  type SelectedMedia,
+} from '@/services/media/uploadMedia';
 import { toast } from '@/shared/utils/toast';
 import { useCallback, useEffect, useMemo } from 'react';
 import { useMarkAsRead } from '../api/useMarkAsRead';
@@ -76,6 +80,9 @@ export function useChatRoomDelivery({
         {
           onSuccess: onSuccess,
           onError: (error: any) => {
+            // A send stopped because the session ended is not an error for
+            // whoever is signed in now.
+            if (isSessionEndedError(error)) return;
             toast.error('Error', error?.message || 'Failed to send message');
           },
         }
@@ -84,32 +91,32 @@ export function useChatRoomDelivery({
     [conversationId, sendMessageMutation]
   );
 
+  // A photo is one operation: the upload runs inside the send mutation, under
+  // the same session owner, and is saved durably (message outbox + upload
+  // operation) from the moment it is chosen. If any stage fails the bubble
+  // stays visible as "failed" and Retry resumes from the stage that failed.
   const sendPhoto = useCallback(
-    async (media: SelectedMedia) => {
+    (media: SelectedMedia) => {
       if (!conversationId) return;
 
-      try {
-        toast.info('Attachment', 'Uploading media...');
-        const completedMedia = await uploadMedia(media, 'message_attachment');
-
-        sendMessageMutation.mutate(
-          {
-            conversationId,
-            attachmentMediaIds: [completedMedia.id],
-            clientMessageId: generateClientMessageId(),
+      toast.info('Attachment', 'Uploading media...');
+      sendMessageMutation.mutate(
+        {
+          conversationId,
+          media,
+          clientUploadId: createClientUploadId(),
+          clientMessageId: generateClientMessageId(),
+        },
+        {
+          onError: (error: any) => {
+            if (isSessionEndedError(error)) return;
+            toast.error(
+              'Attachment Send Failed',
+              error?.message || 'Please retry the message.'
+            );
           },
-          {
-            onError: (error: any) => {
-              toast.error(
-                'Attachment Send Failed',
-                error?.message || 'Please retry the message.'
-              );
-            },
-          }
-        );
-      } catch (error: any) {
-        toast.error('Error', error?.message || 'Failed to send photo');
-      }
+        }
+      );
     },
     [conversationId, sendMessageMutation]
   );
@@ -118,12 +125,23 @@ export function useChatRoomDelivery({
     (message: LocalMessageDto) => {
       if (!conversationId) return;
 
-      sendMessageMutation.mutate({
-        conversationId,
-        text: message.text || undefined,
-        attachmentMediaIds: message.attachmentMediaIds,
-        clientMessageId: message.clientMessageId,
-      });
+      sendMessageMutation.mutate(
+        {
+          conversationId,
+          text: message.text || undefined,
+          attachmentMediaIds: message.attachmentMediaIds,
+          // A photo whose upload had not finished resumes that upload.
+          media: message.localMedia,
+          clientUploadId: message.clientUploadId,
+          clientMessageId: message.clientMessageId,
+        },
+        {
+          onError: (error: any) => {
+            if (isSessionEndedError(error)) return;
+            toast.error('Error', error?.message || 'Failed to send message');
+          },
+        }
+      );
     },
     [conversationId, sendMessageMutation]
   );

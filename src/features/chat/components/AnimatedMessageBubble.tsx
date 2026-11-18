@@ -57,10 +57,21 @@ export function AnimatedMessageBubble({
     text || 'Photo attachment'
   }. ${statusDescription}`;
 
+  // The bubble is one accessible element, so the visual Retry button inside it
+  // cannot be focused separately by a screen reader. Expose Retry as a custom
+  // action on the bubble itself (VoiceOver rotor / TalkBack actions menu).
+  const canRetry = sendStatus === 'failed' && !!onRetry;
+
   const bubbleContent = (
     <View
       accessible={true}
       accessibilityLabel={fullAccessibilityLabel}
+      accessibilityActions={
+        canRetry ? [{ name: 'retry', label: 'Retry sending message' }] : undefined
+      }
+      onAccessibilityAction={(event) => {
+        if (event.nativeEvent.actionName === 'retry') onRetry?.();
+      }}
       className={`max-w-[78%] px-4 py-2.5 rounded-2xl shadow-sm ${
         isMe ? 'rounded-tr-sm' : 'rounded-tl-sm'
       }`}

@@ -98,7 +98,7 @@ describe('useDataStorageStore', () => {
     try {
       useDataStorageStore.getState().clearCache();
       expect(useDataStorageStore.getState().lastCacheClearedAt).toBe(
-        new Date('2026-11-18T12:00:00Z').getTime(),
+        new Date('2026-11-18T12:00:00Z').getTime()
       );
     } finally {
       jest.useRealTimers();

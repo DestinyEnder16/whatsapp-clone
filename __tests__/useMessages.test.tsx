@@ -111,6 +111,7 @@ describe('loading history', () => {
           path: { conversationId: 'c1' },
           query: { limit: 50, cursor: undefined },
         },
+        signal: expect.any(Object),
       },
     );
     expect(allItems(result.current.data)).toEqual([serverMessage('s1')]);

@@ -1,6 +1,6 @@
 // src/features/chat/screens/ChatRoomScreen.tsx
 import { useAuthStore } from '@/core/store/useAuthStore';
-import { isValidUuid } from '@/services/notifications';
+import { isValidUuid } from '@/services/navigation/uuid';
 import { Button } from '@/shared/components';
 import { useAppTheme } from '@/shared/hooks';
 import { toast } from '@/shared/utils/toast';
@@ -751,7 +751,12 @@ export function ChatRoomScreen() {
                 msg as MessageDto & { sendStatus?: 'pending' | 'failed' }
               ).sendStatus;
               const firstAttachment = (msg.attachments as any)?.[0];
-              const imageUri = firstAttachment?.url || null;
+              // A photo that has not reached the server yet is shown from the
+              // local file, so a failed/pending photo is still visible.
+              const imageUri =
+                firstAttachment?.url ||
+                (msg as LocalMessageDto).localMedia?.uri ||
+                null;
 
               const { isRead, isDelivered } = getDeliveryStatus(msg);
 

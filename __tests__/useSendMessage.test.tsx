@@ -104,6 +104,8 @@ describe('sending successfully', () => {
           text: 'hello',
           attachmentMediaIds: undefined,
         },
+        // cancelled if the session ends
+        signal: expect.any(Object),
       },
     );
   });
