@@ -1,5 +1,6 @@
 module.exports = {
   preset: 'jest-expo',
+  clearMocks: true,
   testMatch: [
     '<rootDir>/src/**/*.test.[jt]s?(x)',
     '<rootDir>/src/**/*.spec.[jt]s?(x)',
