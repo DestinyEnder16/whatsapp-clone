@@ -1,3 +1,8 @@
+// Tests for push-notification routing to a chat.
+// Checks that the conversation (and optional name, avatar and participant) is
+// read correctly from a notification, that missing or invalid data returns
+// null, and that the pending destination is used once and then cleared.
+
 import type * as Notifications from 'expo-notifications';
 import {
   consumePendingChatDestination,

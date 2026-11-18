@@ -1,3 +1,10 @@
+// Tests for the auth store (login and logout).
+// Checks that logging in stores the tokens and user, resets push registration
+// for a different account, and registers for push only when allowed. Checks
+// that logging out clears credentials, revokes the refresh token, unregisters
+// push, removes the account's cached data, and still works if the server
+// calls fail. Push, storage and the logout request are mocked.
+
 import { accountQueryKeys } from '@/core/lib/accountQuery';
 import { queryClient } from '@/core/lib/queryClient';
 import { useAuthStore } from '@/core/store/useAuthStore';

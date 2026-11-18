@@ -1,3 +1,9 @@
+// Tests for formatLastActive (the status line under a contact's name).
+// Checks the priority "Typing..." > "Online" > last-active time, then the
+// wording for "just now", minutes, hours, yesterday, days and the DD/MM/YYYY
+// last-seen date, including the fallback for missing or invalid dates. The
+// clock is fixed so results never change.
+
 import { formatLastActive } from '../src/features/chat/utils/formatLastActive';
 
 const NOW = new Date(2026, 10, 18, 12, 0, 0);

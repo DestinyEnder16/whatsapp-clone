@@ -1,3 +1,9 @@
+// Tests for the settings stores: PIN, privacy, data storage and theme.
+// Checks their default values, that each setter changes only its own setting,
+// that clearing the PIN resets both of its fields, and that only the intended
+// fields (not runtime flags) are saved. Storage is replaced with an in-memory
+// version.
+
 import { useDataStorageStore } from '@/core/store/useDataStorageStore';
 import { usePinStore } from '@/core/store/usePinStore';
 import { usePrivacyStore } from '@/core/store/usePrivacyStore';
