@@ -1,3 +1,9 @@
+// Tests for the auth session helpers.
+// Checks that the session counter changes on every logout/login (so slow
+// responses from an old session can be ignored) and that revokeAuthSession
+// sends the refresh token to the logout endpoint, does nothing without a token,
+// and reports network failures. The network call is mocked.
+
 import {
   getAuthSessionGeneration,
   invalidateAuthSession,

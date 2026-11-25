@@ -1,44 +1,103 @@
-import type * as Notifications from 'expo-notifications';
+// src/services/notifications/notificationNavigation.ts
+import { useAuthStore } from '@/core/store/useAuthStore';
+import { useNavigationStore } from '@/core/store/useNavigationStore';
+import * as Notifications from 'expo-notifications';
+import { router } from 'expo-router';
 
-export interface PendingChatDestination {
-  conversationId: string;
-  name?: string;
-  avatarUrl?: string;
-  otherParticipantId?: string;
+import { isValidUuid, UUID_REGEX } from '@/services/navigation/uuid';
+
+export { isValidUuid, UUID_REGEX };
+
+/**
+ * Extract conversationId from a push notification payload or deep link URL.
+ */
+export function extractConversationId(
+  data?: Record<string, any> | null
+): string | null {
+  if (!data) return null;
+
+  // Direct conversationId field
+  if (typeof data.conversationId === 'string' && isValidUuid(data.conversationId)) {
+    return data.conversationId.trim();
+  }
+
+  // Generic id when marked as chat or conversation
+  if (
+    typeof data.id === 'string' &&
+    (data.type === 'chat' || data.type === 'message' || data.type === 'conversation') &&
+    isValidUuid(data.id)
+  ) {
+    return data.id.trim();
+  }
+
+  // URL or path in payload e.g. "/chat/uuid" or "whatsappclone:///chat/uuid"
+  const urlCandidate = data.url || data.path;
+  if (typeof urlCandidate === 'string') {
+    const match = urlCandidate.match(/chat\/([0-9a-fA-F-]{36})/);
+    if (match && isValidUuid(match[1])) {
+      return match[1];
+    }
+  }
+
+  return null;
 }
 
-let pendingChatDestination: PendingChatDestination | null = null;
+/**
+ * Handle notification tap response in both cold and warm states.
+ */
+export async function handleNotificationResponse(
+  response: Notifications.NotificationResponse | null
+): Promise<void> {
+  if (!response) return;
 
-export function getChatDestinationFromNotification(
-  response: Notifications.NotificationResponse
-): PendingChatDestination | null {
-  const data = (response.notification.request.content.data || {}) as Record<
-    string,
-    unknown
-  >;
-  const conversationId = data.conversationId || data.conversation_id;
+  const data = response.notification?.request?.content?.data;
+  const conversationId = extractConversationId(data);
 
-  if (typeof conversationId !== 'string' || !conversationId) return null;
+  if (!conversationId) {
+    return;
+  }
 
-  return {
-    conversationId,
-    name: typeof data.name === 'string' ? data.name : undefined,
-    avatarUrl: typeof data.avatarUrl === 'string' ? data.avatarUrl : undefined,
-    otherParticipantId:
-      typeof data.otherParticipantId === 'string'
-        ? data.otherParticipantId
-        : undefined,
+  const { isAuthenticated, user, hasHydrated } = useAuthStore.getState();
+
+  // If user is fully authenticated and profile complete, route immediately
+  if (hasHydrated && isAuthenticated && user?.profileComplete) {
+    try {
+      router.push({
+        pathname: '/chat/[id]',
+        params: { id: conversationId },
+      } as any);
+    } catch (e) {
+      console.warn('[NotificationNavigation] Failed to navigate to chat:', e);
+    }
+  } else {
+    // If signed out or profile incomplete, retain the destination until authentication completes
+    useNavigationStore.getState().setPendingConversationId(conversationId);
+  }
+}
+
+/**
+ * Sets up notification response handling for cold start and warm interactions.
+ */
+export function setupNotificationNavigation(): () => void {
+  // 1. Warm / Running state listener: triggered whenever user taps a notification
+  const subscription = Notifications.addNotificationResponseReceivedListener(
+    (response) => {
+      void handleNotificationResponse(response);
+    }
+  );
+
+  // 2. Cold start check: triggered if app was launched directly from a notification tap
+  void Notifications.getLastNotificationResponseAsync().then(
+    async (response) => {
+      if (response) {
+        await handleNotificationResponse(response);
+        // Clear to avoid duplicate processing on re-renders
+        await Notifications.clearLastNotificationResponseAsync().catch(() => {});
+      }
+    }
+  );
+
+  return () => {
+    subscription.remove();
   };
-}
-
-export function setPendingChatDestination(
-  destination: PendingChatDestination
-): void {
-  pendingChatDestination = destination;
-}
-
-export function consumePendingChatDestination(): PendingChatDestination | null {
-  const destination = pendingChatDestination;
-  pendingChatDestination = null;
-  return destination;
 }

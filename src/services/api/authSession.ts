@@ -1,7 +1,17 @@
 let authSessionGeneration = 0;
+// Aborted when the session ends, so in-flight requests and uploads stop at the
+// transport instead of only being ignored when they finish.
+let authSessionAbort = new AbortController();
 
 export function invalidateAuthSession() {
   authSessionGeneration += 1;
+  authSessionAbort.abort();
+  authSessionAbort = new AbortController();
+}
+
+/** Aborts when the current session ends (logout or account switch). */
+export function getAuthSessionSignal(): AbortSignal {
+  return authSessionAbort.signal;
 }
 
 export function getAuthSessionGeneration() {

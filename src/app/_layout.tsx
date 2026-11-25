@@ -1,35 +1,142 @@
+// src/app/_layout.tsx
 import { queryClient } from '@/core/lib/queryClient';
 import { useAuthStore } from '@/core/store/useAuthStore';
+import { useNavigationStore } from '@/core/store/useNavigationStore';
+import {
+  canMountPrivateScreens,
+  conversationIdFromPath,
+  decideRouteGuard,
+} from '@/services/navigation/routeGuard';
 import {
   configureNotificationHandler,
-  consumePendingChatDestination,
-  getChatDestinationFromNotification,
-  setPendingChatDestination,
+  extractConversationId,
+  isValidUuid,
+  setupNotificationNavigation,
 } from '@/services/notifications';
 import { useAppTheme } from '@/shared/hooks';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
+import * as Linking from 'expo-linking';
 import { NavigationBar } from 'expo-navigation-bar';
-import * as Notifications from 'expo-notifications';
-import { router, Stack, useSegments } from 'expo-router';
+import { router, Stack, usePathname, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme as useNativeWindColorScheme } from 'nativewind';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import Toast from 'react-native-toast-message';
 import '../../global.css';
 
 // Keep the splash screen visible while fonts and initial state are loading
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
-export default function RootLayout() {
-  const { mode, colors, isDark } = useAppTheme();
-  const { setColorScheme } = useNativeWindColorScheme();
+function RootNavigator() {
+  const { colors, isDark } = useAppTheme();
   const hasHydrated = useAuthStore((state) => state.hasHydrated);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const user = useAuthStore((state) => state.user);
   const segments = useSegments();
-  const handledNotificationIdRef = useRef<string | null>(null);
+  const pathname = usePathname();
+
+  // 1. Configure foreground notification handler and response listener (cold & warm)
+  useEffect(() => {
+    configureNotificationHandler();
+    const cleanupNotifications = setupNotificationNavigation();
+    return () => cleanupNotifications();
+  }, []);
+
+  // 2. Listen to incoming deep links (e.g. whatsappclone://chat/<id>)
+  useEffect(() => {
+    const handleUrl = (url: string | null) => {
+      if (!url) return;
+      const parsed = Linking.parse(url);
+      const conversationId =
+        extractConversationId(parsed.queryParams as any) ||
+        conversationIdFromPath(parsed.path);
+
+      if (conversationId && isValidUuid(conversationId)) {
+        const { isAuthenticated: authed, user: currentUser } =
+          useAuthStore.getState();
+
+        // A signed-in user with a finished profile is routed by Expo Router
+        // itself (it opens the link); pushing here as well would stack the
+        // chat twice. Only retain the destination when the user cannot be
+        // taken there yet, so login/profile completion can resume it.
+        if (!(authed && currentUser?.profileComplete)) {
+          useNavigationStore.getState().setPendingConversationId(conversationId);
+        }
+      }
+    };
+
+    void Linking.getInitialURL().then(handleUrl);
+    const sub = Linking.addEventListener('url', (event) => handleUrl(event.url));
+    return () => sub.remove();
+  }, []);
+
+  // 3. Layout-level session guard: enforces presentation and navigation security.
+  //    The decision itself lives in decideRouteGuard (pure, unit tested).
+  useEffect(() => {
+    const decision = decideRouteGuard({
+      hasHydrated,
+      isAuthenticated,
+      profileComplete: !!user?.profileComplete,
+      segments,
+    });
+
+    if (decision.action === 'redirect') {
+      // Keep the chat the user was trying to open for after login/profile.
+      if (decision.captureConversationId) {
+        useNavigationStore
+          .getState()
+          .setPendingConversationId(decision.captureConversationId);
+      }
+      router.replace(decision.to);
+    } else if (decision.action === 'resume-pending') {
+      const pending = useNavigationStore.getState().consumePendingDestination();
+      router.replace((pending?.pathname ?? '/(tabs)') as any);
+    }
+  }, [hasHydrated, isAuthenticated, user?.profileComplete, segments, pathname]);
+
+  const canMountPrivate = canMountPrivateScreens({
+    hasHydrated,
+    isAuthenticated,
+    profileComplete: !!user?.profileComplete,
+  });
+
+  return (
+    <>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
+
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: colors.background },
+          animation: 'slide_from_right',
+        }}
+      >
+        <Stack.Screen name="index" />
+        <Stack.Screen name="onboarding" />
+        <Stack.Screen name="(auth)" />
+
+        {/* Private screens exist only for a signed-in user with a finished
+            profile, so they can never mount first and be redirected later. */}
+        <Stack.Protected guard={canMountPrivate}>
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="chat" />
+          <Stack.Screen name="settings" />
+          <Stack.Screen name="pin-setup" />
+        </Stack.Protected>
+      </Stack>
+
+      <Toast />
+    </>
+  );
+}
+
+export default function RootLayout() {
+  const { mode, isDark } = useAppTheme();
+  const { setColorScheme } = useNativeWindColorScheme();
+
+  const hasHydrated = useAuthStore((state) => state.hasHydrated);
 
   const [fontsLoaded, fontError] = useFonts({
     SFPRODISPLAY: require('../../assets/fonts/sf-pro-display/SFPRODISPLAYREGULAR.otf'),
@@ -49,119 +156,32 @@ export default function RootLayout() {
     setColorScheme(mode);
   }, [mode, setColorScheme]);
 
-  // Configure Expo foreground notification handler
-  useEffect(() => {
-    configureNotificationHandler();
-  }, []);
-
-  useEffect(() => {
-    const handleNotificationResponse = (
-      response: Notifications.NotificationResponse
-    ) => {
-      const responseId = response.notification.request.identifier;
-      if (responseId === handledNotificationIdRef.current) return;
-      handledNotificationIdRef.current = responseId;
-
-      const destination = getChatDestinationFromNotification(response);
-      if (!destination) return;
-
-      if (hasHydrated && isAuthenticated && user?.profileComplete) {
-        router.push({
-          pathname: '/chat/[id]',
-          params: {
-            id: destination.conversationId,
-            name: destination.name,
-            avatarUrl: destination.avatarUrl,
-            otherParticipantId: destination.otherParticipantId,
-          },
-        });
-      } else {
-        setPendingChatDestination(destination);
-      }
-    };
-
-    const responseSubscription =
-      Notifications.addNotificationResponseReceivedListener(
-        handleNotificationResponse
-      );
-    void Notifications.getLastNotificationResponseAsync().then((response) => {
-      if (response) handleNotificationResponse(response);
-    });
-
-    return () => responseSubscription.remove();
-  }, [hasHydrated, isAuthenticated, user?.profileComplete]);
-
-  useEffect(() => {
-    if (!hasHydrated) return;
-
-    const destination = consumePendingChatDestination();
-    if (destination && isAuthenticated && user?.profileComplete) {
-      router.replace({
-        pathname: '/chat/[id]',
-        params: {
-          id: destination.conversationId,
-          name: destination.name,
-          avatarUrl: destination.avatarUrl,
-          otherParticipantId: destination.otherParticipantId,
-        },
-      });
-    } else if (destination) {
-      setPendingChatDestination(destination);
-    }
-  }, [hasHydrated, isAuthenticated, user?.profileComplete]);
-
-  useEffect(() => {
-    if (!hasHydrated) return;
-
-    const isProtectedRoute =
-      segments[0] === 'chat' ||
-      segments[0] === 'settings' ||
-      segments[0] === '(tabs)';
-
-    if (!isAuthenticated && isProtectedRoute) {
-      router.replace('/onboarding');
-    } else if (isAuthenticated && !user?.profileComplete && isProtectedRoute) {
-      router.replace('/profile');
-    }
-  }, [hasHydrated, isAuthenticated, segments, user?.profileComplete]);
-
   useEffect(() => {
     NavigationBar.setStyle(isDark ? 'light' : 'dark');
   }, [isDark]);
 
-  // Hide splash screen once fonts are loaded or log on error
+  // The app is ready once fonts are loaded (or failed) AND persisted auth has
+  // been restored. Rendering earlier would mount private screens, or redirect a
+  // signed-in user to onboarding, from the empty pre-hydration auth state.
+  const isReady = (fontsLoaded || !!fontError) && hasHydrated;
+
+  // Hide splash screen only when the app is ready
   useEffect(() => {
     if (fontError) {
       console.warn('Error loading fonts:', fontError);
     }
-    if (fontsLoaded || fontError) {
+    if (isReady) {
       SplashScreen.hideAsync().catch(() => {});
     }
-  }, [fontsLoaded, fontError]);
+  }, [fontError, isReady]);
 
-  // Prevent app from rendering with system fallback fonts until SF Pro is loaded
-  if (!fontsLoaded && !fontError) {
+  if (!isReady) {
     return null;
   }
 
   return (
     <QueryClientProvider client={queryClient}>
-      <StatusBar style={isDark ? 'light' : 'dark'} />
-
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: colors.background },
-          animation: 'slide_from_right',
-        }}
-      >
-        <Stack.Screen name="index" />
-        <Stack.Screen name="(auth)" />
-        <Stack.Screen name="(tabs)" />
-      </Stack>
-
-      {/* this allows the toasts to be rendered globally over all screens and modals */}
-      <Toast />
+      <RootNavigator />
     </QueryClientProvider>
   );
 }

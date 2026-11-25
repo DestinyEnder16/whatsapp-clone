@@ -1,3 +1,9 @@
+// Tests for the useMessages hook (loading chat history).
+// Checks page loading, next-page cursors, errors, and that nothing is fetched
+// without a conversation or when signed out. Also checks that messages left
+// unsent when the app closed are shown again as "failed" (without duplicates
+// or other accounts' messages). The HTTP client is mocked.
+
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 import type { QueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api/client';
@@ -105,6 +111,7 @@ describe('loading history', () => {
           path: { conversationId: 'c1' },
           query: { limit: 50, cursor: undefined },
         },
+        signal: expect.any(Object),
       },
     );
     expect(allItems(result.current.data)).toEqual([serverMessage('s1')]);

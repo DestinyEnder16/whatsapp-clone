@@ -1,3 +1,9 @@
+// Tests for formatChatDate and formatMessageTime (chat list and message times).
+// Checks that a timestamp becomes the right label: a 12-hour time for today,
+// "Yesterday", a short weekday for the past week, or a numeric date for older
+// messages, plus the 24-hour HH:mm message time. Also checks that empty or
+// invalid input is handled. The clock is fixed so results never change.
+
 import {
   formatChatDate,
   formatMessageTime,

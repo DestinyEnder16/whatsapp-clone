@@ -1,3 +1,9 @@
+// Tests for the useSendMessage hook (sending a chat message).
+// Checks that the message is posted with its client id, appears instantly as
+// "pending", and is replaced by the server copy on success. On failure it is
+// kept as "failed" in the list and outbox, and a retry reuses the same id so
+// there is one message, not a duplicate. The HTTP client is mocked.
+
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 import type { QueryClient } from '@tanstack/react-query';
 import { accountQueryKeys } from '@/core/lib/accountQuery';
@@ -98,6 +104,8 @@ describe('sending successfully', () => {
           text: 'hello',
           attachmentMediaIds: undefined,
         },
+        // cancelled if the session ends
+        signal: expect.any(Object),
       },
     );
   });

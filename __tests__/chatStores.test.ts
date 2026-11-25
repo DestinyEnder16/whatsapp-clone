@@ -1,3 +1,9 @@
+// Tests for the persisted chat stores: drafts and the message outbox.
+// Checks that drafts and unsent messages are kept separately per account and
+// conversation, that saving, marking failed and removing work (without
+// touching other chats), and that the data is written to storage so it
+// survives an app restart. Storage is replaced with an in-memory version.
+
 import { useChatDraftStore } from '@/features/chat/store/useChatDraftStore';
 import { useMessageOutboxStore } from '@/features/chat/store/useMessageOutboxStore';
 import { clearPersisted, readPersisted } from '../test-utils/mmkvMock';

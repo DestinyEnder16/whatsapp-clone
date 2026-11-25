@@ -1,9 +1,17 @@
-import { useAuthStore } from '@/core/store/useAuthStore';
 import {
-  assignProfileAvatar,
-  uploadMedia,
+  assertSessionOwnerCurrent,
+  captureSessionOwner,
+  isSessionEndedError,
+} from '@/core/session/sessionOwner';
+import { useAuthStore } from '@/core/store/useAuthStore';
+import { useNavigationStore } from '@/core/store/useNavigationStore';
+import { uploadProfileAvatar } from '@/services/media/profileAvatar';
+import {
+  createClientUploadId,
+  discardUploadOperation,
   type SelectedMedia,
 } from '@/services/media/uploadMedia';
+import { findPendingUpload } from '@/services/media/uploadOperationStore';
 import { AppText, BackButton, Button } from '@/shared/components';
 import { PhotoPickerModal } from '@/shared/components/PhotoPickerModal';
 import Screen from '@/shared/components/Screen';
@@ -11,7 +19,7 @@ import { useAppTheme } from '@/shared/hooks';
 import { toast } from '@/shared/utils/toast';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
 type UploadStatus = 'idle' | 'uploading' | 'done' | 'failed';
@@ -19,27 +27,76 @@ type UploadStatus = 'idle' | 'uploading' | 'done' | 'failed';
 export function UploadPhotoScreen() {
   const { colors, isDark } = useAppTheme();
   const setUser = useAuthStore((state) => state.setUser);
+
+  // An upload this account started earlier that never finished (failed, or the
+  // app was closed): resume it instead of making the user start over.
+  const [unfinished] = useState(() =>
+    findPendingUpload(useAuthStore.getState().user?.id, 'profile_avatar')
+  );
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState<SelectedMedia | null>(
-    null
+    unfinished?.media ?? null
   );
-  const [uploadStatus, setUploadStatus] = useState<UploadStatus>('idle');
-  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadStatus, setUploadStatus] = useState<UploadStatus>(
+    unfinished ? 'failed' : 'idle'
+  );
+  const [uploadError, setUploadError] = useState<string | null>(
+    unfinished ? 'Your last upload did not finish. Retry to continue.' : null
+  );
 
-  async function handleSelectPhoto(media: SelectedMedia) {
-    setSelectedImage(media);
-    setModalVisible(false);
+  // The id of the upload being attempted. Reused by Retry so a stage that
+  // already succeeded (transfer, completion) is not repeated.
+  const uploadIdRef = useRef<string | undefined>(unfinished?.clientUploadId);
+  const abortRef = useRef<AbortController | null>(null);
+
+  // Stop an in-flight upload when leaving the screen.
+  useEffect(() => () => abortRef.current?.abort(), []);
+
+  async function runUpload(media: SelectedMedia) {
+    // Who is uploading: captured before any await and checked after each one.
+    const owner = captureSessionOwner();
+    const controller = new AbortController();
+    abortRef.current = controller;
+    const clientUploadId = uploadIdRef.current ?? createClientUploadId();
+    uploadIdRef.current = clientUploadId;
+
     setUploadStatus('uploading');
     setUploadError(null);
     try {
-      const completedMedia = await uploadMedia(media, 'profile_avatar');
-      setUser(await assignProfileAvatar(completedMedia.id));
+      const updatedUser = await uploadProfileAvatar(media, {
+        owner,
+        signal: controller.signal,
+        clientUploadId,
+      });
+      // Last check before the auth-store write.
+      assertSessionOwnerCurrent(owner);
+      setUser(updatedUser);
+      uploadIdRef.current = undefined;
       setUploadStatus('done');
     } catch (error: any) {
+      // Stopped because the screen closed or the session ended: say nothing.
+      if (isSessionEndedError(error)) return;
       setUploadStatus('failed');
       setUploadError(error?.message || 'Photo upload failed');
       toast.error('Photo Upload Failed', error?.message || 'Please try again.');
     }
+  }
+
+  // A newly chosen photo is a new upload (new idempotency key).
+  function handleSelectPhoto(media: SelectedMedia) {
+    const accountId = useAuthStore.getState().user?.id;
+    if (accountId && uploadIdRef.current) {
+      discardUploadOperation(accountId, uploadIdRef.current);
+    }
+    uploadIdRef.current = undefined;
+    setSelectedImage(media);
+    setModalVisible(false);
+    void runUpload(media);
+  }
+
+  // Retry continues the SAME upload from the stage that failed.
+  function handleRetry() {
+    if (selectedImage) void runUpload(selectedImage);
   }
 
   function handleBack() {
@@ -140,8 +197,19 @@ export function UploadPhotoScreen() {
               onPress={() => setModalVisible(true)}
             />
             <Pressable
-              onPress={() => router.replace('/(tabs)')}
+              onPress={() => {
+                const pending =
+                  useNavigationStore.getState().consumePendingDestination();
+                if (pending?.pathname) {
+                  router.replace(pending.pathname as any);
+                } else {
+                  router.replace('/(tabs)');
+                }
+              }}
               className="items-center py-2"
+              accessibilityRole="button"
+              accessibilityLabel="Skip for now"
+              accessibilityHint="Proceed to your conversations without uploading a photo"
             >
               <AppText style={{ color: colors.textSecondary }}>
                 Skip for now
@@ -153,11 +221,26 @@ export function UploadPhotoScreen() {
         {uploadStatus === 'failed' && (
           <Button
             title="Retry"
-            onPress={() => selectedImage && handleSelectPhoto(selectedImage)}
+            onPress={handleRetry}
+            accessibilityLabel="Retry photo upload"
+            accessibilityHint="Retries uploading your selected photo"
           />
         )}
         {uploadStatus === 'done' && (
-          <Button title="Next" onPress={() => router.replace('/(tabs)')} />
+          <Button
+            title="Next"
+            onPress={() => {
+              const pending =
+                useNavigationStore.getState().consumePendingDestination();
+              if (pending?.pathname) {
+                router.replace(pending.pathname as any);
+              } else {
+                router.replace('/(tabs)');
+              }
+            }}
+            accessibilityLabel="Next"
+            accessibilityHint="Continues to your conversations"
+          />
         )}
       </View>
       <PhotoPickerModal

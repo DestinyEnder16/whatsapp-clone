@@ -1,3 +1,10 @@
+// Tests for the auth store (login and logout).
+// Checks that logging in stores the tokens and user, resets push registration
+// for a different account, and registers for push only when allowed. Checks
+// that logging out clears credentials, revokes the refresh token, unregisters
+// push, removes the account's cached data, and still works if the server
+// calls fail. Push, storage and the logout request are mocked.
+
 import { accountQueryKeys } from '@/core/lib/accountQuery';
 import { queryClient } from '@/core/lib/queryClient';
 import { useAuthStore } from '@/core/store/useAuthStore';
@@ -150,7 +157,11 @@ describe('logout', () => {
     expect(unregisterPushDeviceAsync).toHaveBeenCalledTimes(1);
   });
 
-  test('invalidates the session so late responses from this account are ignored', () => {
+  // This only checks the counter that ends the session. The behaviour that
+  // depends on it - releasing a late response into the next session - is
+  // tested end to end in apiClient.session, profileSession,
+  // sendMessage.session, uploadMedia and ProfileSetupScreen.session.
+  test('advances the session generation (the marker that ends in-flight work)', () => {
     const before = getAuthSessionGeneration();
     useAuthStore.getState().logout();
     expect(getAuthSessionGeneration()).toBe(before + 1);

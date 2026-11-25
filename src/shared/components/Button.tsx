@@ -1,3 +1,4 @@
+// src/shared/components/Button.tsx
 import { useAppTheme } from '@/shared/hooks';
 import {
   ActivityIndicator,
@@ -14,6 +15,8 @@ interface BtnProps {
   disabled?: boolean;
   className?: string;
   style?: ViewStyle;
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
 }
 
 export default function Button({
@@ -23,9 +26,15 @@ export default function Button({
   disabled = false,
   className,
   style,
+  accessibilityLabel,
+  accessibilityHint,
 }: BtnProps) {
   const { colors } = useAppTheme();
   const isDisabled = disabled || isLoading;
+
+  // The name stays the same while loading, so a screen reader keeps finding
+  // the same control; "busy" and "disabled" are reported as state instead.
+  const resolvedAccessibilityLabel = accessibilityLabel || title;
 
   return (
     <Pressable
@@ -38,9 +47,23 @@ export default function Button({
       className={className}
       onPress={onPress}
       disabled={isDisabled}
+      accessibilityRole="button"
+      accessibilityLabel={resolvedAccessibilityLabel}
+      accessibilityHint={accessibilityHint}
+      accessibilityState={{
+        disabled: isDisabled,
+        busy: isLoading,
+      }}
+      aria-busy={isLoading}
+      aria-disabled={isDisabled}
     >
       {isLoading ? (
-        <ActivityIndicator color={colors.primaryText} />
+        // Decorative: the button itself already announces "busy".
+        <ActivityIndicator
+          color={colors.primaryText}
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+        />
       ) : (
         <AppText
           variant="bold"

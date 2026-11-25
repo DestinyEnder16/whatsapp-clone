@@ -1,9 +1,14 @@
+import {
+  assertSessionOwnerCurrent,
+  captureSessionOwner,
+  isSessionEndedError,
+} from '@/core/session/sessionOwner';
 import { useAuthStore } from '@/core/store/useAuthStore';
 import { useMe } from '@/features/auth/api/useMe';
 import { useUpdateProfile } from '@/features/auth/api/useUpdateProfile';
+import { uploadProfileAvatar } from '@/services/media/profileAvatar';
 import {
-  assignProfileAvatar,
-  uploadMedia,
+  createClientUploadId,
   type SelectedMedia,
 } from '@/services/media/uploadMedia';
 import { PhotoPickerModal } from '@/shared/components/PhotoPickerModal';
@@ -13,7 +18,7 @@ import { Ionicons } from '@react-native-vector-icons/ionicons';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -48,23 +53,40 @@ export function EditProfileScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
+  // Reused by a retry so an avatar transfer that already succeeded is not
+  // repeated; replaced whenever a different photo is chosen.
+  const avatarUploadIdRef = useRef<string | undefined>(undefined);
+  const abortRef = useRef<AbortController | null>(null);
+  useEffect(() => () => abortRef.current?.abort(), []);
+
   async function handleSave() {
+    // Who is saving: captured before any await and checked after each one.
+    const owner = captureSessionOwner();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     setIsSaving(true);
     try {
       let updatedUser = await updateProfileMutation.mutateAsync({
         displayName: name.trim() || 'Roberto William',
       });
       if (selectedAvatar) {
-        const completedMedia = await uploadMedia(
-          selectedAvatar,
-          'profile_avatar'
-        );
-        updatedUser = await assignProfileAvatar(completedMedia.id);
+        avatarUploadIdRef.current ??= createClientUploadId();
+        updatedUser = await uploadProfileAvatar(selectedAvatar, {
+          owner,
+          signal: controller.signal,
+          clientUploadId: avatarUploadIdRef.current,
+        });
       }
+      // Last check before the auth-store write.
+      assertSessionOwnerCurrent(owner);
+      avatarUploadIdRef.current = undefined;
       setUser(updatedUser);
       toast.success('Profile Updated', 'Your profile was saved successfully!');
       router.back();
     } catch (error: any) {
+      // Stopped because the screen closed or the session ended: say nothing.
+      if (isSessionEndedError(error)) return;
       toast.error(
         'Profile Update Failed',
         error?.message || 'Please try again.'
@@ -172,6 +194,8 @@ export function EditProfileScreen() {
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
         onSelectPhoto={(media) => {
+          // A different photo is a different upload.
+          avatarUploadIdRef.current = undefined;
           setSelectedAvatar(media);
           setAvatarUri(media.uri);
           setModalVisible(false);

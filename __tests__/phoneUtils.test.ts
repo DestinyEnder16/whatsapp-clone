@@ -1,3 +1,9 @@
+// Tests for the phone-number helpers used when matching device contacts.
+// Checks that numbers in many formats (local, with spaces, with 00 or +) are
+// converted to E.164 (+2348012345678), that USSD codes, text and invalid
+// numbers are rejected, that the signed-in user's country code is used for
+// local numbers, and that lists are de-duplicated.
+
 import {
   extractCountryCode,
   normalizePhoneNumber,

@@ -2,6 +2,7 @@
 import { clearAccountQueries } from '@/core/lib/accountQuery';
 import { queryClient } from '@/core/lib/queryClient';
 import { secureAuthStorage } from '@/core/storage/mmkv';
+import { useNavigationStore } from '@/core/store/useNavigationStore';
 import { useNotificationStore } from '@/core/store/useNotificationStore';
 import {
   invalidateAuthSession,
@@ -62,6 +63,12 @@ export const useAuthStore = create<AuthState>()(
       // Called when user logs in or completes OTP verification
       setAuth: (accessToken, refreshToken, user) =>
         (() => {
+          // Signing in as a different account without an explicit logout must
+          // still end the previous session's in-flight work.
+          const previousUserId = useAuthStore.getState().user?.id;
+          if (previousUserId && previousUserId !== user.id) {
+            invalidateAuthSession();
+          }
           const notifications = useNotificationStore.getState();
           notifications.setRegistrationStatus(
             notifications.registeredAccountId === user.id
@@ -107,6 +114,9 @@ export const useAuthStore = create<AuthState>()(
         });
         useNotificationStore.getState().setRegisteredAccountId(null);
         useNotificationStore.getState().setRegistrationStatus('unregistered');
+        // A chat destination remembered for the ended session must not be
+        // opened by whoever signs in next.
+        useNavigationStore.getState().clearPendingDestination();
       },
 
       // Marks hydration as complete so navigation guards can safely redirect
@@ -132,6 +142,11 @@ export const useAuthStore = create<AuthState>()(
       onRehydrateStorage: () => (state, error) => {
         if (!error) {
           state?.setHasHydrated(true);
+        } else {
+          // Unreadable storage must not leave the app on the splash screen
+          // forever: continue signed out instead.
+          console.warn('Could not restore saved sign-in:', error);
+          queueMicrotask(() => useAuthStore.setState({ hasHydrated: true }));
         }
       },
     }

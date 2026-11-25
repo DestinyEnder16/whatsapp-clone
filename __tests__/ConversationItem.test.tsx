@@ -1,3 +1,8 @@
+// Tests for the ConversationItem component (one row in the chat list).
+// Checks the name and initial (with "Contact"/"Group" fallbacks), the message
+// preview (including the "You:" prefix), the time label, the unread badge
+// (including "99+"), and that tapping the row calls onPress.
+
 import { render, screen, userEvent } from '@testing-library/react-native';
 import { ConversationItem } from '@/features/chat/components/ConversationItem';
 

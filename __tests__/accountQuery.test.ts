@@ -1,3 +1,8 @@
+// Tests for the account-scoped React Query helpers.
+// Checks that every cache key includes the account id (so two accounts never
+// share cached data), that clearAccountQueries removes only account data and
+// keeps unrelated queries, and that getAccountId returns null when signed out.
+
 import { QueryClient } from '@tanstack/react-query';
 import {
   accountQueryKeys,

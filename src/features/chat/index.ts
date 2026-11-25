@@ -5,6 +5,7 @@ export { PinSetupScreen } from "./screens/PinSetupScreen";
 
 // API hooks
 export { useConversations } from "./api/useConversations";
+export { useConversation } from "./api/useConversation";
 export { useCreateDirectConversation } from "./api/useCreateDirectConversation";
 export { useSearchUsers } from "./api/useSearchUsers";
 export { useMuteConversation, useUnmuteConversation } from "./api/useMuteConversation";
