@@ -63,11 +63,38 @@ export function decideRouteGuard({
       : { action: 'none' };
   }
 
-  // Signed in with a finished profile but sitting on onboarding/auth screens.
-  if (first === 'onboarding' || first === '(auth)') {
+  // Signed in with a finished profile but sitting on a signed-out screen.
+  // The OTP, profile and photo screens finish the flow themselves (and consume
+  // the saved destination when they do), so the guard must not race them: the
+  // optional photo step would otherwise be skipped as soon as the name is saved.
+  const second = segments[1];
+  if (
+    first === 'onboarding' ||
+    (first === '(auth)' && !(second && SELF_NAVIGATING_AUTH_SCREENS.has(second)))
+  ) {
     return { action: 'resume-pending' };
   }
   return { action: 'none' };
+}
+
+/** Auth screens that navigate onward on their own once their step is done. */
+const SELF_NAVIGATING_AUTH_SCREENS = new Set([
+  'verify-otp',
+  'profile',
+  'upload-photo',
+]);
+
+/**
+ * May private screens (tabs, chat, settings, pin-setup) be mounted at all?
+ * Only after auth is restored, for a signed-in user whose profile is finished.
+ * Used for Stack.Protected so they never mount first and redirect later.
+ */
+export function canMountPrivateScreens({
+  hasHydrated,
+  isAuthenticated,
+  profileComplete,
+}: Omit<GuardInput, 'segments'>): boolean {
+  return hasHydrated && isAuthenticated && profileComplete;
 }
 
 /**

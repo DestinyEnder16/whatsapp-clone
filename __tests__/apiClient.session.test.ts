@@ -165,6 +165,33 @@ describe('a request belongs to the session that sent it', () => {
     expect(useAuthStore.getState().accessToken).toBe(bAccess);
     expect(useAuthStore.getState().refreshToken).toBe('refresh-B');
   });
+
+  test('a signed-out request (no token) whose 401 arrives after B signs in is not replayed as B', async () => {
+    // Signed out: e.g. an OTP verification is in flight.
+    const response = deferred<Response>();
+    fetchMock.mockReturnValueOnce(response.promise);
+
+    const pending = api.POST('/v1/auth/otp/verify', {
+      body: { phoneNumber: '+2348012345678', code: '0000' } as any,
+    });
+    while (fetchMock.mock.calls.length === 0) await Promise.resolve();
+    expect(calls()[0].auth).toBeNull(); // it was sent without any token
+
+    signIn('B');
+    const bAccess = useAuthStore.getState().accessToken;
+
+    response.resolve(json({ message: 'Invalid code' }, 401));
+    const { error, response: received } = await pending;
+
+    // The server's real answer is returned, untouched.
+    expect(received.status).toBe(401);
+    expect(error).toEqual({ message: 'Invalid code' });
+    // B was not refreshed, and nothing was replayed with B's token.
+    expect(refreshCalls()).toHaveLength(0);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(calls().some((c) => c.auth === `Bearer ${bAccess}`)).toBe(false);
+    expect(useAuthStore.getState().accessToken).toBe(bAccess);
+  });
 });
 
 describe('the normal refresh-and-replay still works for the current session', () => {

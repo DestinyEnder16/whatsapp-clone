@@ -1,3 +1,8 @@
+import {
+  captureSessionOwner,
+  isSessionEndedError,
+  isSessionOwnerCurrent,
+} from '@/core/session/sessionOwner';
 import { useAuthStore } from '@/core/store/useAuthStore';
 import { AppText, AppTextInput, BackButton, Button } from '@/shared/components';
 import Heading from '@/shared/components/Heading';
@@ -20,10 +25,15 @@ export function ProfileSetupScreen() {
   function handleSaveName() {
     if (!name.trim()) return;
 
+    // Who is saving: captured when the user taps Save, and checked again right
+    // before the auth-store write (these callbacks run after the request).
+    const owner = captureSessionOwner();
+
     updateProfileMutation.mutate(
       { displayName: name.trim() },
       {
         onSuccess: (updatedUser) => {
+          if (!isSessionOwnerCurrent(owner)) return;
           setUser(updatedUser);
 
           toast.success(
@@ -34,6 +44,9 @@ export function ProfileSetupScreen() {
           router.push('/upload-photo');
         },
         onError: (err: Error) => {
+          // Stopped because the session ended: not an error for whoever is
+          // signed in now.
+          if (isSessionEndedError(err) || !isSessionOwnerCurrent(owner)) return;
           toast.error('Error', err.message);
         },
       }

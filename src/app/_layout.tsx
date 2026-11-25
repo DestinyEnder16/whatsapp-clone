@@ -3,6 +3,7 @@ import { queryClient } from '@/core/lib/queryClient';
 import { useAuthStore } from '@/core/store/useAuthStore';
 import { useNavigationStore } from '@/core/store/useNavigationStore';
 import {
+  canMountPrivateScreens,
   conversationIdFromPath,
   decideRouteGuard,
 } from '@/services/navigation/routeGuard';
@@ -95,6 +96,12 @@ function RootNavigator() {
     }
   }, [hasHydrated, isAuthenticated, user?.profileComplete, segments, pathname]);
 
+  const canMountPrivate = canMountPrivateScreens({
+    hasHydrated,
+    isAuthenticated,
+    profileComplete: !!user?.profileComplete,
+  });
+
   return (
     <>
       <StatusBar style={isDark ? 'light' : 'dark'} />
@@ -110,7 +117,9 @@ function RootNavigator() {
         <Stack.Screen name="onboarding" />
         <Stack.Screen name="(auth)" />
 
-        <Stack.Protected guard={isAuthenticated}>
+        {/* Private screens exist only for a signed-in user with a finished
+            profile, so they can never mount first and be redirected later. */}
+        <Stack.Protected guard={canMountPrivate}>
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="chat" />
           <Stack.Screen name="settings" />

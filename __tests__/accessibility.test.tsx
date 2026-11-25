@@ -83,20 +83,37 @@ describe('Button', () => {
     expect(onPress).not.toHaveBeenCalled();
   });
 
-  test('while loading it is still labelled (not an unlabeled spinner), busy and disabled', () => {
+  test('while loading it keeps the same name (not an unlabeled spinner) and is busy and disabled', () => {
     const onPress = jest.fn();
     render(<Button title="Save" onPress={onPress} isLoading />);
 
-    const button = screen.getByRole('button', { name: 'Save, in progress' });
+    const button = screen.getByRole('button', { name: 'Save' });
     expect(button).toBeDisabled();
     expect(button.props.accessibilityState).toMatchObject({ disabled: true, busy: true });
     fireEvent.press(button);
     expect(onPress).not.toHaveBeenCalled();
   });
 
-  test('the loading spinner has its own label', () => {
+  test('the name is stable across idle -> loading -> idle, so focus stays on the same control', () => {
+    const view = render(<Button title="Save" onPress={jest.fn()} />);
+    expect(screen.getByRole('button', { name: 'Save' }).props.accessibilityState).toMatchObject({ busy: false });
+
+    view.rerender(<Button title="Save" onPress={jest.fn()} isLoading />);
+    expect(screen.getByRole('button', { name: 'Save' }).props.accessibilityState).toMatchObject({ busy: true });
+
+    view.rerender(<Button title="Save" onPress={jest.fn()} />);
+    expect(screen.getByRole('button', { name: 'Save' }).props.accessibilityState).toMatchObject({ busy: false });
+  });
+
+  test('the spinner is hidden from screen readers (the button reports busy instead)', () => {
     render(<Button title="Save" onPress={jest.fn()} isLoading />);
-    expect(screen.getByLabelText('Loading')).toBeOnTheScreen();
+    expect(screen.queryByLabelText('Loading')).toBeNull();
+    expect(screen.getAllByRole('button')).toHaveLength(1);
+  });
+
+  test('a custom label also stays the same while loading', () => {
+    render(<Button title="Next" accessibilityLabel="Save your name" onPress={jest.fn()} isLoading />);
+    expect(screen.getByRole('button', { name: 'Save your name' }).props.accessibilityState).toMatchObject({ busy: true });
   });
 
   test('uses a custom label and hint when given', () => {

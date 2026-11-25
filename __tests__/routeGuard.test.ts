@@ -7,6 +7,7 @@
 // chat links are parsed safely. Client-side protection only; the server still
 // authorizes.
 import {
+  canMountPrivateScreens,
   conversationIdFromPath,
   decideRouteGuard,
   type GuardInput,
@@ -115,6 +116,24 @@ describe('signed in with a complete profile', () => {
     },
   );
 
+  test('leaving the phone-number screen also resumes the saved destination', () => {
+    expect(decideRouteGuard(ready(['(auth)', 'phone']))).toEqual({
+      action: 'resume-pending',
+    });
+  });
+
+  // These screens move on (and consume the saved destination) themselves. If
+  // the guard also jumped away, saving the name would skip the optional photo
+  // step, and the saved chat could be consumed before the flow finished.
+  test.each([['verify-otp'], ['profile'], ['upload-photo']])(
+    'does not race the self-navigating (auth)/%s screen',
+    (second) => {
+      expect(decideRouteGuard(ready(['(auth)', second]))).toEqual({
+        action: 'none',
+      });
+    },
+  );
+
   test.each([['(tabs)'], ['chat'], ['settings'], ['pin-setup']])(
     'stays on private screen %s',
     (first) => {
@@ -123,6 +142,22 @@ describe('signed in with a complete profile', () => {
       });
     },
   );
+});
+
+describe('canMountPrivateScreens (Stack.Protected)', () => {
+  test('only a restored, signed-in user with a finished profile gets private screens', () => {
+    expect(
+      canMountPrivateScreens({ hasHydrated: true, isAuthenticated: true, profileComplete: true }),
+    ).toBe(true);
+  });
+
+  test.each([
+    ['before auth is restored', { hasHydrated: false, isAuthenticated: true, profileComplete: true }],
+    ['signed out', { hasHydrated: true, isAuthenticated: false, profileComplete: false }],
+    ['profile not finished', { hasHydrated: true, isAuthenticated: true, profileComplete: false }],
+  ])('none %s', (_label, input) => {
+    expect(canMountPrivateScreens(input)).toBe(false);
+  });
 });
 
 describe('conversationIdFromPath', () => {

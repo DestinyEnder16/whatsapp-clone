@@ -76,6 +76,16 @@ local config when cloning):
 git config --local core.hooksPath .githooks
 ```
 
+The hook is committed as executable (`100755`); Git silently ignores a hook
+without the executable bit. It refuses to push uncommitted changes or a branch
+other than the one checked out, then runs `npm run verify`; any failing check
+(a type error, a lint error, a failing test or a broken Android/iOS bundle)
+stops the push. To see it work, commit a deliberately failing test and try to
+push: the push is rejected with Jest's failure output and nothing is sent.
+
+`test:ci` runs Jest with `--watchman=false`, so verification also works where
+Watchman cannot run (sandboxes, some CI images).
+
 Tests live in `__tests__/`, shared test helpers in `test-utils/`. Tests replace
 only the outside edges (network, native storage, push, sockets, the router) and
 keep the application logic real. They do **not** replace trying the app on a

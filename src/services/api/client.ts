@@ -178,6 +178,10 @@ const authMiddleware: Middleware = {
 
     if (response.status === 401 && schemaPath !== '/v1/auth/refresh') {
       if (request.headers.get('x-auth-retried') === 'true') return;
+      // A request sent while signed out carried no token, so a 401 is the
+      // server's real answer (e.g. a wrong OTP). Never "repair" it by
+      // refreshing and replaying it as whoever has signed in since.
+      if (!owner?.accountId) return;
       const token = await getValidAccessToken(true, owner);
       // The refresh can outlive the session: re-check before replaying.
       assertRequestOwnerCurrent(owner);

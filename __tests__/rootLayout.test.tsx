@@ -159,6 +159,30 @@ describe('which screens exist', () => {
     }
   });
 
+  test('a signed-in user whose profile is not finished gets the public screens only', async () => {
+    restoreAuth(false, true);
+    await render(<RootLayout />);
+
+    for (const name of PUBLIC) {
+      expect(screen.getByTestId(`screen-${name}`)).toBeOnTheScreen();
+    }
+    for (const name of PROTECTED) {
+      expect(screen.queryByTestId(`screen-${name}`)).toBeNull();
+    }
+  });
+
+  test('finishing the profile adds the private screens', async () => {
+    restoreAuth(false, true);
+    await render(<RootLayout />);
+    expect(screen.queryByTestId('screen-chat')).toBeNull();
+
+    act(() => {
+      useAuthStore.setState({ user: { id: 'A', profileComplete: true } as any });
+    });
+
+    expect(screen.getByTestId('screen-chat')).toBeOnTheScreen();
+  });
+
   test('signing out removes the private screens', async () => {
     restoreAuth(true, true);
     await render(<RootLayout />);
@@ -217,6 +241,21 @@ describe('redirects and the chat the user was trying to open', () => {
 
     expect(router.replace).toHaveBeenCalledWith('/(tabs)');
   });
+
+  test.each([['profile'], ['upload-photo'], ['verify-otp']])(
+    'finishing the profile on (auth)/%s does not jump away or consume the saved chat',
+    async (screenName) => {
+      // The screen moves on by itself (e.g. to the optional photo step) and
+      // consumes the saved chat when the flow is done.
+      useNavigationStore.getState().setPendingConversationId(CHAT_ID);
+      segments.mockReturnValue(['(auth)', screenName]);
+      restoreAuth(true, true);
+      await render(<RootLayout />);
+
+      expect(router.replace).not.toHaveBeenCalled();
+      expect(useNavigationStore.getState().pendingDestination?.conversationId).toBe(CHAT_ID);
+    },
+  );
 
   test('a signed-in user on a private screen is left alone', async () => {
     segments.mockReturnValue(['chat', CHAT_ID]);

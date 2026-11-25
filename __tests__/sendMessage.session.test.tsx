@@ -199,6 +199,41 @@ describe('a send already in flight when the session changes', () => {
     expect(outboxFor('A')).toHaveLength(0); // A's own record is finished
   });
 
+  test.each([
+    ['switching to B', 'B'],
+    ['logging out and back in as A', 'A'],
+  ])(
+    "A's late confirmation after %s does not re-create A's cleared cache in the new session",
+    async (_label, nextAccount) => {
+      const request = deferred<any>();
+      post.mockReturnValueOnce(request.promise);
+      const invalidate = jest.spyOn(queryClient, 'invalidateQueries');
+      const { result } = await setup();
+
+      act(() => {
+        result.current.mutate({ conversationId: 'c1', text: 'for A', clientMessageId: 'm1' });
+      });
+      await waitFor(() => expect(messagePosts()).toHaveLength(1));
+      expect(cachedItems('A')).toHaveLength(1); // the optimistic row
+
+      // Logout clears the ended account's cache, then the next session starts.
+      switchAccount(nextAccount);
+      queryClient.removeQueries({ queryKey: accountQueryKeys.messages('A', 'c1') });
+
+      await act(async () => {
+        request.resolve({ data: serverMessage('m1'), error: undefined });
+      });
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+      // The confirmed send is finished durably for A...
+      expect(outboxFor('A')).toHaveLength(0);
+      // ...but no cache entry or refetch is written on A's behalf in the new session.
+      expect(cachedItems('A')).toBeUndefined();
+      expect(cachedItems('B')).toBeUndefined();
+      expect(invalidate).not.toHaveBeenCalled();
+    },
+  );
+
   test("A's failure is kept for A to retry, and does not touch B", async () => {
     const request = deferred<any>();
     post.mockReturnValueOnce(request.promise);

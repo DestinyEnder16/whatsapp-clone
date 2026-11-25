@@ -3,6 +3,7 @@ import { accountQueryKeys } from '@/core/lib/accountQuery';
 import {
   assertSessionOwnerCurrent,
   captureSessionOwner,
+  isSessionOwnerCurrent,
   SessionChangedError,
   type SessionOwner,
 } from '@/core/session/sessionOwner';
@@ -297,15 +298,23 @@ export function useSendMessage() {
 
     onSuccess: (serverMessage, variables, context) => {
       if (!context) return;
-      const { outboxAccountId, stableClientMessageId } = context;
+      const { outboxAccountId, stableClientMessageId, owner } = context;
 
-      // Genuine confirmation: the durable entries are no longer needed.
+      // Genuine confirmation: the durable entries (owned by the sending
+      // account, under its own keys) are no longer needed - even if that
+      // session has ended, so the account never sees a Retry for it later.
       useMessageOutboxStore
         .getState()
         .remove(outboxAccountId, variables.conversationId, stableClientMessageId);
       if (variables.clientUploadId) {
         discardUploadOperation(outboxAccountId, variables.clientUploadId);
       }
+
+      // The visible cache belongs to the live session. If the sender's session
+      // ended (logout, account switch, or a fresh login as the same account)
+      // its cache was cleared: writing it now would resurrect the old
+      // account's data inside the new session. History reloads it later.
+      if (!isSessionOwnerCurrent(owner)) return;
 
       queryClient.setQueryData(
         accountQueryKeys.messages(outboxAccountId, variables.conversationId),

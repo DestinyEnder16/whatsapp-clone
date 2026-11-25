@@ -32,9 +32,9 @@ export default function Button({
   const { colors } = useAppTheme();
   const isDisabled = disabled || isLoading;
 
-  // Stable accessibility label that remains informative whether loading or idle
-  const resolvedAccessibilityLabel =
-    accessibilityLabel || (isLoading ? `${title}, in progress` : title);
+  // The name stays the same while loading, so a screen reader keeps finding
+  // the same control; "busy" and "disabled" are reported as state instead.
+  const resolvedAccessibilityLabel = accessibilityLabel || title;
 
   return (
     <Pressable
@@ -58,9 +58,11 @@ export default function Button({
       aria-disabled={isDisabled}
     >
       {isLoading ? (
+        // Decorative: the button itself already announces "busy".
         <ActivityIndicator
           color={colors.primaryText}
-          accessibilityLabel="Loading"
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
         />
       ) : (
         <AppText
